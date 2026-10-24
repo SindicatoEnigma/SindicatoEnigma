@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#09090b"/>
+      <stop offset="1" stop-color="#38312a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#sky)"/>
+  <circle cx="880" cy="170" r="80" fill="#d8d1b8"/>
+  <path d="M0 620 L260 430 L410 620 L600 390 L790 620 L1000 420 L1200 620 V800 H0Z" fill="#151515"/>
+  <path d="M0 690 Q600 570 1200 690 V800 H0Z" fill="#090909"/>
+  <g fill="#d56a1f">
+    <circle cx="180" cy="680" r="34"/>
+    <circle cx="1060" cy="675" r="40"/>
+  </g>
+  <g fill="#050505">
+    <circle cx="168" cy="672" r="5"/><circle cx="192" cy="672" r="5"/>
+    <path d="M165 690 Q180 705 195 690Z"/>
+    <circle cx="1046" cy="665" r="6"/><circle cx="1070" cy="665" r="6"/>
+    <path d="M1040 684 Q1060 700 1080 684Z"/>
+  </g>
+  <text x="600" y="750" fill="#ddd5c3" text-anchor="middle" font-family="Georgia" font-size="28">SINDICATO ENIGMA</text>
+</svg>
