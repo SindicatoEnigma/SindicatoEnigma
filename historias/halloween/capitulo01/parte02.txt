@@ -1,0 +1,32 @@
+# PARTE 02
+# Esta parte demuestra que el documento también puede existir
+# como un elemento independiente del menú.
+
+[FONDO calle_noche]
+
+[EL normal]
+EL: Si seleccionaste esta parte directamente desde el archivo, no pasa nada.
+
+[NARRADOR]
+El motor permite abrir una parte individualmente.
+
+[DOCUMENTO notas_investigacion]
+NOTAS PRELIMINARES
+
+Objetivo:
+Determinar qué relación existe entre la leyenda de Jack-o'-lantern,
+la familia de Margaret y la puerta descrita por sus nietas.
+
+Hipótesis inicial:
+La puerta podría ser una representación ritual, no necesariamente
+una puerta física.
+
+Advertencia:
+Una hipótesis no es un hecho.
+
+[FIN DOCUMENTO]
+
+[EL sospechando]
+EL: Y recuerden esa última línea. Una investigación seria separa evidencia de interpretación.
+
+[FIN PARTE]

@@ -1,0 +1,16 @@
+# PARTE 03
+# Aquí demostramos cómo una historia puede abrir un minijuego.
+# El módulo real se sustituirá después por el crucigrama,
+# Sudoku, nonograma, etc.
+
+[FONDO calle_noche]
+
+[EL normal]
+EL: Tenemos una primera pista, pero todavía necesitamos interpretarla.
+
+[PUZZLE crucigrama_001]
+
+[EL normal]
+EL: Excelente. El minijuego devolvió el control a la historia.
+
+[FIN CAPITULO]

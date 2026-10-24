@@ -1,0 +1,47 @@
+# ============================================================
+# PARTE 01 - EJEMPLO
+# ============================================================
+# Las líneas que comienzan con # son comentarios internos.
+# El motor las ignora. Sirven para que el autor pueda estudiar
+# y organizar la historia.
+
+[FONDO calle_noche]
+
+[EL normal]
+EL: Buenas noches, detective.
+
+[NARRADOR]
+Una carta llegó al Sindicato Enigma justo antes de medianoche.
+
+[EL normal]
+EL: No parece una carta cualquiera. La remitente es Margaret, una botánica retirada que vive en un pueblo donde las historias de brujas todavía se cuentan como si fueran noticias.
+
+[EL normal derecha]
+EL: Y, naturalmente, decidió escribirnos durante Halloween.
+
+[MARGARET preocupada]
+MARGARET: Si alguien recibe esta carta, significa que mi familia ya no puede resolver esto sola.
+
+[EL sospechando]
+EL: Ah. Esa frase nunca precede a una noche tranquila.
+
+[DOCUMENTO carta_margaret]
+Carta de Margaret
+
+Querido Sindicato Enigma:
+
+Necesito ayuda. Mis nietas encontraron un antiguo cuaderno de mi madre.
+Desde entonces, una de ellas afirma haber visto una puerta donde no debería existir ninguna.
+
+Hay una leyenda relacionada con Jack-o'-lanterns, una puerta y algo que
+no pertenece completamente ni al mundo de los vivos ni al de los muertos.
+
+Por favor, vengan antes de la próxima luna llena.
+
+Margaret
+[FIN DOCUMENTO]
+
+[EL normal]
+EL: La investigación comienza aquí.
+
+[FIN PARTE]
