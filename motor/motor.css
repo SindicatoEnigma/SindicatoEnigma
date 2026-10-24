@@ -1,0 +1,477 @@
+/*
+    SINDICATO ENIGMA - MOTOR VISUAL
+    --------------------------------
+    Este archivo contiene exclusivamente la apariencia.
+
+    Una idea importante para estudiar:
+    HTML = estructura
+    CSS  = apariencia
+    JavaScript = comportamiento
+
+    Si cambias colores, tamaños o posiciones, normalmente trabajas aquí.
+*/
+
+:root {
+    --negro: #111111;
+    --gris-oscuro: #222222;
+    --gris: #555555;
+    --marfil: #eee9dc;
+    --papel: #f5f0e4;
+    --rojo: #7d1f1f;
+    --rojo-claro: #a23a3a;
+    --borde: rgba(238, 233, 220, 0.65);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--negro);
+    color: var(--marfil);
+    font-family: Georgia, "Times New Roman", serif;
+}
+
+button {
+    font: inherit;
+}
+
+.pantalla {
+    display: none;
+    width: 100%;
+    min-height: 100dvh;
+}
+
+.pantalla.activa {
+    display: flex;
+}
+
+/* ---------- Inicio ---------- */
+
+#pantalla-inicio {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background:
+        radial-gradient(circle, #333 0%, #111 65%);
+}
+
+.logo-inicio {
+    width: min(90%, 600px);
+    padding: 30px;
+}
+
+.logo-se {
+    margin: auto;
+    width: 110px;
+    height: 110px;
+    border: 3px solid var(--marfil);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 42px;
+    letter-spacing: 4px;
+}
+
+.logo-inicio h1 {
+    letter-spacing: 5px;
+    margin-bottom: 8px;
+}
+
+.logo-inicio p {
+    color: #c8c0af;
+}
+
+/* ---------- Botones ---------- */
+
+button {
+    border: 1px solid var(--borde);
+    background: var(--gris-oscuro);
+    color: var(--marfil);
+    padding: 12px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #333;
+}
+
+.logo-inicio button {
+    margin-top: 25px;
+    background: var(--rojo);
+}
+
+.boton-secundario {
+    background: transparent;
+}
+
+.boton-icono,
+.boton-control {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+}
+
+.boton-control {
+    background: rgba(0, 0, 0, 0.65);
+}
+
+/* ---------- Encabezados ---------- */
+
+.encabezado {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 20px;
+    border-bottom: 1px solid #444;
+    background: #171717;
+}
+
+.encabezado > div {
+    flex: 1;
+}
+
+.encabezado h2 {
+    margin: 4px 0 0;
+}
+
+.etiqueta {
+    color: #b6ad9d;
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+}
+
+/* ---------- Archivo ---------- */
+
+#pantalla-archivo,
+#pantalla-capitulo {
+    flex-direction: column;
+    background: #151515;
+}
+
+.lista-casos,
+.lista-partes {
+    width: min(94%, 850px);
+    margin: 25px auto;
+}
+
+.expediente {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 15px;
+    padding: 22px;
+    background: var(--papel);
+    color: var(--negro);
+    border: 1px solid #777;
+    position: relative;
+}
+
+.expediente::after {
+    content: "SINDICATO ENIGMA";
+    position: absolute;
+    right: 14px;
+    bottom: 10px;
+    opacity: 0.25;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+}
+
+.expediente h3 {
+    margin: 0 0 6px;
+}
+
+.expediente p {
+    margin: 0;
+    color: #444;
+}
+
+.item-parte {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    margin-bottom: 10px;
+    text-align: left;
+    background: #202020;
+}
+
+.numero-parte {
+    min-width: 42px;
+    text-align: center;
+    font-size: 1.2rem;
+    color: #c8c0af;
+}
+
+.tipo-parte {
+    font-size: 0.75rem;
+    color: #aaa;
+    letter-spacing: 1px;
+}
+
+/* ---------- Escena ---------- */
+
+.pantalla-historia {
+    background: #000;
+}
+
+.escena {
+    position: relative;
+    width: 100%;
+    height: 100dvh;
+    min-height: 520px;
+    overflow: hidden;
+
+    /*
+        El fondo real de la historia se asigna desde JavaScript.
+        Por defecto usamos un degradado para que la escena siga funcionando
+        aunque todavía no haya una imagen de fondo.
+    */
+    background:
+        radial-gradient(circle at 50% 35%, #444 0%, #181818 50%, #050505 100%);
+    background-size: cover;
+    background-position: center;
+}
+
+.capa-personajes {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+/*
+    Cada personaje se coloca en la parte inferior.
+    left/right no significa que la expresión cambie de sitio.
+    La posición pertenece al personaje, no a su expresión.
+*/
+.personaje {
+    position: absolute;
+    bottom: 13%;
+    max-width: 42%;
+    max-height: 58%;
+    object-fit: contain;
+    transition:
+        opacity 250ms ease,
+        transform 250ms ease;
+    opacity: 1;
+}
+
+.personaje.izquierda {
+    left: 5%;
+}
+
+.personaje.derecha {
+    right: 5%;
+}
+
+.personaje.entrando {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.personaje.saliendo {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+/* ---------- Diálogo ---------- */
+
+.dialogo {
+    position: absolute;
+    left: 4%;
+    right: 4%;
+    bottom: 3%;
+    min-height: 150px;
+    max-height: 31%;
+    padding: 22px 24px;
+    background: rgba(15, 15, 15, 0.84);
+    border: 1px solid var(--borde);
+    border-radius: 4px;
+    z-index: 10;
+}
+
+.dialogo::before,
+.dialogo::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    height: 1px;
+    background: rgba(238, 233, 220, 0.28);
+}
+
+.dialogo::before {
+    top: 7px;
+}
+
+.dialogo::after {
+    bottom: 7px;
+}
+
+.nombre-personaje {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 4px 12px;
+    background: var(--rojo);
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+.texto-dialogo {
+    height: calc(100% - 42px);
+    overflow-y: auto;
+    line-height: 1.6;
+    font-size: clamp(1rem, 2.2vw, 1.25rem);
+    padding-right: 10px;
+}
+
+.indicador-avance {
+    position: absolute;
+    right: 17px;
+    bottom: 10px;
+    opacity: 0.7;
+    animation: pulso 1s infinite;
+}
+
+@keyframes pulso {
+    50% { opacity: 0.2; }
+}
+
+/* ---------- Documento ---------- */
+
+.documento {
+    position: absolute;
+    inset: 5%;
+    z-index: 30;
+    padding: 35px;
+    background: rgba(245, 240, 228, 0.97);
+    color: #171717;
+    border: 2px solid #777;
+    overflow: hidden;
+}
+
+.texto-documento {
+    height: calc(100% - 60px);
+    overflow-y: auto;
+    white-space: pre-wrap;
+    line-height: 1.7;
+    font-size: clamp(1rem, 2.2vw, 1.2rem);
+}
+
+/* ---------- Controles ---------- */
+
+.controles-historia {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 20;
+}
+
+.controles-audio {
+    display: flex;
+    gap: 8px;
+}
+
+/* ---------- Puzzle ---------- */
+
+#pantalla-puzzle {
+    align-items: stretch;
+    justify-content: center;
+    background: #111;
+}
+
+.puzzle-contenedor {
+    width: min(100%, 1000px);
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+}
+
+.puzzle-contenido {
+    flex: 1;
+    padding: 25px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+}
+
+.puzzle-demo {
+    max-width: 650px;
+    padding: 30px;
+    border: 1px solid #555;
+    background: #1d1d1d;
+}
+
+.puzzle-demo h3 {
+    margin-top: 0;
+}
+
+.puzzle-demo .resultado {
+    margin-top: 20px;
+    color: #d7cfbf;
+}
+
+/* ---------- Configuración ---------- */
+
+#pantalla-config {
+    align-items: flex-start;
+    justify-content: center;
+    background: #151515;
+}
+
+.config-contenedor {
+    width: min(100%, 700px);
+}
+
+.opcion-config {
+    display: block;
+    margin: 20px;
+    padding: 18px;
+    background: #222;
+}
+
+.opcion-config input {
+    transform: scale(1.3);
+    margin-right: 12px;
+}
+
+/* ---------- Utilidades ---------- */
+
+.oculto {
+    display: none !important;
+}
+
+/* ---------- Adaptación móvil ---------- */
+
+@media (max-width: 600px) {
+    .dialogo {
+        min-height: 170px;
+        max-height: 36%;
+        padding: 20px 17px;
+    }
+
+    .personaje {
+        max-width: 55%;
+        max-height: 55%;
+        bottom: 25%;
+    }
+
+    .documento {
+        inset: 3%;
+        padding: 22px;
+    }
+
+    .encabezado {
+        padding: 14px;
+    }
+}
