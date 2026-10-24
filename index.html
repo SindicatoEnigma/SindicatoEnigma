@@ -1,267 +1,152 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#171717">
-  <title>Sindicato Enigma</title>
-  <style>
-    :root {
-      --fondo: #171717;
-      --papel: #eee5d2;
-      --rojo: #9d2929;
-      --tinta: #29251f;
-    }
+    <meta charset="UTF-8">
 
-    * { box-sizing: border-box; }
+    <!--
+        viewport es importante para que la interfaz sea realmente móvil.
+        El proyecto está pensado primero para Android, pero también funciona
+        en pantallas grandes.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    body {
-      margin: 0;
-      background: var(--fondo);
-      color: var(--papel);
-      font-family: Georgia, "Times New Roman", serif;
-    }
+    <title>Sindicato Enigma</title>
 
-    header {
-      text-align: center;
-      padding: 28px 16px 20px;
-      border-bottom: 1px solid #62594c;
-    }
-
-    .siglas {
-      color: var(--rojo);
-      font-size: 38px;
-      font-weight: bold;
-      letter-spacing: 5px;
-    }
-
-    header h1 {
-      font-size: 23px;
-      letter-spacing: 3px;
-      margin: 6px 0;
-    }
-
-    header p {
-      color: #b9ad99;
-      font-size: 12px;
-      letter-spacing: 2px;
-    }
-
-    main {
-      width: min(720px, 100%);
-      margin: auto;
-      padding: 20px 14px 40px;
-    }
-
-    .expediente {
-      background: var(--papel);
-      color: var(--tinta);
-      padding: 22px;
-      border: 1px solid #9a8b72;
-      box-shadow: 0 5px 18px #0008;
-    }
-
-    .sello {
-      display: inline-block;
-      border: 2px solid var(--rojo);
-      color: var(--rojo);
-      padding: 5px 9px;
-      font-weight: bold;
-      letter-spacing: 2px;
-      transform: rotate(-3deg);
-    }
-
-    .expediente h2 {
-      text-align: center;
-      margin: 22px 0 8px;
-      font-size: 24px;
-    }
-
-    .subtitulo {
-      text-align: center;
-      font-size: 12px;
-      letter-spacing: 2px;
-    }
-
-    .separador {
-      border: 0;
-      border-top: 1px solid #a99b83;
-      margin: 18px 0;
-    }
-
-    .escena {
-      margin-top: 22px;
-      border: 1px solid #665c4b;
-      background: #242321;
-      overflow: hidden;
-    }
-
-    .escenario {
-      min-height: 180px;
-      display: grid;
-      place-items: center;
-      padding: 22px;
-      text-align: center;
-      background:
-        radial-gradient(ellipse at center, #514638 0%, #282623 65%, #171717 100%);
-    }
-
-    .escenario .luna {
-      font-size: 42px;
-      margin-bottom: 8px;
-    }
-
-    .escenario h3 {
-      margin: 0;
-      font-size: 21px;
-    }
-
-    .escenario p {
-      margin-bottom: 0;
-      color: #c5b9a4;
-      font-size: 13px;
-    }
-
-    .dialogo {
-      background: var(--papel);
-      color: var(--tinta);
-      padding: 18px;
-      min-height: 145px;
-    }
-
-    .personaje {
-      color: var(--rojo);
-      font-weight: bold;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
-    }
-
-    #texto {
-      line-height: 1.6;
-      margin: 0;
-    }
-
-    button {
-      display: block;
-      width: 100%;
-      margin-top: 14px;
-      padding: 14px;
-      background: var(--rojo);
-      color: white;
-      border: 1px solid #c66a60;
-      font: bold 15px Georgia, serif;
-      cursor: pointer;
-    }
-
-    button:active { opacity: 0.8; }
-
-    .nota {
-      color: #b9ad99;
-      font-size: 12px;
-      text-align: center;
-      line-height: 1.6;
-      margin-top: 22px;
-    }
-
-    footer {
-      text-align: center;
-      padding: 18px;
-      border-top: 1px solid #51483c;
-      color: #9d917d;
-      font-size: 12px;
-    }
-  </style>
+    <!-- Hoja de estilos principal -->
+    <link rel="stylesheet" href="motor/motor.css">
 </head>
+
 <body>
-  <header>
-    <div class="siglas">S · E</div>
-    <h1>SINDICATO ENIGMA</h1>
-    <p>ARCHIVOS · MISTERIOS · DEDUCCIÓN</p>
-  </header>
+    <!--
+        Todo el juego se dibuja dentro de este contenedor.
+        JavaScript cambia su contenido y visibilidad según el estado actual.
+    -->
+    <main id="app">
 
-  <main>
-    <section class="expediente">
-      <div class="sello">ARCHIVO ABIERTO</div>
-      <h2>Bienvenido, investigador</h2>
-      <p class="subtitulo">TU PRÓXIMO MISTERIO COMIENZA AQUÍ</p>
-      <hr class="separador">
-      <p>
-        Algunos secretos se esconden detrás de una puerta.
-        Otros, detrás de una palabra, un número o una
-        contradicción que nadie se ha detenido a examinar.
-      </p>
-      <p>
-        En este lugar encontrarás casos, acertijos y
-        aventuras. Observa las pruebas, cuestiona tus
-        sospechas y descubre qué se oculta tras cada enigma.
-      </p>
-    </section>
+        <!-- PANTALLA DE INICIO -->
+        <section id="pantalla-inicio" class="pantalla activa">
+            <div class="logo-inicio">
+                <div class="logo-se">SE</div>
+                <h1>SINDICATO ENIGMA</h1>
+                <p>Archivo de investigaciones extraordinarias</p>
+                <button id="btn-iniciar">Abrir archivo</button>
+            </div>
+        </section>
 
-    <section class="escena">
-      <div class="escenario">
-        <div>
-          <div class="luna">☾</div>
-          <h3 id="tituloEscena">La oficina del detective</h3>
-          <p id="lugar">Sindicato Enigma · 23:47</p>
-        </div>
-      </div>
+        <!-- ARCHIVO DE CASOS -->
+        <section id="pantalla-archivo" class="pantalla">
+            <header class="encabezado">
+                <div>
+                    <span class="etiqueta">ARCHIVO</span>
+                    <h2>Casos del Sindicato</h2>
+                </div>
+                <button id="btn-config" class="boton-icono" title="Configuración">⚙</button>
+            </header>
 
-      <div class="dialogo">
-        <div class="personaje" id="nombrePersonaje">EL</div>
-        <p id="texto">Vaya, por fin has llegado. Tengo un expediente que necesita una mente curiosa. ¿Te atreves a examinarlo?</p>
-        <button id="avanzar">Continuar →</button>
-      </div>
-    </section>
+            <div id="lista-casos" class="lista-casos">
+                <!-- JavaScript inserta aquí los expedientes -->
+            </div>
+        </section>
 
-    <p class="nota">
-      Esta es la primera versión de nuestro motor narrativo.
-      Más adelante añadiremos ilustraciones, personajes,
-      escenarios intercambiables, decisiones y minijuegos.
-    </p>
-  </main>
+        <!-- MENÚ DE CAPÍTULO -->
+        <section id="pantalla-capitulo" class="pantalla">
+            <header class="encabezado">
+                <button id="btn-volver-archivo" class="boton-secundario">← Archivo</button>
+                <div>
+                    <span id="capitulo-etiqueta" class="etiqueta">CAPÍTULO</span>
+                    <h2 id="capitulo-titulo">Investigación</h2>
+                </div>
+            </header>
 
-  <footer>
-    SINDICATO ENIGMA · CADA PISTA CUENTA
-  </footer>
+            <div id="lista-partes" class="lista-partes">
+                <!-- JavaScript inserta aquí las partes -->
+            </div>
+        </section>
 
-  <script>
-    const escenas = [
-      {
-        lugar: "Sindicato Enigma · 23:47",
-        titulo: "La oficina del detective",
-        personaje: "EL",
-        texto: "Vaya, por fin has llegado. Tengo un expediente que necesita una mente curiosa. ¿Te atreves a examinarlo?",
-        boton: "Continuar →"
-      },
-      {
-        lugar: "Expediente sin clasificar",
-        titulo: "Una carta misteriosa",
-        personaje: "EL",
-        texto: "Esta mañana encontré una carta sin remitente. Solo contiene una frase: «La verdad está a la vista, pero nadie la observa».",
-        boton: "Examinar la pista →"
-      },
-      {
-        lugar: "Primera regla de investigación",
-        titulo: "Antes de sacar conclusiones",
-        personaje: "EL",
-        texto: "Recuerda: una observación no es lo mismo que una hipótesis. Primero reúne los hechos; después, considera qué explicaciones encajan con ellos.",
-        boton: "Volver al principio ↻"
-      }
-    ];
+        <!-- ESCENA NARRATIVA -->
+        <section id="pantalla-historia" class="pantalla pantalla-historia">
+            <div id="escena" class="escena">
 
-    let indice = 0;
+                <!--
+                    El fondo se coloca mediante CSS/JavaScript.
+                    Los personajes se mantienen encima del fondo.
+                -->
+                <div id="capa-personajes" class="capa-personajes"></div>
 
-    document.getElementById("avanzar").addEventListener("click", () => {
-      indice = (indice + 1) % escenas.length;
-      const escena = escenas[indice];
+                <!-- Caja de diálogo -->
+                <div id="dialogo" class="dialogo oculto">
+                    <div id="nombre-personaje" class="nombre-personaje"></div>
+                    <div id="texto-dialogo" class="texto-dialogo"></div>
+                    <div id="indicador-avance" class="indicador-avance">▼</div>
+                </div>
 
-      document.getElementById("lugar").textContent = escena.lugar;
-      document.getElementById("tituloEscena").textContent = escena.titulo;
-      document.getElementById("nombrePersonaje").textContent = escena.personaje;
-      document.getElementById("texto").textContent = escena.texto;
-      document.getElementById("avanzar").textContent = escena.boton;
-    });
-  </script>
+                <!-- Documento largo -->
+                <div id="documento" class="documento oculto">
+                    <div id="texto-documento" class="texto-documento"></div>
+                    <button id="btn-cerrar-documento" class="boton-secundario">Cerrar documento</button>
+                </div>
+
+                <!-- Botones de control -->
+                <div class="controles-historia">
+                    <button id="btn-menu-historia" class="boton-control">☰</button>
+                    <div class="controles-audio">
+                        <button id="btn-musica" class="boton-control">♫</button>
+                        <button id="btn-sonido" class="boton-control">🔊</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PANTALLA DE MINIJUEGO -->
+        <section id="pantalla-puzzle" class="pantalla">
+            <div class="puzzle-contenedor">
+                <header class="encabezado">
+                    <div>
+                        <span class="etiqueta">MINIJUEGO</span>
+                        <h2 id="puzzle-titulo">Puzzle</h2>
+                    </div>
+                </header>
+
+                <div id="puzzle-contenido" class="puzzle-contenido">
+                    <!-- El módulo del puzzle se monta aquí -->
+                </div>
+
+                <button id="btn-salir-puzzle" class="boton-secundario">
+                    Salir del minijuego
+                </button>
+            </div>
+        </section>
+
+        <!-- CONFIGURACIÓN -->
+        <section id="pantalla-config" class="pantalla">
+            <div class="config-contenedor">
+                <header class="encabezado">
+                    <button id="btn-cerrar-config" class="boton-secundario">← Volver</button>
+                    <div>
+                        <span class="etiqueta">SISTEMA</span>
+                        <h2>Configuración</h2>
+                    </div>
+                </header>
+
+                <label class="opcion-config">
+                    <input type="checkbox" id="config-musica" checked>
+                    Música
+                </label>
+
+                <label class="opcion-config">
+                    <input type="checkbox" id="config-sonido" checked>
+                    Efectos de sonido
+                </label>
+            </div>
+        </section>
+
+    </main>
+
+    <!--
+        audio.js se carga antes que motor.js porque motor.js utiliza
+        el objeto AudioEngine que se define allí.
+    -->
+    <script src="motor/audio.js"></script>
+    <script src="motor/motor.js"></script>
 </body>
 </html>
