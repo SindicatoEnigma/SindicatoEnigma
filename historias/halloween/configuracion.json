@@ -1,0 +1,31 @@
+{
+  "id": "halloween",
+  "titulo": "El caso de la puerta de Jack",
+  "descripcion": "Una investigación sobrenatural entre leyendas, botánica y una puerta que quizá no debería abrirse.",
+  "extensionImagen": ".svg",
+  "carpetaRecursos": "../../recursos/halloween/",
+  "capitulos": [
+    {
+      "id": "capitulo01",
+      "titulo": "La carta de Margaret",
+      "descripcion": "El inicio de la investigación.",
+      "partes": [
+        {
+          "archivo": "parte01.txt",
+          "titulo": "La carta",
+          "tipo": "HISTORIA"
+        },
+        {
+          "archivo": "parte02.txt",
+          "titulo": "El documento",
+          "tipo": "DOCUMENTO"
+        },
+        {
+          "archivo": "parte03.txt",
+          "titulo": "La primera pista",
+          "tipo": "PUZZLE"
+        }
+      ]
+    }
+  ]
+}
