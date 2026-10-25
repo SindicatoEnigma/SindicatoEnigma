@@ -144,7 +144,7 @@ function actualizarPista(){
 /* La palabra completa se valida de una vez. Si falla, NO cambia el tablero. */
 $("confirmar").onclick=confirmar;
 input.onkeydown=e=>{if(e.key==="Enter")confirmar()};
-function confirmar(){
+/*function confirmar(){
   const w=S.actual;if(!w||w.completada)return;
   const x=normalizar(input.value);
   if(x.length!==w.respuesta.length){error("La respuesta debe tener "+w.respuesta.length+" letras.");return}
@@ -153,7 +153,93 @@ function confirmar(){
   w.completada=true;S.celdas[w.fila][w.col].el.classList.add("completada");
   const n=S.celdas[w.fila][w.col].el.querySelector(".numero");if(n)n.style.color="#050505";
   mensaje.textContent="Palabra correcta.";mensaje.className="mensaje ok";comprobarFinal();
+}*/
+function confirmar(){
+
+  const w=S.actual;
+
+  if(!w || w.completada)return;
+
+  const x=normalizar(input.value);
+
+  if(x.length!==w.respuesta.length){
+    error(
+      "La respuesta debe tener "+
+      w.respuesta.length+
+      " letras."
+    );
+    return;
+  }
+
+  /*
+   * Si la palabra completa es incorrecta,
+   * no modificamos absolutamente ninguna
+   * casilla del tablero.
+   */
+  if(x!==w.respuesta){
+    error("Respuesta incorrecta.");
+    return;
+  }
+
+  /*
+   * Respuesta correcta:
+   * escribimos todas las letras,
+   * las bloqueamos y las marcamos como
+   * parte de una palabra completada.
+   */
+  w.celdas.forEach(p=>{
+
+    const c=S.celdas[p.fila][p.col];
+
+    c.letra=w.respuesta[p.i];
+    c.estado="bloqueada";
+
+    pintar(c);
+
+    c.el.classList.add("completada");
+
+  });
+
+  w.completada=true;
+
+  /*
+   * La casilla inicial de la pista
+   * también queda completada.
+   */
+  const inicio=S.celdas[w.fila][w.col];
+
+  inicio.el.classList.add("completada");
+
+  const numero=inicio.el.querySelector(".numero");
+
+  if(numero){
+    numero.style.color="#050505";
+  }
+
+  mensaje.textContent="Palabra correcta.";
+  mensaje.className="mensaje ok";
+
+  /*
+   * Revisamos las palabras que cruzan
+   * con la palabra recién completada.
+   */
+  const palabrasCruzadas=new Set();
+
+  w.celdas.forEach(p=>{
+
+    const c=S.celdas[p.fila][p.col];
+
+    c.palabras.forEach(id=>{
+      palabrasCruzadas.add(id);
+    });
+
+  });
+
+  revisar([...palabrasCruzadas]);
+
+  actualizarPista();
 }
+
 function error(t){mensaje.textContent=t;mensaje.className="mensaje error"}
 
 function comprobarFinal(){
