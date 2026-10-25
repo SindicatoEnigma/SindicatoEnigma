@@ -39,7 +39,18 @@ function leerTXT(texto){
   }
   return d;
 }
-function pistaDato(l){const p=l.split("|");return{num:+p[0],fila:+p[1],col:+p[2],texto:p.slice(3).join("|")}}
+/*function pistaDato(l){const p=l.split("|");return{num:+p[0],fila:+p[1],col:+p[2],texto:p.slice(3).join("|")}}*/
+function pistaDato(l){
+  const p=l.split("|");
+
+  return {
+    num:+p[0],
+    fila:+p[1]-1,
+    col:+p[2]-1,
+    texto:p.slice(3).join("|")
+  };
+}
+
 
 function crearPalabras(){
   const hacer=(p,dir)=>{
