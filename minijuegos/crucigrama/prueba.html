@@ -9,7 +9,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Crucigrama — Sindicato Enigma</title>
+    <title>Prueba — Crucigrama Sindicato Enigma</title>
 
     <link
         rel="stylesheet"
@@ -21,20 +21,31 @@
 
     <main id="crucigrama">
 
-        <header class="cabecera-prueba">
+        <header>
             <h1>Crucigrama</h1>
             <p>Prueba técnica — Sindicato Enigma</p>
         </header>
 
-        <section class="panel-crucigrama">
+        <div
+            id="diagnostico"
+            style="
+                background:#e9e4d7;
+                color:#111;
+                padding:10px;
+                margin:10px;
+                border:2px solid #111;
+            "
+        >
+            Cargando motor...
+        </div>
 
-            <!-- TABLERO -->
+        <section id="app">
+
             <div
                 id="tablero"
                 class="tablero"
             ></div>
 
-            <!-- INFORMACIÓN DE LA PALABRA -->
             <section
                 id="respuesta"
                 class="respuesta hidden"
@@ -43,9 +54,7 @@
                 <div
                     id="cabecera"
                     class="cabecera"
-                >
-                    —
-                </div>
+                ></div>
 
                 <div
                     id="pista"
@@ -54,13 +63,11 @@
                     Selecciona una palabra.
                 </div>
 
-                <!-- Casillas que muestran la respuesta -->
                 <div
                     id="casillas"
                     class="casillas"
                 ></div>
 
-                <!-- Entrada de respuesta completa -->
                 <div class="entrada">
 
                     <input
@@ -68,7 +75,6 @@
                         type="text"
                         autocomplete="off"
                         autocapitalize="characters"
-                        placeholder="Escribe la respuesta"
                     >
 
                     <button
@@ -87,7 +93,6 @@
 
             </section>
 
-            <!-- RESULTADO FINAL -->
             <section
                 id="final"
                 class="final hidden"
@@ -110,7 +115,30 @@
 
     </main>
 
+    <script>
+
+        /*
+         * PRUEBA DIAGNÓSTICA
+         *
+         * Si aparece este mensaje, prueba.html funciona.
+         */
+        document.getElementById("diagnostico").textContent =
+            "HTML cargado correctamente. Intentando cargar el motor...";
+
+    </script>
+
     <script src="crucigrama.js"></script>
+
+    <script>
+
+        /*
+         * Si aparece este segundo mensaje,
+         * crucigrama.js también fue cargado.
+         */
+        document.getElementById("diagnostico").textContent =
+            "HTML + crucigrama.js cargados. El motor está iniciándose.";
+
+    </script>
 
 </body>
 
