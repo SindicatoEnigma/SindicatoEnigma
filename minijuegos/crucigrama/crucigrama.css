@@ -40,3 +40,41 @@
 .celda.completada.seleccionada{
   outline:none;
 }
+
+/* ============================================================
+   CASILLAS DE PISTA
+   ============================================================ */
+
+.celda.pista {
+  background: #050505;
+  color: #fff;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Identificador de pista: 1V, 3H, etc. */
+.celda.pista .numero {
+  position: static;
+
+  font-size: clamp(0.9rem, 4vw, 1.35rem);
+  line-height: 1;
+
+  font-weight: bold;
+
+  color: #fff;
+
+  text-align: center;
+}
+
+/* Pista completada */
+.celda.pista.pista-completada {
+  background: #050505;
+  color: #050505;
+}
+
+.celda.pista.pista-completada .numero {
+  color: #050505;
+}
