@@ -26,7 +26,12 @@ function leerTXT(texto){
   const d={filas:0,columnas:0,tablero:[],H:[],V:[],respuestas:[],final:{}};
   let sec="";
   for(const raw of texto.split(/\r?\n/)){
-    const l=raw.trim(); if(!l||l.startsWith("#")) continue;
+    const l=raw.trim();/* if(!l||l.startsWith("#")) continue;*/
+     if(!l) continue;
+
+if(sec!=="TABLERO" && l.startsWith("#")){
+  continue;
+}
     if(l.startsWith("[")&&l.endsWith("]")){sec=l.slice(1,-1).toUpperCase();continue}
     if(sec==="TABLERO"){
       if(l.startsWith("FILAS=")) d.filas=+l.slice(6);
