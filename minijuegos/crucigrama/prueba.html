@@ -1,23 +1,117 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Prueba - Crucigrama Sindicato Enigma</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <link rel="stylesheet" href="crucigrama.css">
+    <title>Crucigrama — Sindicato Enigma</title>
+
+    <link
+        rel="stylesheet"
+        href="crucigrama.css"
+    >
 </head>
 
 <body>
 
-    <main id="crucigrama"></main>
+    <main id="crucigrama">
+
+        <header class="cabecera-prueba">
+            <h1>Crucigrama</h1>
+            <p>Prueba técnica — Sindicato Enigma</p>
+        </header>
+
+        <section class="panel-crucigrama">
+
+            <!-- TABLERO -->
+            <div
+                id="tablero"
+                class="tablero"
+            ></div>
+
+            <!-- INFORMACIÓN DE LA PALABRA -->
+            <section
+                id="respuesta"
+                class="respuesta hidden"
+            >
+
+                <div
+                    id="cabecera"
+                    class="cabecera"
+                >
+                    —
+                </div>
+
+                <div
+                    id="pista"
+                    class="pista"
+                >
+                    Selecciona una palabra.
+                </div>
+
+                <!-- Casillas que muestran la respuesta -->
+                <div
+                    id="casillas"
+                    class="casillas"
+                ></div>
+
+                <!-- Entrada de respuesta completa -->
+                <div class="entrada">
+
+                    <input
+                        id="input"
+                        type="text"
+                        autocomplete="off"
+                        autocapitalize="characters"
+                        placeholder="Escribe la respuesta"
+                    >
+
+                    <button
+                        id="confirmar"
+                        type="button"
+                    >
+                        Comprobar
+                    </button>
+
+                </div>
+
+                <div
+                    id="mensaje"
+                    class="mensaje"
+                ></div>
+
+            </section>
+
+            <!-- RESULTADO FINAL -->
+            <section
+                id="final"
+                class="final hidden"
+            >
+
+                <h2>¡Crucigrama completado!</h2>
+
+                <p id="finalTexto"></p>
+
+                <button
+                    id="continuar"
+                    type="button"
+                >
+                    CONTINUAR
+                </button>
+
+            </section>
+
+        </section>
+
+    </main>
 
     <script src="crucigrama.js"></script>
 
-    <script>
-        iniciarCrucigrama("datos/crucigrama_001.txt");
-    </script>
-
 </body>
+
 </html>
