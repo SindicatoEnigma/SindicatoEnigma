@@ -14,7 +14,7 @@ function normalizar(t){return String(t).normalize("NFD").replace(/[\u0300-\u036f
 
 async function iniciar(){
   try{
-    const r=await fetch("minijuegos/crucigrama/crucigrama_prueba.txt");
+    const r=await fetch("minijuegos/crucigramas/crucigrama_prueba.txt");
     if(!r.ok) throw Error("No se pudo cargar el TXT.");
     S.datos=leerTXT(await r.text());
     crearPalabras(); crearTablero();
