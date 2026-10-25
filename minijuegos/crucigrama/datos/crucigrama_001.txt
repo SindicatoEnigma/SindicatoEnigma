@@ -21,7 +21,7 @@ COLUMNAS=5
 H|1|CAT
 H|3|SHE
 V|1|COW
-V|2|AT
+V|2|TAT
 
 [FINAL]
 MENSAJE=Has completado correctamente el crucigrama de prueba del Sindicato Enigma.
