@@ -982,7 +982,7 @@ function completarPalabra(w){
    ACTUALIZAR CASILLAS DE RESPUESTA
    ============================================================ */
 
-function actualizarPista(){
+/*function actualizarPista(){
 
   if(
     !S.actual ||
@@ -1023,7 +1023,66 @@ function actualizarPista(){
 
   });
 
+}*/
+
+function actualizarPista(){
+
+  if(
+    !S.actual ||
+    S.actual.completada
+  ){
+    return;
+  }
+
+  casillas.innerHTML = "";
+
+  S.actual.celdas.forEach(p => {
+
+    const c =
+      S.celdas[p.fila][p.col];
+
+    const v =
+      document.createElement("div");
+
+    v.className =
+      "respuesta-celda";
+
+
+    /*
+     * Solo mostramos la letra si:
+     *
+     * 1. La casilla tiene una letra.
+     * 2. Esa letra coincide con la respuesta
+     *    correcta de la palabra seleccionada.
+     *
+     * Una letra incorrecta permanece en el tablero,
+     * pero NO aparece aquí.
+     */
+
+    if(
+      c.letra &&
+      c.letra === S.actual.respuesta[p.i]
+    ){
+
+      v.textContent = c.letra;
+
+      v.classList.add(
+        "descubierta"
+      );
+
+    }else{
+
+      v.textContent = "";
+
+    }
+
+
+    casillas.append(v);
+
+  });
+
 }
+
 
 
 /* ============================================================
