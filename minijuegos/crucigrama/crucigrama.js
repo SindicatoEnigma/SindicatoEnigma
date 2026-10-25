@@ -546,12 +546,19 @@ function crearTablero(){
          * La dirección aparece en el panel.
          */
 
-        numero.textContent =
+        /*numero.textContent =
           cel.pistas[0]
             ? S.palabras.get(
                 cel.pistas[0]
               ).num
-            : "";
+            : "";*/
+         const palabraPista = cel.pistas[0]
+  ? S.palabras.get(cel.pistas[0])
+  : null;
+
+numero.textContent = palabraPista
+  ? `${palabraPista.num}${palabraPista.dir}`
+  : "";
 
         b.append(numero);
 
