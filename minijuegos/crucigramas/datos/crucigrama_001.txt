@@ -1,0 +1,28 @@
+[TABLERO]
+FILAS=7
+COLUMNAS=7
+#######
+#...###
+#.#.###
+#.#.###
+#...###
+###.###
+###.###
+
+[PISTAS_H]
+1|1|1|Animal que dice miau
+2|4|1|Objeto que usamos para escribir
+
+[PISTAS_V]
+3|1|3|Lugar donde vivimos
+4|1|1|Lo contrario de frio
+
+[RESPUESTAS]
+H|1|GATO
+H|2|LAPIZ
+V|3|CASA
+V|4|CALOR
+
+[FINAL]
+MENSAJE=Has completado el primer caso de prueba del Sindicato Enigma.
+CODIGO=ENIGMA001
