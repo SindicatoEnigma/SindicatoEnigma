@@ -1,28 +1,26 @@
 [TABLERO]
-FILAS=7
-COLUMNAS=7
-#######
-#...###
-#.#.###
-#.#.###
-#...###
-###.###
-###.###
+FILAS=5
+COLUMNAS=5
+CAT##
+O#A##
+W#T##
+SHE##
+#####
 
 [PISTAS_H]
-1|1|1|Animal que dice miau
-2|4|1|Objeto que usamos para escribir
+1|1|1|Animal domestico que dice miau
+3|4|1|Pronombre femenino en ingles
 
 [PISTAS_V]
-3|1|3|Lugar donde vivimos
-4|1|1|Lo contrario de frio
+1|1|1|Animales de granja que producen leche
+2|1|3|Lo que haces cuando consumes algo
 
 [RESPUESTAS]
-H|1|GATO
-H|2|LAPIZ
-V|3|CASA
-V|4|CALOR
+H|1|CAT
+H|3|SHE
+V|1|COWS
+V|2|ATE
 
 [FINAL]
-MENSAJE=Has completado el primer caso de prueba del Sindicato Enigma.
+MENSAJE=Has completado correctamente el crucigrama de prueba del Sindicato Enigma.
 CODIGO=ENIGMA001
