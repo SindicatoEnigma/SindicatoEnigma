@@ -10,7 +10,7 @@ COLUMNAS=5
 
 
 [PISTAS_H]
-1|2|1|Animal domestico que dice miau
+1|2|1|Animal con orejas que dice miau
 3|6|1|Pronombre femenino en ingles
 
 [PISTAS_V]
