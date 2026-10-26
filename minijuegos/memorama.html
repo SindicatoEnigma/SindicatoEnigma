@@ -815,7 +815,7 @@ function finishGame() {
 
     prepareGame();
 }*/
-    function playAgain() {
+    /*function playAgain() {
     // Preparar una nueva partida
     prepareGame();
 
@@ -834,7 +834,24 @@ function finishGame() {
 
     // Restablecer los controles
     document.getElementById("startBtn").disabled = false;
-    }
+    }*/
+    
+/* ---------- VOLVER A JUGAR ---------- */
+
+function playAgain() {
+
+    // Ocultar la pantalla de resultados
+    resultScreen.classList.add("hidden");
+
+    // Mostrar nuevamente la pantalla del juego
+    gameScreen.classList.remove("hidden");
+
+    // Preparar una partida nueva:
+    // reinicia errores, tiempo, parejas y tablero
+    prepareGame();
+
+}
+
 
 /* ---------- CAMBIAR COLECCIÓN ---------- */
 
