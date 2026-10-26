@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Memorama | Sindicato Enigma</title>
+<style>
+    :root {
+        --paper: #f4f0e6;
+        --paper-dark: #ded8c9;
+        --ink: #171717;
+        --gray: #555;
+        --black: #050505;
+        --gold: #9a7b32;
+        --gap: clamp(4px, 1.2vw, 10px);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: Georgia, "Times New Roman", serif;
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    button {
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .screen {
+        width: min(100%, 900px);
+        height: 100dvh;
+        padding: clamp(10px, 2vw, 22px);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .header {
+        flex: 0 0 auto;
+        text-align: center;
+        border-bottom: 1px solid var(--ink);
+        padding-bottom: 8px;
+    }
+
+    .brand {
+        font-size: clamp(13px, 2vw, 17px);
+        letter-spacing: .18em;
+        font-weight: bold;
+    }
+
+    h1 {
+        margin: 3px 0 0;
+        font-size: clamp(22px, 5vw, 38px);
+        letter-spacing: .08em;
+    }
+
+    .subtitle {
+        margin: 2px 0 0;
+        color: var(--gray);
+        font-size: clamp(11px, 2vw, 14px);
+    }
+
+    .view {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .hidden { display: none !important; }
+
+    /* MENU */
+    #collectionScreen {
+        justify-content: center;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .menu-title {
+        text-align: center;
+        font-size: clamp(16px, 3vw, 22px);
+    }
+
+    .collections {
+        width: min(100%, 600px);
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
+    }
+
+    .collection-button {
+        min-height: 110px;
+        border: 2px solid var(--ink);
+        background: #fffdf7;
+        padding: 15px;
+        position: relative;
+        box-shadow: 3px 3px 0 var(--ink);
+    }
+
+    .collection-button:active {
+        transform: translate(2px, 2px);
+        box-shadow: 1px 1px 0 var(--ink);
+    }
+
+    .collection-symbol {
+        font-size: 30px;
+        margin-bottom: 6px;
+    }
+
+    .collection-name {
+        display: block;
+        font-weight: bold;
+        letter-spacing: .08em;
+    }
+
+    .collection-description {
+        display: block;
+        margin-top: 5px;
+        color: var(--gray);
+        font-size: 12px;
+    }
+
+    /* GAME */
+    #gameScreen {
+        gap: clamp(6px, 1.3vh, 12px);
+    }
+
+    .game-top {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .collection-label {
+        font-size: clamp(12px, 2vw, 16px);
+        font-weight: bold;
+    }
+
+    .small-button, .main-button {
+        border: 1px solid var(--ink);
+        background: var(--black);
+        color: white;
+        padding: 8px 12px;
+        letter-spacing: .04em;
+    }
+
+    .small-button {
+        font-size: 12px;
+    }
+
+    .stats {
+        flex: 0 0 auto;
+        display: flex;
+        justify-content: center;
+        gap: clamp(12px, 6vw, 50px);
+        text-align: center;
+    }
+
+    .stat-label {
+        display: block;
+        font-size: clamp(9px, 1.7vw, 12px);
+        letter-spacing: .12em;
+        color: var(--gray);
+    }
+
+    .stat-value {
+        display: block;
+        font-family: "Courier New", monospace;
+        font-weight: bold;
+        font-size: clamp(18px, 4vw, 27px);
+    }
+
+    #previewMessage {
+        flex: 0 0 auto;
+        text-align: center;
+        font-size: clamp(11px, 2vw, 14px);
+        color: var(--gray);
+    }
+
+    /* BOARD */
+    .board-area {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .board {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        gap: var(--gap);
+        width: min(100%, calc(100dvh - 235px));
+        aspect-ratio: 1 / 1;
+    }
+
+    .card {
+        min-width: 0;
+        min-height: 0;
+        border: 2px solid var(--ink);
+        background: #fffdf7;
+        padding: 0;
+        perspective: 700px;
+        position: relative;
+    }
+
+    .card:disabled {
+        cursor: default;
+    }
+
+    .card-inner {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform .22s ease;
+    }
+
+    .card.revealed .card-inner,
+    .card.matched .card-inner {
+        transform: rotateY(180deg);
+    }
+
+    .card-face {
+        position: absolute;
+        inset: 0;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .card-back {
+        background: var(--paper);
+    }
+
+    .seal {
+        width: 58%;
+        height: 58%;
+        border: 3px double var(--ink);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: clamp(14px, 4vw, 28px);
+        letter-spacing: -.05em;
+        transform: rotate(-8deg);
+    }
+
+    .card-front {
+        transform: rotateY(180deg);
+        background: #fffdf7;
+        padding: 5%;
+    }
+
+    .card-front img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+
+    .card.matched {
+        background: var(--black);
+        border-color: var(--black);
+    }
+
+    .card.matched .card-front {
+        background: var(--black);
+    }
+
+    .card.matched .card-front img {
+        opacity: 0;
+    }
+
+    .actions {
+        flex: 0 0 auto;
+        display: flex;
+        justify-content: center;
+        min-height: 38px;
+    }
+
+    .main-button {
+        min-width: 190px;
+        font-size: 14px;
+    }
+
+    /* RESULT */
+    #resultScreen {
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        gap: 14px;
+    }
+
+    .result-box {
+        width: min(100%, 430px);
+        border: 2px solid var(--ink);
+        background: #fffdf7;
+        padding: 22px;
+        box-shadow: 5px 5px 0 var(--ink);
+    }
+
+    .result-title {
+        font-size: clamp(24px, 6vw, 38px);
+        margin-bottom: 12px;
+    }
+
+    .result-line {
+        margin: 8px 0;
+        font-size: 16px;
+    }
+
+    .result-value {
+        font-family: "Courier New", monospace;
+        font-weight: bold;
+    }
+
+    .result-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    @media (max-height: 650px) {
+        .screen { padding-top: 6px; padding-bottom: 6px; }
+        .header { padding-bottom: 4px; }
+        .board { width: min(100%, calc(100dvh - 190px)); }
+        #gameScreen { gap: 4px; }
+        .collection-label { font-size: 11px; }
+        #previewMessage { display: none; }
+        .small-button { padding: 5px 8px; }
+    }
+
+    @media (max-width: 360px) {
+        .screen { padding-left: 6px; padding-right: 6px; }
+        .board { gap: 4px; }
+        .card { border-width: 1px; }
+    }
+</style>
+</head>
+<body>
+
+<main class="screen">
+
+    <header class="header">
+        <div class="brand">SINDICATO ENIGMA</div>
+        <h1>MEMORAMA</h1>
+        <div class="subtitle">Laboratorio de EL · Juego de memoria</div>
+    </header>
+
+    <!-- MENÚ DE COLECCIONES -->
+    <section id="collectionScreen" class="view">
+        <div class="menu-title">Seleccione una colección</div>
+
+        <div id="collections" class="collections"></div>
+    </section>
+
+    <!-- JUEGO -->
+    <section id="gameScreen" class="view hidden">
+
+        <div class="game-top">
+            <div id="collectionLabel" class="collection-label"></div>
+            <button id="changeCollectionButton" class="small-button">COLECCIONES</button>
+        </div>
+
+        <div class="stats">
+            <div>
+                <span class="stat-label">TIEMPO</span>
+                <span id="timer" class="stat-value">00:00</span>
+            </div>
+            <div>
+                <span class="stat-label">ERRORES</span>
+                <span id="errors" class="stat-value">0</span>
+            </div>
+        </div>
+
+        <div id="previewMessage">
+            Observe las cartas. Cuando esté listo, inicie la partida.
+        </div>
+
+        <div class="board-area">
+            <div id="board" class="board"></div>
+        </div>
+
+        <div class="actions">
+            <button id="startButton" class="main-button">INICIAR PARTIDA</button>
+        </div>
+
+    </section>
+
+    <!-- RESULTADO -->
+    <section id="resultScreen" class="view hidden">
+        <div class="result-box">
+            <div class="result-title">CASO RESUELTO</div>
+
+            <div class="result-line">
+                Colección:
+                <span id="resultCollection" class="result-value"></span>
+            </div>
+
+            <div class="result-line">
+                Tiempo:
+                <span id="resultTime" class="result-value"></span>
+            </div>
+
+            <div class="result-line">
+                Errores:
+                <span id="resultErrors" class="result-value"></span>
+            </div>
+
+            <div class="result-buttons">
+                <button id="playAgainButton" class="main-button">JUGAR DE NUEVO</button>
+                <button id="resultCollectionsButton" class="small-button">CAMBIAR COLECCIÓN</button>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<script>
+/*
+==========================================================
+  SINDICATO ENIGMA - MEMORAMA
+  Prototipo independiente
+
+  Para agregar una colección:
+  1. Añade una nueva entrada dentro de COLLECTIONS.
+  2. Coloca al menos 8 imágenes en la carpeta indicada.
+  3. Cada imagen debe tener un nombre único.
+==========================================================
+*/
+
+/* ---------- CATÁLOGO DE COLECCIONES ---------- */
+
+const COLLECTIONS = {
+    halloween: {
+        name: "Halloween",
+        description: "Criaturas de la noche",
+        symbol: "☾",
+        path: "assets/memorama/halloween/",
+        images: [
+            "hombre-lobo.svg",
+            "jinete-sin-cabeza.svg",
+            "frankenstein.svg",
+            "bruja.svg",
+            "vampiro.svg",
+            "fantasma.svg",
+            "momia.svg",
+            "jack.svg"
+        ]
+    }
+};
+
+/* ---------- ESTADO DEL JUEGO ---------- */
+
+let currentCollectionKey = null;
+let currentCards = [];
+
+let firstCard = null;
+let secondCard = null;
+
+let gameStarted = false;
+let locked = false;
+let matchedPairs = 0;
+let errors = 0;
+
+let startTime = 0;
+let timerInterval = null;
+
+/* ---------- ELEMENTOS ---------- */
+
+const collectionScreen = document.getElementById("collectionScreen");
+const gameScreen = document.getElementById("gameScreen");
+const resultScreen = document.getElementById("resultScreen");
+
+const collectionsContainer = document.getElementById("collections");
+const board = document.getElementById("board");
+
+const collectionLabel = document.getElementById("collectionLabel");
+const timerElement = document.getElementById("timer");
+const errorsElement = document.getElementById("errors");
+
+const previewMessage = document.getElementById("previewMessage");
+const startButton = document.getElementById("startButton");
+
+const changeCollectionButton =
+    document.getElementById("changeCollectionButton");
+
+const resultCollection =
+    document.getElementById("resultCollection");
+
+const resultTime =
+    document.getElementById("resultTime");
+
+const resultErrors =
+    document.getElementById("resultErrors");
+
+const playAgainButton =
+    document.getElementById("playAgainButton");
+
+const resultCollectionsButton =
+    document.getElementById("resultCollectionsButton");
+
+/* ---------- MENÚ ---------- */
+
+function renderCollectionMenu() {
+    collectionsContainer.innerHTML = "";
+
+    Object.entries(COLLECTIONS).forEach(([key, collection]) => {
+
+        const button = document.createElement("button");
+        button.className = "collection-button";
+
+        button.innerHTML = `
+            <div class="collection-symbol">${collection.symbol}</div>
+            <span class="collection-name">${collection.name}</span>
+            <span class="collection-description">
+                ${collection.description}
+            </span>
+        `;
+
+        button.addEventListener("click", () => {
+            selectCollection(key);
+        });
+
+        collectionsContainer.appendChild(button);
+    });
+}
+
+/* ---------- SELECCIONAR COLECCIÓN ---------- */
+
+function selectCollection(key) {
+
+    currentCollectionKey = key;
+
+    collectionScreen.classList.add("hidden");
+    resultScreen.classList.add("hidden");
+    gameScreen.classList.remove("hidden");
+
+    prepareGame();
+}
+
+/* ---------- PREPARAR PARTIDA ---------- */
+
+function prepareGame() {
+
+    stopTimer();
+
+    const collection = COLLECTIONS[currentCollectionKey];
+
+    currentCards = [];
+
+    /*
+      Cada imagen se introduce dos veces.
+      Después se mezcla el array.
+    */
+    collection.images.forEach((filename, index) => {
+
+        const cardData = {
+            id: index,
+            filename: filename
+        };
+
+        currentCards.push({...cardData});
+        currentCards.push({...cardData});
+    });
+
+    shuffle(currentCards);
+
+    firstCard = null;
+    secondCard = null;
+
+    gameStarted = false;
+    locked = false;
+    matchedPairs = 0;
+    errors = 0;
+
+    timerElement.textContent = "00:00";
+    errorsElement.textContent = "0";
+
+    collectionLabel.textContent =
+        "COLECCIÓN: " + collection.name.toUpperCase();
+
+    previewMessage.textContent =
+        "Observe las cartas. Cuando esté listo, inicie la partida.";
+
+    startButton.textContent = "INICIAR PARTIDA";
+    startButton.disabled = false;
+
+    renderBoard(true);
+}
+
+/* ---------- CREAR TABLERO ---------- */
+
+function renderBoard(preview = false) {
+
+    board.innerHTML = "";
+
+    currentCards.forEach((cardData, index) => {
+
+        const card = document.createElement("button");
+
+        card.className = "card";
+
+        /*
+          Durante la vista previa las cartas muestran el frente.
+          Después del inicio solamente muestran el reverso.
+        */
+        if (preview) {
+            card.classList.add("revealed");
+        }
+
+        card.dataset.index = index;
+        card.dataset.cardId = cardData.id;
+
+        card.innerHTML = `
+            <div class="card-inner">
+
+                <div class="card-face card-back">
+                    <div class="seal">SE</div>
+                </div>
+
+                <div class="card-face card-front">
+                    <img
+                        src="${COLLECTIONS[currentCollectionKey].path}${cardData.filename}"
+                        alt="Carta de memorama"
+                        draggable="false"
+                    >
+                </div>
+
+            </div>
+        `;
+
+        card.addEventListener("click", () => handleCardClick(card));
+
+        board.appendChild(card);
+    });
+}
+
+/* ---------- CLIC EN CARTA ---------- */
+
+function handleCardClick(card) {
+
+    if (!gameStarted) return;
+    if (locked) return;
+    if (card.classList.contains("revealed")) return;
+    if (card.classList.contains("matched")) return;
+
+    card.classList.add("revealed");
+
+    if (!firstCard) {
+        firstCard = card;
+        return;
+    }
+
+    secondCard = card;
+
+    locked = true;
+
+    const firstId = Number(firstCard.dataset.cardId);
+    const secondId = Number(secondCard.dataset.cardId);
+
+    if (firstId === secondId) {
+
+        /*
+          Pareja correcta.
+          Las cartas quedan bloqueadas.
+        */
+        setTimeout(() => {
+
+            firstCard.classList.add("matched");
+            secondCard.classList.add("matched");
+
+            firstCard.disabled = true;
+            secondCard.disabled = true;
+
+            matchedPairs++;
+
+            firstCard = null;
+            secondCard = null;
+            locked = false;
+
+            if (matchedPairs === currentCards.length / 2) {
+                finishGame();
+            }
+
+        }, 350);
+
+    } else {
+
+        /*
+          Pareja incorrecta.
+          Se muestra durante un instante para que el jugador
+          pueda registrar la información visual.
+        */
+        errors++;
+        errorsElement.textContent = errors;
+
+        setTimeout(() => {
+
+            firstCard.classList.remove("revealed");
+            secondCard.classList.remove("revealed");
+
+            firstCard = null;
+            secondCard = null;
+            locked = false;
+
+        }, 850);
+    }
+}
+
+/* ---------- INICIAR ---------- */
+
+function startGame() {
+
+    if (gameStarted) return;
+
+    gameStarted = true;
+
+    startButton.classList.add("hidden");
+
+    previewMessage.textContent =
+        "Encuentre las ocho parejas.";
+
+    /*
+      Importante:
+      renderizamos de nuevo el tablero SIN barajarlo.
+      currentCards mantiene exactamente las mismas posiciones.
+    */
+    renderBoard(false);
+
+    startTime = Date.now();
+
+    timerInterval = setInterval(updateTimer, 250);
+}
+
+/* ---------- CRONÓMETRO ---------- */
+
+function updateTimer() {
+
+    const elapsed = Date.now() - startTime;
+
+    timerElement.textContent = formatTime(elapsed);
+}
+
+function formatTime(milliseconds) {
+
+    const totalSeconds = Math.floor(milliseconds / 1000);
+
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    return String(minutes).padStart(2, "0") +
+           ":" +
+           String(seconds).padStart(2, "0");
+}
+
+function stopTimer() {
+
+    if (timerInterval !== null) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+
+/* ---------- TERMINAR ---------- */
+
+function finishGame() {
+
+    stopTimer();
+
+    gameStarted = false;
+    locked = true;
+
+    const finalTime = timerElement.textContent;
+
+    resultCollection.textContent =
+        COLLECTIONS[currentCollectionKey].name;
+
+    resultTime.textContent = finalTime;
+    resultErrors.textContent = errors;
+
+    gameScreen.classList.add("hidden");
+    resultScreen.classList.remove("hidden");
+}
+
+/* ---------- VOLVER A JUGAR ---------- */
+
+function playAgain() {
+
+    resultScreen.classList.add("hidden");
+    gameScreen.classList.remove("hidden");
+
+    prepareGame();
+}
+
+/* ---------- CAMBIAR COLECCIÓN ---------- */
+
+function showCollections() {
+
+    stopTimer();
+
+    gameStarted = false;
+    locked = true;
+
+    gameScreen.classList.add("hidden");
+    resultScreen.classList.add("hidden");
+    collectionScreen.classList.remove("hidden");
+}
+
+/* ---------- MEZCLAR ---------- */
+
+function shuffle(array) {
+
+    /*
+      Fisher-Yates:
+      mezcla verdaderamente las posiciones del tablero.
+    */
+    for (let i = array.length - 1; i > 0; i--) {
+
+        const j = Math.floor(Math.random() * (i + 1));
+
+        [array[i], array[j]] =
+        [array[j], array[i]];
+    }
+
+    return array;
+}
+
+/* ---------- EVENTOS ---------- */
+
+startButton.addEventListener("click", startGame);
+
+changeCollectionButton.addEventListener(
+    "click",
+    showCollections
+);
+
+playAgainButton.addEventListener(
+    "click",
+    playAgain
+);
+
+resultCollectionsButton.addEventListener(
+    "click",
+    showCollections
+);
+
+/* ---------- ARRANQUE ---------- */
+
+renderCollectionMenu();
+</script>
+
+</body>
+</html>
