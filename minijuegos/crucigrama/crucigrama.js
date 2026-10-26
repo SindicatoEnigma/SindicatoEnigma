@@ -712,7 +712,7 @@ function seleccionar(id){
    * Mostrar casillas de respuesta
    */
 
-  w.celdas.forEach(p => {
+  /*w.celdas.forEach(p => {
 
     const c =
       S.celdas[p.fila][p.col];
@@ -735,7 +735,47 @@ function seleccionar(id){
     casillas.append(v);
 
   });
+*/
+ w.celdas.forEach(p => {
 
+  const c =
+    S.celdas[p.fila][p.col];
+
+  const v =
+    document.createElement("div");
+
+  v.className =
+    "respuesta-celda";
+
+  /*
+   * SOLO mostramos una letra si es correcta.
+   *
+   * Si el jugador escribió una letra incorrecta
+   * en el tablero, permanece allí como error,
+   * pero no se muestra en el panel de respuesta.
+   */
+
+  if(
+    c.letra &&
+    c.letra === w.respuesta[p.i]
+  ){
+
+    v.textContent = c.letra;
+
+    v.classList.add(
+      "descubierta"
+    );
+
+  }else{
+
+    v.textContent = "";
+
+  }
+
+  casillas.append(v);
+
+});
+   
 
   input.value = "";
 
