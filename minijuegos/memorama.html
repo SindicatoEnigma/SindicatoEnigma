@@ -608,6 +608,7 @@ function prepareGame() {
 
     startButton.textContent = "INICIAR PARTIDA";
     startButton.disabled = false;
+    startButton.classList.remove("hidden");
 
     renderBoard(true);
 }
@@ -847,6 +848,12 @@ function playAgain() {
     gameScreen.classList.remove("hidden");
     document.getElementById("startButton").disabled = false;
     startButton.disabled = false;
+
+    
+startButton.textContent = "INICIAR PARTIDA";
+startButton.disabled = false;
+startButton.classList.remove("hidden");
+
 
     // Preparar una partida nueva:
     // reinicia errores, tiempo, parejas y tablero
