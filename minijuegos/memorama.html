@@ -845,6 +845,8 @@ function playAgain() {
 
     // Mostrar nuevamente la pantalla del juego
     gameScreen.classList.remove("hidden");
+    document.getElementById("startButton").disabled = false;
+    startButton.disabled = false;
 
     // Preparar una partida nueva:
     // reinicia errores, tiempo, parejas y tablero
