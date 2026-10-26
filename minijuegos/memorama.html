@@ -808,13 +808,33 @@ function finishGame() {
 
 /* ---------- VOLVER A JUGAR ---------- */
 
-function playAgain() {
+/*function playAgain() {
 
     resultScreen.classList.add("hidden");
     gameScreen.classList.remove("hidden");
 
     prepareGame();
-}
+}*/
+    function playAgain() {
+    // Preparar una nueva partida
+    prepareGame();
+
+    // Ocultar la pantalla de resultados
+    document.getElementById("resultScreen").classList.add("hidden");
+
+    // Mostrar nuevamente la pantalla del juego
+    document.getElementById("gameScreen").classList.remove("hidden");
+
+    // Asegurarnos de que el juego esté detenido
+    gameStarted = false;
+    locked = false;
+
+    // El tablero vuelve a mostrar las imágenes
+    renderBoard(true);
+
+    // Restablecer los controles
+    document.getElementById("startBtn").disabled = false;
+    }
 
 /* ---------- CAMBIAR COLECCIÓN ---------- */
 
