@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ruleta | Sindicato Enigma</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;margin:0;overflow:hidden}
+body{background:#111;color:#eee;font-family:Georgia,"Times New Roman",serif}
+button,input{font:inherit}.screen{width:100%;height:100dvh;display:flex;align-items:center;justify-content:center;padding:14px}
+.hidden{display:none!important}
+.menu-panel{width:min(92vw,620px);text-align:center}
+.main-title{margin:0 0 8px;font-size:clamp(28px,7vw,48px);letter-spacing:4px;text-transform:uppercase}
+.subtitle{margin:0 0 24px;color:#bbb;font-size:clamp(14px,3.5vw,18px)}
+.collection-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.collection-btn,.action-btn{border:1px solid #aaa;background:#eee;color:#111;padding:15px;cursor:pointer;border-radius:4px}
+.collection-btn:active,.action-btn:active{transform:scale(.97)}
+.collection-symbol{display:block;font-size:36px;margin-bottom:8px}
+.setup-panel{width:min(94vw,680px);max-height:96dvh;display:flex;flex-direction:column}
+.setup-title{text-align:center;margin:0 0 14px;font-size:clamp(23px,5vw,36px);text-transform:uppercase;letter-spacing:2px}
+.challenge-list{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.challenge-row{display:flex;align-items:center;gap:7px;min-width:0}
+.challenge-number{width:27px;flex:0 0 27px;text-align:center;font-weight:bold}
+.challenge-input{width:100%;min-width:0;height:44px;padding:0 10px;border:1px solid #777;border-radius:3px;background:#f3f3f3;color:#111;outline:none}
+.challenge-input:focus{border-color:#fff}
+.setup-actions{margin-top:14px;display:flex;gap:9px}.setup-actions .action-btn{flex:1}
+#rouletteScreen{padding:8px}
+.roulette-frame,.result-card{position:relative;width:min(94vw,calc(100dvh - 16px));height:min(94vw,calc(100dvh - 16px));max-width:900px;max-height:900px;background:#050505;overflow:hidden;cursor:pointer;user-select:none}
+.roulette-frame{border:clamp(5px,1vw,10px) solid #ddd;outline:1px solid #555;display:flex;align-items:center;justify-content:center}
+.roulette-image{width:100%;height:100%;object-fit:contain;padding:4%}
+.roulette-hint{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.35);padding:7px 12px;font-size:clamp(11px,2.5vw,15px);white-space:nowrap;pointer-events:none}
+.result-screen{position:relative;padding:8px}
+.result-card{border:clamp(5px,1vw,10px) solid #ddd}
+.result-image{width:100%;height:100%;object-fit:contain;display:block}
+.result-title{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:90%;text-align:center;color:white;font-size:clamp(19px,4.5vw,38px);font-weight:bold;text-shadow:0 2px 5px #000;pointer-events:none}
+.description-box{position:absolute;left:5%;right:5%;bottom:5%;padding:12px 14px;background:rgba(0,0,0,.68);border:1px solid rgba(255,255,255,.6);color:white;text-align:center;font-size:clamp(13px,3vw,20px);line-height:1.25;pointer-events:none}
+.result-hint{position:absolute;left:50%;bottom:1.5%;transform:translateX(-50%);color:rgba(255,255,255,.75);font-size:clamp(10px,2vw,13px);pointer-events:none}
+.final-panel{position:absolute;inset:0;background:rgba(0,0,0,.78);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px}
+.final-panel .action-btn{width:min(80%,360px)}
+@media(max-height:560px){.screen{padding:7px}.setup-title{margin-bottom:7px;font-size:22px}.challenge-list{gap:5px}.challenge-input{height:36px}.setup-actions{margin-top:7px}}
+@media(max-width:480px){.challenge-list{grid-template-columns:1fr}.challenge-input{height:40px}}
+</style>
+</head>
+<body>
+
+<audio id="rouletteSound" preload="auto" src="../assets/ruleta/sonido-ruleta.wav"></audio>
+
+<section id="menuScreen" class="screen">
+<div class="menu-panel"><h1 class="main-title">Ruleta</h1><p class="subtitle">Selecciona una colección</p><div id="collectionGrid" class="collection-grid"></div></div>
+</section>
+
+<section id="setupScreen" class="screen hidden">
+<div class="setup-panel">
+<h1 class="setup-title">Escribe tus retos</h1>
+<div id="challengeList" class="challenge-list"></div>
+<div class="setup-actions"><button id="startBtn" class="action-btn">INICIAR</button><button id="backMenuBtn" class="action-btn">MENÚ</button></div>
+</div>
+</section>
+
+<section id="rouletteScreen" class="screen hidden">
+<div id="rouletteFrame" class="roulette-frame">
+<img id="rouletteImage" class="roulette-image" alt="Carta de la ruleta">
+<div class="roulette-hint">Toca la pantalla para detener</div>
+</div>
+</section>
+
+<section id="resultScreen" class="screen result-screen hidden">
+<div id="resultCard" class="result-card">
+<img id="resultImage" class="result-image" alt="Resultado de la ruleta">
+<div id="resultTitle" class="result-title"></div>
+<div id="descriptionBox" class="description-box"></div>
+<div id="resultHint" class="result-hint">Toca para continuar</div>
+<div id="finalPanel" class="final-panel hidden">
+<button id="againBtn" class="action-btn">VOLVER A LA RULETA</button>
+<button id="exitBtn" class="action-btn">SALIR AL MENÚ</button>
+</div>
+</div>
+</section>
+
+<script>
+/* ===== COLECCIONES ===== */
+const COLLECTIONS={
+halloween:{
+name:"Halloween",symbol:"☾",description:"Criaturas de la noche",
+path:"../assets/ruleta/halloween/",descriptionFile:"descripciones.txt",
+images:["hombre-lobo.svg","jinete-sin-cabeza.svg","frankenstein.svg","bruja.svg","vampiro.svg","fantasma.svg"]
+}};
+
+/* ===== ELEMENTOS ===== */
+const menuScreen=document.getElementById("menuScreen");
+const setupScreen=document.getElementById("setupScreen");
+const rouletteScreen=document.getElementById("rouletteScreen");
+const resultScreen=document.getElementById("resultScreen");
+const collectionGrid=document.getElementById("collectionGrid");
+const challengeList=document.getElementById("challengeList");
+const startBtn=document.getElementById("startBtn");
+const backMenuBtn=document.getElementById("backMenuBtn");
+const rouletteFrame=document.getElementById("rouletteFrame");
+const rouletteImage=document.getElementById("rouletteImage");
+const resultCard=document.getElementById("resultCard");
+const resultImage=document.getElementById("resultImage");
+const resultTitle=document.getElementById("resultTitle");
+const descriptionBox=document.getElementById("descriptionBox");
+const resultHint=document.getElementById("resultHint");
+const finalPanel=document.getElementById("finalPanel");
+const againBtn=document.getElementById("againBtn");
+const exitBtn=document.getElementById("exitBtn");
+const rouletteSound=document.getElementById("rouletteSound");
+
+/* ===== ESTADO ===== */
+let currentCollection=null;
+let challenges=[];
+let assignedCards=[];
+let rouletteRunning=false;
+let rouletteTimer=null;
+let currentCardIndex=0;
+let selectedCard=null;
+let showingFinalOptions=false;
+let descriptions={};
+
+/* ===== MENÚ ===== */
+function renderCollections(){
+collectionGrid.innerHTML="";
+Object.keys(COLLECTIONS).forEach(key=>{
+const c=COLLECTIONS[key],button=document.createElement("button");
+button.className="collection-btn";
+button.innerHTML=`<span class="collection-symbol">${c.symbol}</span><strong>${c.name}</strong><br><small>${c.description}</small>`;
+button.addEventListener("click",()=>openCollection(key));
+collectionGrid.appendChild(button);
+});
+}
+
+/* ===== ABRIR COLECCIÓN ===== */
+async function openCollection(key){
+currentCollection=COLLECTIONS[key];
+stopRoulette();
+await loadDescriptions();
+createChallengeInputs();
+showScreen(setupScreen);
+}
+
+/* ===== DESCRIPCIONES ===== */
+async function loadDescriptions(){
+descriptions={};
+try{
+const response=await fetch(currentCollection.path+currentCollection.descriptionFile);
+if(!response.ok)throw new Error("No se pudo cargar descripciones.txt");
+const text=await response.text();
+text.split(/\r?\n/).forEach(line=>{
+line=line.trim();
+if(!line||line.startsWith("#"))return;
+const separator=line.indexOf("|");
+if(separator===-1)return;
+const filename=line.slice(0,separator).trim();
+const description=line.slice(separator+1).trim();
+descriptions[filename]=description;
+});
+}catch(error){console.warn(error);}
+}
+
+/* ===== CAMPOS ===== */
+function createChallengeInputs(){
+challengeList.innerHTML="";
+for(let i=1;i<=6;i++){
+const row=document.createElement("label");
+row.className="challenge-row";
+row.innerHTML=`<span class="challenge-number">${i}.</span><input class="challenge-input" id="challenge${i}" type="text" maxlength="40" autocomplete="off" spellcheck="false">`;
+challengeList.appendChild(row);
+}
+}
+
+/* ===== INICIAR ===== */
+function startGame(){
+challenges=[];
+for(let i=1;i<=6;i++)challenges.push(document.getElementById(`challenge${i}`).value);
+assignedCards=[...currentCollection.images];
+shuffle(assignedCards);
+selectedCard=null;
+showingFinalOptions=false;
+finalPanel.classList.add("hidden");
+startRoulette();
+}
+
+/* ===== RULETA ===== */
+function startRoulette(){
+showScreen(rouletteScreen);
+rouletteRunning=true;
+currentCardIndex=Math.floor(Math.random()*assignedCards.length);
+showRouletteCard();
+rouletteTimer=setInterval(()=>{
+currentCardIndex=Math.floor(Math.random()*assignedCards.length);
+showRouletteCard();
+playRouletteSound();
+},80);
+}
+
+function showRouletteCard(){
+rouletteImage.src=currentCollection.path+assignedCards[currentCardIndex];
+}
+
+function playRouletteSound(){
+rouletteSound.currentTime=0;
+const p=rouletteSound.play();
+if(p!==undefined)p.catch(()=>{});
+}
+
+function stopRoulette(){
+if(rouletteTimer!==null){clearInterval(rouletteTimer);rouletteTimer=null;}
+rouletteRunning=false;
+}
+
+/* ===== DETENER ===== */
+rouletteFrame.addEventListener("click",()=>{
+if(!rouletteRunning)return;
+stopRoulette();
+selectedCard=assignedCards[currentCardIndex];
+showResult();
+});
+
+/* ===== RESULTADO ===== */
+function showResult(){
+const challengeIndex=assignedCards.indexOf(selectedCard);
+resultImage.src=currentCollection.path+selectedCard;
+resultTitle.textContent=`RETO ${challengeIndex+1}: ${challenges[challengeIndex]||"(Sin reto)"}`;
+descriptionBox.textContent=descriptions[selectedCard]||"Esta carta todavía no tiene una descripción.";
+resultHint.classList.remove("hidden");
+finalPanel.classList.add("hidden");
+showingFinalOptions=false;
+showScreen(resultScreen);
+}
+
+/* ===== SEGUNDO CLIC ===== */
+resultCard.addEventListener("click",event=>{
+if(event.target.closest("button"))return;
+if(showingFinalOptions)return;
+showingFinalOptions=true;
+resultHint.classList.add("hidden");
+finalPanel.classList.remove("hidden");
+});
+
+/* ===== OTRA RONDA ===== */
+againBtn.addEventListener("click",event=>{
+event.stopPropagation();
+selectedCard=null;
+showingFinalOptions=false;
+finalPanel.classList.add("hidden");
+assignedCards=[...currentCollection.images];
+shuffle(assignedCards);
+startRoulette();
+});
+
+/* ===== SALIR ===== */
+exitBtn.addEventListener("click",event=>{
+event.stopPropagation();
+stopRoulette();
+selectedCard=null;
+showingFinalOptions=false;
+showScreen(menuScreen);
+});
+
+backMenuBtn.addEventListener("click",()=>{
+stopRoulette();
+showScreen(menuScreen);
+});
+
+/* ===== CAMBIAR PANTALLA ===== */
+function showScreen(screen){
+[menuScreen,setupScreen,rouletteScreen,resultScreen].forEach(s=>s.classList.add("hidden"));
+screen.classList.remove("hidden");
+}
+
+/* ===== FISHER-YATES ===== */
+function shuffle(array){
+for(let i=array.length-1;i>0;i--){
+const j=Math.floor(Math.random()*(i+1));
+[array[i],array[j]]=[array[j],array[i]];
+}
+return array;
+}
+
+startBtn.addEventListener("click",startGame);
+renderCollections();
+</script>
+</body>
+</html>
