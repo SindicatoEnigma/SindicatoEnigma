@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="700">
+<rect width="1000" height="700" fill="#121212"/>
+<rect x="25" y="25" width="950" height="650" fill="#e7dfcd" stroke="#26221b" stroke-width="20"/>
+<rect x="70" y="100" width="860" height="510" fill="#202020"/>
+<circle cx="500" cy="330" r="130" fill="none" stroke="#d8cbb0" stroke-width="10"/>
+<text x="500" y="185" fill="#27231c" font-family="Georgia,serif" font-size="32" text-anchor="middle" letter-spacing="5">RESPUESTA 02</text>
+<text x="500" y="350" fill="#d8cbb0" font-family="Georgia,serif" font-size="58" text-anchor="middle">ROJO</text>
+<text x="500" y="430" fill="#d8d0c2" font-family="Georgia,serif" font-size="28" text-anchor="middle">Respuesta correcta</text>
+</svg>
