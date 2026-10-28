@@ -1,0 +1,79 @@
+# ==========================================================
+# GUIÓN ÚNICO — TRIVIA DE PRUEBA
+# ==========================================================
+# Para otra trivia: copia toda esta carpeta, cambia recursos
+# y cambia TRIVIA_PATH en motor/trivia.js.
+#
+# FONDO=archivo -> /fondos/
+# EL=archivo -> /EL/
+# IMAGEN=archivo -> /preguntas/
+# IMAGEN_RESPUESTA=archivo -> /respuestas/
+# SONIDO=archivo -> /sonidos/
+# TIEMPO=segundos para responder
+# ESPERA=segundos mostrando la respuesta
+# ==========================================================
+
+[PORTADA]
+TITULO=EL DESAFÍO DEL DETECTIVE
+SUBTITULO=Trivia de prueba — Sindicato Enigma
+FONDO=fondo_inicio.svg
+
+[EL]
+EL=normal.svg
+TEXTO=Bienvenido, investigador. Hoy pondremos a prueba tu capacidad de observación.
+SONIDO=entrada_el.wav
+
+[EL]
+EL=hablando.svg
+TEXTO=Escucha cada pregunta con atención. Tendrás diez segundos para encontrar la respuesta.
+SONIDO=click.wav
+
+[EL]
+EL=serio.svg
+TEXTO=Cuando el tiempo termine, la respuesta será revelada. ¿Estás preparado?
+SONIDO=click.wav
+
+[INICIO_TRIVIA]
+
+[PREGUNTA]
+TEXTO=¿Qué instrumento utiliza tradicionalmente un detective para observar objetos muy pequeños?
+EL=pensando.svg
+IMAGEN=pista01.svg
+ETIQUETA=PISTA
+TIEMPO=10
+SONIDO=click.wav
+RESPUESTA=Una lupa.
+IMAGEN_RESPUESTA=respuesta01.svg
+SONIDO_RESPUESTA=revelar.wav
+ESPERA=3
+
+[PREGUNTA]
+TEXTO=¿Qué color suele asociarse con una carpeta de máxima confidencialidad?
+EL=sorprendido.svg
+IMAGEN=pista02.svg
+ETIQUETA=ARCHIVO
+TIEMPO=10
+SONIDO=click.wav
+RESPUESTA=Rojo.
+IMAGEN_RESPUESTA=respuesta02.svg
+SONIDO_RESPUESTA=revelar.wav
+ESPERA=3
+
+[PREGUNTA]
+TEXTO=En una investigación, ¿qué debe distinguirse de una hipótesis?
+EL=serio.svg
+TIEMPO=10
+SONIDO=click.wav
+RESPUESTA=Un hecho observable o evidencia comprobable.
+IMAGEN_RESPUESTA=respuesta03.svg
+SONIDO_RESPUESTA=revelar.wav
+ESPERA=3
+
+[FINAL]
+FONDO=fondo_final.svg
+EL=feliz.svg
+TEXTO=Buen trabajo, investigador. El expediente queda cerrado... por ahora.
+SONIDO=final.wav
+ESPERA=10
+OSCURECER=3
+NEGRO=2
