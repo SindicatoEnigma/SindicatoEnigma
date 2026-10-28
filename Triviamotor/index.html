@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Motor Trivia — Sindicato Enigma</title>
+<link rel="stylesheet" href="motor/trivia.css">
+</head>
+<body>
+<main id="juego">
+  <div id="fondo"></div><div id="capaOscura"></div>
+  <section id="portada" class="escena visible">
+    <div class="portada-panel">
+      <div class="sello">SINDICATO ENIGMA</div>
+      <h1 id="tituloPortada">TRIVIA</h1>
+      <p id="subtituloPortada">Una prueba de observación</p>
+      <p class="ayuda">Toca la pantalla para comenzar</p>
+    </div>
+  </section>
+  <section id="escenaContenido" class="escena">
+    <div id="personajeEL" class="personaje"><img id="imagenEL" alt="EL"></div>
+    <div id="textoEL" class="texto-el oculto"><div id="nombreEL" class="nombre-el">EL</div><div id="contenidoEL"></div></div>
+    <div id="preguntaPanel" class="panel-pregunta oculto"><div class="etiqueta">PREGUNTA</div><div id="preguntaTexto"></div></div>
+    <div id="marcoImagen" class="marco-imagen oculto">
+      <div class="marco-cabecera"><span id="marcoEtiqueta">EVIDENCIA</span><span id="marcoNumero"></span></div>
+      <div class="marco-contenido"><img id="imagenContenido" alt=""></div>
+    </div>
+    <div id="contador" class="contador oculto"><div id="contadorNumero">10</div><div class="barra-tiempo"><div id="barraTiempoRelleno"></div></div></div>
+    <div id="respuestaPanel" class="panel-respuesta oculto"><div class="etiqueta">RESPUESTA</div><div id="respuestaTexto"></div></div>
+  </section>
+</main>
+<script src="motor/audio.js"></script><script src="motor/trivia.js"></script>
+</body></html>
