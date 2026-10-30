@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sopa de Letras | Sindicato Enigma</title>
+<link rel="stylesheet" href="../assets/sopa_letras/sopa_letras.css">
+</head>
+<body>
+<main class="game">
+<header class="top">
+<h1>Sopa de Letras</h1>
+<div class="stats">
+<span>TIEMPO <strong id="timer">00:00</strong></span>
+<span>ERRORES <strong id="errors">0</strong></span>
+</div>
+</header>
+<section id="status" class="status">Cargando expediente...</section>
+<section id="board" class="board" aria-label="Tablero de sopa de letras"></section>
+<section class="word-section">
+<h2>Palabras</h2>
+<div id="word-list" class="word-list"></div>
+</section>
+<section id="finish" class="finish hidden">
+<h2>¡Sopa de letras completada!</h2>
+<p>Tiempo: <strong id="final-time">00:00</strong></p>
+<p>Errores: <strong id="final-errors">0</strong></p>
+<button id="restart" type="button">Jugar de nuevo</button>
+</section>
+</main>
+<script src="../assets/sopa_letras/sopa_letras.js"></script>
+</body>
+</html>
