@@ -12,9 +12,9 @@ columnas=5
 
 [COLUMNAS]
 1
-2
+1 1
 5
-2
+1 1
 1
 
 [SOLUCION]
