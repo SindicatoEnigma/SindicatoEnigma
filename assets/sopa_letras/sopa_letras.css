@@ -1,0 +1,30 @@
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%;min-height:100%;overflow-x:hidden;background:#eee;color:#111;font-family:Arial,Helvetica,sans-serif}
+body{min-height:100vh}
+.game{width:100%;max-width:720px;margin:0 auto;padding:10px 8px 28px}
+.top{text-align:center}
+.top h1{margin:2px 0 8px;font-size:clamp(20px,6vw,30px);letter-spacing:1px}
+.stats{display:flex;justify-content:center;gap:24px;font-size:clamp(12px,3.5vw,16px);margin-bottom:8px}
+.stats span{white-space:nowrap}
+.stats strong{margin-left:4px}
+.status{text-align:center;min-height:22px;font-size:13px;margin-bottom:6px}
+.board{width:100%;aspect-ratio:1/1;display:grid;border:2px solid #111;background:#111;gap:1px;touch-action:manipulation;user-select:none;margin:0 auto}
+.cell{position:relative;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;background:#fff;color:#111;font-weight:700;font-size:clamp(9px,4.8vw,28px);cursor:pointer;overflow:hidden;border:0;padding:0}
+.cell.correct{background:#555;color:#fff}
+.cell.wrong{background:#d83b3b;color:#fff}
+.cell.word-complete,.cell.correct.word-complete{background:#cfe8cf;color:#222}
+.cell.locked{cursor:default}
+.word-section{margin-top:12px}
+.word-section h2{margin:0 0 8px;text-align:center;font-size:clamp(16px,4.5vw,22px)}
+.word-list{width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:7px 8px;align-items:start}
+.word-entry{min-width:0;display:flex;align-items:center;gap:5px;min-height:36px}
+.word-number{flex:0 0 auto;min-width:20px;font-weight:700;text-align:right;font-size:clamp(12px,3.5vw,17px)}
+.letter-slots{min-width:0;flex:1;display:flex;gap:2px;overflow:hidden}
+.letter-slot{min-width:0;flex:1 1 0;height:clamp(24px,7vw,38px);border:1px solid #222;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:clamp(11px,3.2vw,17px)}
+.word-entry.complete .letter-slot{background:#cfe8cf}
+.finish{margin-top:18px;padding:16px 12px;text-align:center;border:2px solid #222;background:#fff}
+.finish h2{margin:0 0 10px;font-size:clamp(18px,5vw,25px)}
+.finish p{margin:5px 0}
+.finish button{margin-top:10px;padding:10px 18px;border:1px solid #111;background:#222;color:#fff;font-weight:700;cursor:pointer}
+.hidden{display:none}
+@media (min-width:600px){.game{padding-left:12px;padding-right:12px}.cell{font-size:clamp(14px,3.2vw,28px)}}
