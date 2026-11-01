@@ -217,7 +217,7 @@ async function cargarCasoDemo() {
         }
 
         Engine.caso = await respuesta.json();
-        Engine.extensionImagen = Engine.caso.extensionImagen || ".png";
+        //Engine.extensionImagen = Engine.caso.extensionImagen || ".png";
 
         console.log("[SE] Caso cargado:", Engine.caso.titulo);
 
@@ -903,7 +903,7 @@ ejecutarComando = function(instruccion) {
     */
     const personajesConocidos = ["EL", "MARGARET"];
 
-    if (personajesConocidos.includes(comando)) {
+    /*if (personajesConocidos.includes(comando)) {
 
         const expresion = p[0] || "normal";
         const lado = p[1] || "izquierda";
@@ -913,14 +913,42 @@ ejecutarComando = function(instruccion) {
         ejecutarSiguiente();
         return;
     }
+    */
+    if (personajesConocidos.includes(comando)) {
+
+    const expresion = p[0] || "normal";
+    const lado = p[1] || "izquierda";
+
+    mostrarPersonaje(
+        comando,
+        expresion,
+        lado
+    ).then(() => {
+
+        ejecutarSiguiente();
+
+    });
+
+    return;
+    }
 
     // Si no es personaje, usamos la lógica normal.
     switch (comando) {
 
-        case "FONDO":
+        /*case "FONDO":
             cambiarFondo(p[0]);
             ejecutarSiguiente();
             break;
+        */
+        case "FONDO":
+
+    cambiarFondo(p[0]).then(() => {
+
+        ejecutarSiguiente();
+
+    });
+
+    break;
 
         case "OCULTAR":
             if (p[0] === "TODOS") {
@@ -1323,7 +1351,7 @@ function escapeHTML(texto) {
 // 26. NORMALIZACIÓN DE IDS
 // ============================================================
 
-function normalizarId(texto) {
+/*function normalizarId(texto) {
     function buscarImagen(rutaBase) {
 
     return new Promise((resolver) => {
@@ -1373,6 +1401,26 @@ function normalizarId(texto) {
         "Señora Margaret" -> "señora-margaret"
 
         Así podemos utilizarlos de forma segura como IDs HTML.
+    
+
+    return texto
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+}
+*/
+// ============================================================
+// 26. NORMALIZACIÓN DE IDS
+// ============================================================
+
+function normalizarId(texto) {
+
+    /*
+        Convierte nombres como:
+        "EL" -> "el"
+        "Señora Margaret" -> "senora-margaret"
     */
 
     return texto
@@ -1381,4 +1429,72 @@ function normalizarId(texto) {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
+}
+
+
+// ============================================================
+// 27. BUSCADOR AUTOMÁTICO DE IMÁGENES
+// ============================================================
+
+function buscarImagen(rutaBase) {
+
+    return new Promise((resolver) => {
+
+        // Si el nombre ya tiene extensión, probamos solamente esa.
+        const tieneExtension =
+            /\.(png|jpg|jpeg|webp|svg)$/i.test(rutaBase);
+
+        if (tieneExtension) {
+
+            const imagen = new Image();
+
+            imagen.onload = () => resolver(rutaBase);
+            imagen.onerror = () => resolver(null);
+
+            imagen.src = rutaBase;
+            return;
+        }
+
+        let indice = 0;
+
+        function probarSiguiente() {
+
+            if (indice >= Engine.extensionesImagen.length) {
+
+                console.warn(
+                    "[SE] No se encontró la imagen:",
+                    rutaBase
+                );
+
+                resolver(null);
+                return;
+            }
+
+            const extension =
+                Engine.extensionesImagen[indice];
+
+            const ruta = rutaBase + extension;
+
+            const imagen = new Image();
+
+            imagen.onload = () => {
+
+                console.log(
+                    "[SE] Imagen encontrada:",
+                    ruta
+                );
+
+                resolver(ruta);
+            };
+
+            imagen.onerror = () => {
+                indice++;
+                probarSiguiente();
+            };
+
+            imagen.src = ruta;
+        }
+
+        probarSiguiente();
+    });
 }
