@@ -345,6 +345,12 @@ button:hover {
 }
 
 /* ---------- Documento ---------- */
+#btn-cerrar-documento {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+}
 
 .documento {
     position: absolute;
@@ -358,6 +364,23 @@ button:hover {
 }
 
 .texto-documento {
+    /* ---------- Botón cerrar documento ---------- */
+
+#btn-cerrar-documento {
+    background: #29251f;
+    color: #f5f0e4;
+    border: 2px solid #8b744d;
+    padding: 10px 18px;
+    border-radius: 4px;
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: background 200ms ease;
+}
+
+#btn-cerrar-documento:hover {
+    background: #59452e;
+    color: #ffffff;
+}
     height: calc(100% - 60px);
     overflow-y: auto;
     white-space: pre-wrap;
