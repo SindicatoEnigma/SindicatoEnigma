@@ -574,10 +574,16 @@ function ejecutarComando(instruccion) {
 
     switch (comando) {
 
-        case "FONDO":
+        /*case "FONDO":
             cambiarFondo(p[0]);
             ejecutarSiguiente();
             break;
+        */
+        case "FONDO":
+    cambiarFondo(p[0]).then(() => {
+        ejecutarSiguiente();
+    });
+    break;
 
         case "OCULTAR":
             ocultarPersonaje(p[0]);
@@ -697,14 +703,14 @@ async function cambiarFondo(nombre) {
 // 13. PERSONAJES
 // ============================================================
 
-function mostrarPersonaje(nombre, expresion, lado = "izquierda") {
+/*function mostrarPersonaje(nombre, expresion, lado = "izquierda") {
 
     const id = normalizarId(nombre);
 
     /*
         Si el personaje ya existe, cambiamos solamente su imagen.
         Así evitamos que la expresión provoque un salto de posición.
-    */
+    
     let elemento = document.getElementById(`personaje-${id}`);
 
     if (!elemento) {
@@ -735,7 +741,7 @@ function mostrarPersonaje(nombre, expresion, lado = "izquierda") {
     /*
         Regla de robustez:
         si una expresión no existe, conservamos la imagen anterior.
-    */
+    
     const imagenAnterior = elemento.src;
 
     elemento.onerror = () => {
@@ -751,7 +757,7 @@ function mostrarPersonaje(nombre, expresion, lado = "izquierda") {
             /*
                 Primera aparición sin imagen:
                 no mostramos una imagen rota.
-            */
+            
             elemento.remove();
         }
     };
@@ -770,7 +776,73 @@ function mostrarPersonaje(nombre, expresion, lado = "izquierda") {
 
     console.log("[SE] Personaje:", nombre, expresion, lado);
 }
+*/
+async function mostrarPersonaje(
+    nombre,
+    expresion,
+    lado = "izquierda"
+) {
 
+    const id = normalizarId(nombre);
+
+    let elemento =
+        document.getElementById(`personaje-${id}`);
+
+    if (!elemento) {
+
+        elemento = document.createElement("img");
+
+        elemento.id = `personaje-${id}`;
+        elemento.className =
+            "personaje entrando";
+
+        UI.capaPersonajes.appendChild(elemento);
+
+        requestAnimationFrame(() => {
+            elemento.classList.remove("entrando");
+        });
+    }
+
+    elemento.classList.remove(
+        "izquierda",
+        "derecha"
+    );
+
+    elemento.classList.add(lado);
+
+    const rutaBase =
+        `recursos/${Engine.caso.id}/personajes/` +
+        `${nombre}/${nombre}_${expresion}`;
+
+    const ruta =
+        await buscarImagen(rutaBase);
+
+    if (!ruta) {
+
+        console.warn(
+            `[SE] No se encontró la expresión: ` +
+            `${nombre}_${expresion}`
+        );
+
+        return;
+    }
+
+    elemento.src = ruta;
+
+    Engine.personajes[id] = {
+        nombre: nombre,
+        expresion: expresion,
+        lado: lado
+    };
+
+    console.log(
+        "[SE] Personaje cargado:",
+        nombre,
+        expresion,
+        lado,
+        ruta
+    );
+}
 
 function ocultarPersonaje(nombre) {
 
