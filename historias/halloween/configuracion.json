@@ -2,7 +2,6 @@
   "id": "halloween",
   "titulo": "El caso de la puerta de Jack",
   "descripcion": "Una investigación sobrenatural entre leyendas, botánica y una puerta que quizá no debería abrirse.",
-  "extensionImagen": ".png",
   "carpetaRecursos": "../../recursos/halloween/",
   "capitulos": [
     {
