@@ -14,11 +14,11 @@ PZZ!!!
 [NARRADOR]
 Te estaba esperando 
 
-[FONDO Calle lampara]
+[FONDO Calle_lampara]
 
-[FONDO calle noche]
+[FONDO calle_noche]
 
-[FONDO Calle lampara]
+[FONDO Calle_lampara]
 
 [NARRADOR]
 Mi nombre es EL y soy parte del Sindicato Enigma.
