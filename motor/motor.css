@@ -288,8 +288,7 @@ button:hover {
     left: 4%;
     right: 4%;
     bottom: 3%;
-    min-height: 150px;
-    max-height: 31%;
+    height: 180px;
     padding: 22px 24px;
     background: rgba(15, 15, 15, 0.84);
     border: 1px solid var(--borde);
@@ -326,7 +325,8 @@ button:hover {
 
 .texto-dialogo {
     height: calc(100% - 42px);
-    overflow-y: auto;
+    overflow-y: hidden;
+    overflow-x: hidden;
     line-height: 1.6;
     font-size: clamp(1rem, 2.2vw, 1.25rem);
     padding-right: 10px;
@@ -366,6 +366,13 @@ button:hover {
 .texto-documento {
     /* ---------- Botón cerrar documento ---------- */
 
+
+    height: calc(100% - 60px);
+    overflow-y: auto;
+    white-space: pre-wrap;
+    line-height: 1.7;
+    font-size: clamp(1rem, 2.2vw, 1.2rem);
+}
 #btn-cerrar-documento {
     background: #29251f;
     color: #f5f0e4;
@@ -380,12 +387,6 @@ button:hover {
 #btn-cerrar-documento:hover {
     background: #59452e;
     color: #ffffff;
-}
-    height: calc(100% - 60px);
-    overflow-y: auto;
-    white-space: pre-wrap;
-    line-height: 1.7;
-    font-size: clamp(1rem, 2.2vw, 1.2rem);
 }
 
 /* ---------- Controles ---------- */
@@ -478,8 +479,7 @@ button:hover {
 
 @media (max-width: 600px) {
     .dialogo {
-        min-height: 170px;
-        max-height: 36%;
+        height: 180px;
         padding: 20px 17px;
     }
 
