@@ -5,7 +5,51 @@
 # El motor las ignora. Sirven para que el autor pueda estudiar
 # y organizar la historia.
 
-[FONDO calle_noche]
+
+[FONDO Negro]
+
+[NARRADOR]
+PZZ!!!
+
+[NARRADOR]
+Te estaba esperando 
+
+[FONDO Calle_lampara]
+
+[NARRADOR]
+Mi nombre es EL y soy parte del Sindicato Enigma.
+
+[NARRADOR]
+EL: Me gustaria darte la bienvenida adecuada pero tenemos trabajo
+
+[NARRADOR]
+EL: Hace un momento recibi una carta, la envías una mujer llamada Margaret
+
+[NARRADOR]
+EL: Mirala
+
+[DOCUMENTO carta_margaret]
+Carta de Margaret
+
+Para Sindicato Enigma:
+
+Necesito ayuda. Mis nietas encontraron un antiguo cuaderno de mi madre.
+Desde entonces, una de ellas afirma haber visto una puerta donde no debería existir ninguna.
+
+Hay una leyenda relacionada con Jack-o'-lanterns, una puerta y algo que
+no pertenece completamente ni al mundo de los vivos ni al de los muertos.
+
+Por favor, vengan antes de la próxima luna llena.
+
+[NARRADOR]
+EL: Es hora de trabajar
+
+
+[FONDO Casa_margaret]
+
+[MARGARET preocupada]
+MARGARET: Si alguien recibe esta carta, significa que mi familia ya no puede resolver esto sola.
+
 
 [EL normal]
 EL: Buenas noches, detective.
