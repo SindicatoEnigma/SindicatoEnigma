@@ -14,11 +14,11 @@ PZZ!!!
 [NARRADOR]
 Te estaba esperando 
 
-[FONDO Calle_lampara]
+[FONDO Calle lampara]
 
-[FONDO calle_noche]
+[FONDO calle noche]
 
-[FONDO Calle_lampara]
+[FONDO Calle lampara]
 
 [NARRADOR]
 Mi nombre es EL y soy parte del Sindicato Enigma.
@@ -60,13 +60,13 @@ EL: Es hora de trabajar
 MARGARET: Si alguien recibe esta carta, significa que mi familia ya no puede resolver esto sola.
 
 
-[EL normall]
+[EL_normall]
 EL: Buenas noches, detective.
 
 [NARRADOR]
 Una carta llegó al Sindicato Enigma justo antes de medianoche.
 
-[EL normall]
+[EL_normall]
 EL: No parece una carta cualquiera. La remitente es Margaret, una botánica retirada que vive en un pueblo donde las historias de brujas todavía se cuentan como si fueran noticias.
 
 [EL normal derecha]
