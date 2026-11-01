@@ -290,7 +290,7 @@ button:hover {
     bottom: 3%;
     height: 180px;
     padding: 22px 24px;
-    background: rgba(15, 15, 15, 0.84);
+    background: #111111;
     border: 1px solid var(--borde);
     border-radius: 4px;
     z-index: 10;
