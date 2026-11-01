@@ -60,19 +60,19 @@ EL: Es hora de trabajar
 MARGARET: Si alguien recibe esta carta, significa que mi familia ya no puede resolver esto sola.
 
 
-[EL normal]
+[EL normall]
 EL: Buenas noches, detective.
 
 [NARRADOR]
 Una carta llegó al Sindicato Enigma justo antes de medianoche.
 
-[EL normal]
+[EL normall]
 EL: No parece una carta cualquiera. La remitente es Margaret, una botánica retirada que vive en un pueblo donde las historias de brujas todavía se cuentan como si fueran noticias.
 
 [EL normal derecha]
 EL: Y, naturalmente, decidió escribirnos durante Halloween.
 
-[MARGARET preocupada]
+[MARGARET preocupadaa]
 MARGARET: Si alguien recibe esta carta, significa que mi familia ya no puede resolver esto sola.
 
 [EL sospechando]
