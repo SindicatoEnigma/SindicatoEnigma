@@ -640,7 +640,7 @@ function ejecutarComando(instruccion) {
 
     console.log("[SE] Fondo:", nombre);
 }
-*/
+
 function cambiarFondo(nombre) {
 
     if (!nombre) {
@@ -659,6 +659,38 @@ function cambiarFondo(nombre) {
 
     console.log("[SE] Fondo:", nombre);
     console.log("[SE] Ruta:", ruta);
+}
+*/
+async function cambiarFondo(nombre) {
+
+    if (!nombre) {
+        console.warn("[SE] FONDO sin nombre.");
+        return;
+    }
+
+    const tieneExtension =
+        /\.(png|jpg|jpeg|webp|svg)$/i.test(nombre);
+
+    const rutaBase =
+        `recursos/${Engine.caso.id}/fondos/` +
+        (tieneExtension
+            ? nombre.substring(0, nombre.lastIndexOf("."))
+            : nombre);
+
+    const ruta = await buscarImagen(rutaBase);
+
+    if (!ruta) {
+        console.warn(
+            "[SE] No se pudo cargar el fondo:",
+            nombre
+        );
+        return;
+    }
+
+    UI.escena.style.backgroundImage =
+        `url("${ruta}")`;
+
+    console.log("[SE] Fondo cargado:", ruta);
 }
 
 // ============================================================
