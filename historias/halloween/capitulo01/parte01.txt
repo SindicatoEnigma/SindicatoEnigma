@@ -16,6 +16,10 @@ Te estaba esperando
 
 [FONDO Calle_lampara]
 
+[FONDO calle_noche]
+
+[FONDO Calle_lampara]
+
 [NARRADOR]
 Mi nombre es EL y soy parte del Sindicato Enigma.
 
