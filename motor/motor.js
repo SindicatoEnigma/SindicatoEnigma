@@ -856,7 +856,7 @@ ejecutarComando = function(instruccion) {
 // 16. DIÁLOGO
 // ============================================================
 
-function mostrarDialogo(personaje, texto) {
+/*function mostrarDialogo(personaje, texto) {
 
     cerrarDocumento();
 
@@ -865,12 +865,27 @@ function mostrarDialogo(personaje, texto) {
     UI.nombrePersonaje.textContent = personaje;
     escribirTexto(UI.textoDialogo, texto);
 }
+*/
+function mostrarDialogo(personaje, texto) {
+
+    cerrarDocumento();
+
+    setTimeout(() => {
+
+        UI.dialogo.classList.remove("oculto");
+
+        UI.nombrePersonaje.textContent = personaje;
+        escribirTexto(UI.textoDialogo, texto);
+
+    }, 1000);
+}
 
 
 // ============================================================
 // 17. NARRACIÓN
 // ============================================================
 
+/*
 function mostrarNarracion(texto) {
 
     cerrarDocumento();
@@ -880,6 +895,21 @@ function mostrarNarracion(texto) {
     UI.nombrePersonaje.textContent = "NARRADOR";
 
     escribirTexto(UI.textoDialogo, texto);
+}
+*/
+function mostrarNarracion(texto) {
+
+    cerrarDocumento();
+
+    setTimeout(() => {
+
+        UI.dialogo.classList.remove("oculto");
+
+        UI.nombrePersonaje.textContent = "NARRADOR";
+
+        escribirTexto(UI.textoDialogo, texto);
+
+    }, 1000);
 }
 
 
