@@ -625,7 +625,7 @@ function ejecutarComando(instruccion) {
 // 12. FONDO
 // ============================================================
 
-function cambiarFondo(nombre) {
+/*function cambiarFondo(nombre) {
 
     if (!nombre) {
         console.warn("[SE] FONDO sin nombre.");
@@ -639,7 +639,26 @@ function cambiarFondo(nombre) {
 
     console.log("[SE] Fondo:", nombre);
 }
+*/
+function cambiarFondo(nombre) {
 
+    if (!nombre) {
+        console.warn("[SE] FONDO sin nombre.");
+        return;
+    }
+
+    const extension = /\.(png|jpg|jpeg|svg|webp)$/i.test(nombre)
+        ? ""
+        : Engine.extensionImagen;
+
+    const ruta =
+        `url("recursos/${Engine.caso.id}/fondos/${nombre}${extension}")`;
+
+    UI.escena.style.backgroundImage = ruta;
+
+    console.log("[SE] Fondo:", nombre);
+    console.log("[SE] Ruta:", ruta);
+}
 
 // ============================================================
 // 13. PERSONAJES
