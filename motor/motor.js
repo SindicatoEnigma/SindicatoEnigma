@@ -62,7 +62,8 @@ const Engine = {
     escenaAntesPuzzle: null,
 
     // Configuración visual de rutas.
-    extensionImagen: ".svg"
+    //extensionImagen: ".svg"
+    extensionesImagen: [".png", ".jpg", ".jpeg", ".webp", ".svg"]
 };
 
 
@@ -1219,6 +1220,48 @@ function escapeHTML(texto) {
 // ============================================================
 
 function normalizarId(texto) {
+    function buscarImagen(rutaBase) {
+
+    return new Promise((resolver) => {
+
+        let indice = 0;
+
+        function probarSiguiente() {
+
+            if (indice >= Engine.extensionesImagen.length) {
+                console.warn(
+                    "[SE] No se encontró la imagen:",
+                    rutaBase
+                );
+
+                resolver(null);
+                return;
+            }
+
+            const extension =
+                Engine.extensionesImagen[indice];
+
+            const ruta =
+                rutaBase + extension;
+
+            const imagen = new Image();
+
+            imagen.onload = () => {
+                console.log("[SE] Imagen encontrada:", ruta);
+                resolver(ruta);
+            };
+
+            imagen.onerror = () => {
+                indice++;
+                probarSiguiente();
+            };
+
+            imagen.src = ruta;
+        }
+
+        probarSiguiente();
+    });
+    }
 
     /*
         Convierte nombres como:
