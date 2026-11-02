@@ -844,6 +844,38 @@ async function mostrarPersonaje(
     );
 }
 
+function marcarPersonajeHablando(nombre) {
+
+    const idHablante = normalizarId(nombre);
+
+    Object.keys(Engine.personajes).forEach(id => {
+
+        const elemento =
+            document.getElementById(`personaje-${id}`);
+
+        if (!elemento) return;
+
+        if (id === idHablante) {
+
+            // El personaje que habla vuelve a estar iluminado.
+            elemento.classList.remove("no-habla");
+
+            // Reiniciamos la animación para que ocurra
+            // cada vez que comienza una intervención.
+            elemento.classList.remove("hablando");
+
+            void elemento.offsetWidth;
+
+            elemento.classList.add("hablando");
+
+        } else {
+
+            // Todos los demás personajes quedan ligeramente oscuros.
+            elemento.classList.add("no-habla");
+        }
+    });
+}
+
 function ocultarPersonaje(nombre) {
 
     if (!nombre) {
@@ -914,7 +946,7 @@ ejecutarComando = function(instruccion) {
         return;
     }
     */
-    if (personajesConocidos.includes(comando)) {
+    /*if (personajesConocidos.includes(comando)) {
 
     const expresion = p[0] || "normal";
     const lado = p[1] || "izquierda";
@@ -931,6 +963,27 @@ ejecutarComando = function(instruccion) {
 
     return;
     }
+    */
+    if (personajesConocidos.includes(comando)) {
+
+    const expresion = p[0] || "normal";
+    const lado = p[1] || "izquierda";
+
+    mostrarPersonaje(
+        comando,
+        expresion,
+        lado
+    ).then(() => {
+
+        marcarPersonajeHablando(comando);
+
+        ejecutarSiguiente();
+
+    });
+
+    return;
+    }
+    
 
     // Si no es personaje, usamos la lógica normal.
     switch (comando) {
