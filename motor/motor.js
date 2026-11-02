@@ -1146,6 +1146,66 @@ ejecutarComando = function(instruccion) {
 
     // Si no es personaje, usamos la lógica normal.
     switch (comando) {
+        
+case "MUSICA": {
+
+    const accion = (p[0] || "").toUpperCase();
+
+    // DETENER
+    if (accion === "DETENER") {
+
+        AudioEngine.stopMusic().then(() => {
+            ejecutarSiguiente();
+        });
+
+    }
+
+    // PAUSA
+    else if (accion === "PAUSA") {
+
+        AudioEngine.pauseMusic();
+
+        ejecutarSiguiente();
+    }
+
+    // REANUDAR
+    else if (accion === "REANUDAR") {
+
+        AudioEngine.resumeMusic();
+
+        ejecutarSiguiente();
+    }
+
+    // VOLUMEN
+    else if (accion === "VOLUMEN") {
+
+        AudioEngine.setVolume(p[1]);
+
+        ejecutarSiguiente();
+    }
+
+    // REPRODUCIR CANCIÓN
+    else if (p[0]) {
+
+        const ruta =
+            `historias/${Engine.caso.id}/` +
+            `${Engine.capitulo.id}/musica/${p[0]}`;
+
+        AudioEngine.playTrack(ruta).then(() => {
+            ejecutarSiguiente();
+        });
+
+    }
+
+    else {
+
+        console.warn("[SE] Comando MUSICA sin parámetros.");
+
+        ejecutarSiguiente();
+    }
+
+    break;
+}
 
         /*case "FONDO":
             cambiarFondo(p[0]);
@@ -1402,7 +1462,7 @@ function escribirTexto(elemento, texto) {
 
     ejecutarSiguiente();
 }
-*/
+
 if (Engine.escribiendo) {
 
     clearInterval(Engine.temporizadorTexto);
@@ -1417,6 +1477,41 @@ if (Engine.escribiendo) {
     Engine.escribiendo = false;
 
     return;
+}
+*/
+
+// ============================================================
+// 19. AVANZAR
+// ============================================================
+
+function avanzar() {
+
+    // Intentamos reanudar la música tras una interacción del usuario.
+    AudioEngine.resumeMusic();
+
+    // Si el texto todavía se está escribiendo,
+    // el primer toque lo completa inmediatamente.
+
+    if (Engine.escribiendo) {
+
+        clearInterval(Engine.temporizadorTexto);
+
+        UI.textoDialogo.textContent = Engine.textoActual;
+
+        UI.textoDialogo.scrollTop =
+            UI.textoDialogo.scrollHeight;
+
+        Engine.temporizadorTexto = null;
+        Engine.escribiendo = false;
+
+        return;
+    }
+
+    AudioEngine.click();
+
+    UI.dialogo.classList.add("oculto");
+
+    ejecutarSiguiente();
 }
 
 // ============================================================
