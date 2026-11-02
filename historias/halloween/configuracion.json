@@ -3,6 +3,12 @@
   "titulo": "El caso de la puerta de Jack",
   "descripcion": "Una investigación sobrenatural entre leyendas, botánica y una puerta que quizá no debería abrirse.",
   "carpetaRecursos": "../../recursos/halloween/",
+  "personajes": [
+    "EL",
+    "MARGARET",
+    "SALI",
+    "CAT"
+  ],
   "capitulos": [
     {
       "id": "capitulo01",
