@@ -21,7 +21,7 @@
 EL:Mi nombre es EL y soy parte del Sindicato Enigma.
 
 [NARRADOR]
-EL:Me gustaria darte la bienvenida adecuada pero tenemos trabajo
+EL:Me gustaria darte una bienvenida adecuada pero tenemos trabajo
 
 [NARRADOR]
 EL:Hace un momento recibi una carta, la envia una mujer llamada Margaret, esta en problemas 
@@ -49,6 +49,10 @@ EL:Parece que sera un Halloween ocupado, no perdamos mas tiempo y vamos.
 
 [FONDO Casa_margaret]
 
+[NARRADOR]
+...:...
+
+
 [MARGARET preocupadaa]
 MARGARET: ustedes son...
 
@@ -56,38 +60,38 @@ MARGARET: ustedes son...
 MARGARET:son del sindicato enigma
 
 [EL normall derecha]
-EL: Buenas noches, recibimos su carta, digamos que fue lo que sucedio?
+EL: Buenas noches, recibimos su carta, yo soy EL y mi acompañante el miembro mas reciente del sindicato, estamos aqui para ayudarla.
 
-
-[EL_normall]
-EL: No parece una carta cualquiera. La remitente es Margaret, una botánica retirada que vive en un pueblo donde las historias de brujas todavía se cuentan como si fueran noticias.
-
-[EL normal derecha]
-EL: Y, naturalmente, decidió escribirnos durante Halloween.
+[EL normall derecha]
+EL: cuentenos que fue lo que sucedio?
 
 [MARGARET preocupadaa]
-MARGARET: Si alguien recibe esta carta, significa que mi familia ya no puede resolver esto sola.
+MARGARET: Bueno, no se por donde comenzar
 
-[EL sospechando]
-EL: Ah. Esa frase nunca precede a una noche tranquila.
+[EL normall derecha]
+EL: Por favor guarde la calma y cuentenos desde la ultima vez que vio a sus nietas.
 
-[DOCUMENTO carta_margaret]
-Carta de Margaret
+[MARGARET preocupadaa]
+MARGARET: Entiendo, hoy en la mañana estaba con mis nietas, ellas viven conmigo
 
-Querido Sindicato Enigma:
+[MARGARET preocupadaa]
+MARGARET: pero mi trabajo como unica botánica y médica del pueblo me tienen ocupada gran parte del dia y lejos de casa.
 
-Necesito ayuda. Mis nietas encontraron un antiguo cuaderno de mi madre.
-Desde entonces, una de ellas afirma haber visto una puerta donde no debería existir ninguna.
+[MARGARET preocupadaa]
+MARGARET: hoy en particular tenia que atender a un paciente, cuando terminé mi labor me proponia a regresar a casa cuándo una gran tormenta golpeo el pueblo
 
-Hay una leyenda relacionada con Jack-o'-lanterns, una puerta y algo que
-no pertenece completamente ni al mundo de los vivos ni al de los muertos.
+[MARGARET preocupadaa]
+MARGARET: la tormenta duro varias horas y no fue hasta el atardecer que pude regresar a casa, pero cuando llegué, mis nietas no estaban
 
-Por favor, vengan antes de la próxima luna llena.
+[MARGARET preocupadaa]
+MARGARET: la puerta trasera estaba abierta y con el cristal roto, creo que alguien pudo haberselas llevado, entonces les escribí y no he movido nada, la casa esta como la encontré.
 
-Margaret
-[FIN DOCUMENTO]
+[MARGARET preocupadaa]
+MARGARET: por favor, estoy muy preocupada por mis niñas 
 
-[EL normal]
-EL: La investigación comienza aquí.
+
+
+
+
 
 [FIN PARTE]
