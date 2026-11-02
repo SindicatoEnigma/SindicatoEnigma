@@ -34,13 +34,9 @@ Carta de Margaret
 
 Para Sindicato Enigma:
 
-Necesito ayuda. Mis nietas encontraron un antiguo cuaderno de mi madre.
-Desde entonces, una de ellas afirma haber visto una puerta donde no debería existir ninguna.
+Necesito ayuda, mis nietas han desaparecido y no se a quien mas acudir, escuché que ustedes pueden ayudarme, por favor vengan a mi casa y encuentren a mis nietas, son lo unico que me queda, estoy deseperada y preocupada por ellas.
 
-Hay una leyenda relacionada con Jack-o'-lanterns, una puerta y algo que
-no pertenece completamente ni al mundo de los vivos ni al de los muertos.
-
-Por favor, vengan antes de la próxima luna llena.
+vivo en las afueras del pueblo de Carmoria, cerca del bosque, pregunten por la casa de la Botánica y cualquiera en el pueblo les dira como llegar.
 
 Margaret
 
@@ -53,15 +49,15 @@ EL:Parece que sera un Halloween ocupado, no perdamos mas tiempo y vamos.
 
 [FONDO Casa_margaret]
 
-[MARGARET_preocupadaa]
-MARGARET: Si alguien recibe esta carta, significa que mi familia ya no puede resolver esto sola.
+[MARGARET preocupadaa]
+MARGARET: ustedes son...
 
+[MARGARET preocupadaa]
+MARGARET:son del sindicato enigma
 
-[EL_normall]
-EL: Buenas noches, detective.
+[EL normall derecha]
+EL: Buenas noches, recibimos su carta, digamos que fue lo que sucedio?
 
-[NARRADOR]
-Una carta llegó al Sindicato Enigma justo antes de medianoche.
 
 [EL_normall]
 EL: No parece una carta cualquiera. La remitente es Margaret, una botánica retirada que vive en un pueblo donde las historias de brujas todavía se cuentan como si fueran noticias.
