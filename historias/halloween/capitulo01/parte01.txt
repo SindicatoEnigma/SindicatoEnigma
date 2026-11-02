@@ -8,26 +8,26 @@
 
 [FONDO Negro]
 
-[...]
-PZZ!!!
+[NARRADOR]
+...:PZZ!!!
 
-[...]
-Te estaba esperando 
+[NARRADOR]
+...:Te estaba esperando 
 
 [FONDO Calle_lampara]
 
 
-[...]
-Mi nombre es EL y soy parte del Sindicato Enigma.
+[NARRADOR]
+EL:Mi nombre es EL y soy parte del Sindicato Enigma.
 
-[EL]
-Me gustaria darte la bienvenida adecuada pero tenemos trabajo
+[NARRADOR]
+EL:Me gustaria darte la bienvenida adecuada pero tenemos trabajo
 
-[EL]
-Hace un momento recibi una carta, la envia una mujer llamada Margaret, esta en problemas 
+[NARRADOR]
+EL:Hace un momento recibi una carta, la envia una mujer llamada Margaret, esta en problemas 
 
-[EL]
-Mira
+[NARRADOR]
+EL:Mira
 
 [DOCUMENTO carta_margaret]
 Carta de Margaret
@@ -47,13 +47,13 @@ Margaret
 [FIN DOCUMENTO]
 
 
-[EL]
-Parece que sera un Halloween ocupado, no perdamos mas tiempo y vamos.
+[NARRADOR]
+EL:Parece que sera un Halloween ocupado, no perdamos mas tiempo y vamos.
 
 
 [FONDO Casa_margaret]
 
-[MARGARET_preocupada]
+[MARGARET_preocupadaa]
 MARGARET: Si alguien recibe esta carta, significa que mi familia ya no puede resolver esto sola.
 
 
