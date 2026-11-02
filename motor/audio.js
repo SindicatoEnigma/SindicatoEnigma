@@ -349,6 +349,7 @@ click() {
 type() {
 
     this.playTone(900, 0.018, 0.008);
+}
 };
 
 AudioEngine.init();
