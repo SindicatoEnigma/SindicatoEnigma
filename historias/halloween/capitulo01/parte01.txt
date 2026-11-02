@@ -15,7 +15,7 @@
 ...:Te estaba esperando 
 
 [FONDO Calle_lampara]
-
+[MUSICA Se.mp3]
 
 [NARRADOR]
 EL:Mi nombre es EL y soy parte del Sindicato Enigma.
@@ -91,7 +91,7 @@ MARGARET: por favor, estoy muy preocupada por mis niñas
 
 
 
-
+[MUSICA DETENER]
 
 
 [FIN PARTE]
