@@ -264,11 +264,11 @@ button:hover {
 }
 
 .personaje.izquierda {
-    left: 5%;
+    left: 1%;
 }
 
 .personaje.derecha {
-    right: 5%;
+    right: 1%;
 }
 
 .personaje.entrando {
