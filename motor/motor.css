@@ -484,9 +484,9 @@ button:hover {
     }
 
     .personaje {
-        max-width: 55%;
-        max-height: 55%;
-        bottom: 25%;
+        max-width: 45%;
+        max-height: 45%;
+        bottom: 30%;
     }
 
     .documento {
