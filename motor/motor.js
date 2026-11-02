@@ -1299,11 +1299,11 @@ function mostrarNarracion(texto) {
 // 18. EFECTO DE ESCRITURA
 // ============================================================
 
-function escribirTexto(elemento, texto) {
+/*function escribirTexto(elemento, texto) {
 
-    /*
+    
         Si había un texto escribiéndose, lo detenemos.
-    */
+    
     if (Engine.temporizadorTexto) {
         clearInterval(Engine.temporizadorTexto);
     }
@@ -1332,21 +1332,58 @@ function escribirTexto(elemento, texto) {
         }
 
     }, 20);
-}
+}*/
+function escribirTexto(elemento, texto) {
 
+    // Si había un texto escribiéndose, lo detenemos.
+    if (Engine.temporizadorTexto) {
+        clearInterval(Engine.temporizadorTexto);
+    }
+
+    Engine.textoActual = texto;
+    Engine.indiceTexto = 0;
+    Engine.escribiendo = true;
+
+    elemento.textContent = "";
+
+    // Reiniciamos la posición para comenzar desde arriba.
+    elemento.scrollTop = 0;
+
+    Engine.temporizadorTexto = setInterval(() => {
+
+        Engine.indiceTexto++;
+
+        elemento.textContent =
+            Engine.textoActual.substring(0, Engine.indiceTexto);
+
+        // Mantenemos visible la parte más reciente del texto.
+        elemento.scrollTop = elemento.scrollHeight;
+
+        if (Engine.indiceTexto >= Engine.textoActual.length) {
+
+            clearInterval(Engine.temporizadorTexto);
+
+            Engine.temporizadorTexto = null;
+            Engine.escribiendo = false;
+
+            UI.indicadorAvance.textContent = "▼";
+        }
+
+    }, 20);
+}
 
 // ============================================================
 // 19. AVANZAR
 // ============================================================
 
-function avanzar() {
+/*function avanzar() {
 
     /*
         Si el texto todavía se está escribiendo, el primer toque
         lo completa inmediatamente.
 
         Esto evita obligar al jugador a esperar.
-    */
+    
     if (Engine.escribiendo) {
 
         clearInterval(Engine.temporizadorTexto);
@@ -1365,7 +1402,22 @@ function avanzar() {
 
     ejecutarSiguiente();
 }
+*/
+if (Engine.escribiendo) {
 
+    clearInterval(Engine.temporizadorTexto);
+
+    UI.textoDialogo.textContent = Engine.textoActual;
+
+    // Desplazamos hasta el final del texto.
+    UI.textoDialogo.scrollTop =
+        UI.textoDialogo.scrollHeight;
+
+    Engine.temporizadorTexto = null;
+    Engine.escribiendo = false;
+
+    return;
+}
 
 // ============================================================
 // 20. CONTROL DE CLIC / TOUCH
