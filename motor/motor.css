@@ -253,14 +253,20 @@ button:hover {
 */
 .personaje {
     position: absolute;
-    bottom: 18%;
-    max-width: 35%;
-    max-height: 40%;
+    bottom: 30%;
+    max-width: 45%;
+    max-height: 45%;
     object-fit: contain;
     transition:
         opacity 250ms ease,
-        transform 250ms ease;
+        transform 250ms ease,
+        filter 250ms ease;
     opacity: 1;
+    filter: brightness(1);
+}
+
+.personaje.no-habla {
+    filter: brightness(0.55);
 }
 
 .personaje.izquierda {
