@@ -777,7 +777,7 @@ async function cambiarFondo(nombre) {
     console.log("[SE] Personaje:", nombre, expresion, lado);
 }
 */
-async function mostrarPersonaje(
+/*async function mostrarPersonaje(
     nombre,
     expresion,
     lado = "izquierda"
@@ -843,6 +843,89 @@ async function mostrarPersonaje(
         ruta
     );
 }
+*/
+async function mostrarPersonaje(
+    nombre,
+    expresion,
+    lado = "izquierda"
+) {
+
+    const id = normalizarId(nombre);
+
+    let elemento =
+        document.getElementById(`personaje-${id}`);
+
+    let esNuevo = false;
+
+    if (!elemento) {
+
+        elemento = document.createElement("img");
+
+        elemento.id = `personaje-${id}`;
+
+        elemento.className =
+            "personaje entrando";
+
+        UI.capaPersonajes.appendChild(elemento);
+
+        esNuevo = true;
+    }
+
+    elemento.classList.remove(
+        "izquierda",
+        "derecha"
+    );
+
+    elemento.classList.add(lado);
+
+    const rutaBase =
+        `recursos/${Engine.caso.id}/personajes/` +
+        `${nombre}/${nombre}_${expresion}`;
+
+    const ruta =
+        await buscarImagen(rutaBase);
+
+    if (!ruta) {
+
+        console.warn(
+            `[SE] No se encontró la expresión: ` +
+            `${nombre}_${expresion}`
+        );
+
+        if (esNuevo) elemento.remove();
+
+        return;
+    }
+
+    elemento.src = ruta;
+
+    Engine.personajes[id] = {
+        nombre: nombre,
+        expresion: expresion,
+        lado: lado
+    };
+
+    // Si es un personaje nuevo, esperar su entrada.
+
+    if (esNuevo) {
+
+        await new Promise(resolve => {
+            requestAnimationFrame(resolve);
+        });
+
+        elemento.classList.remove("entrando");
+
+        await esperarTransicion(elemento);
+    }
+
+    console.log(
+        "[SE] Personaje cargado:",
+        nombre,
+        expresion,
+        lado,
+        ruta
+    );
+}
 
 function marcarPersonajeHablando(nombre) {
 
@@ -876,7 +959,50 @@ function marcarPersonajeHablando(nombre) {
     });
 }
 
-function ocultarPersonaje(nombre) {
+
+function esperarTransicion(elemento, duracionMaxima = 300) {
+
+    return new Promise(resolve => {
+
+        let resuelta = false;
+
+        const terminar = () => {
+
+            if (resuelta) return;
+
+            resuelta = true;
+
+            clearTimeout(seguridad);
+
+            elemento.removeEventListener(
+                "transitionend",
+                alTerminar
+            );
+
+            resolve();
+        };
+
+        const alTerminar = (evento) => {
+
+            if (evento.target === elemento) {
+                terminar();
+            }
+        };
+
+        const seguridad = setTimeout(
+            terminar,
+            duracionMaxima
+        );
+
+        elemento.addEventListener(
+            "transitionend",
+            alTerminar
+        );
+
+    });
+}
+
+/*function ocultarPersonaje(nombre) {
 
     if (!nombre) {
         console.warn("[SE] OCULTAR sin nombre.");
@@ -899,7 +1025,39 @@ function ocultarPersonaje(nombre) {
 
     delete Engine.personajes[normalizarId(nombre)];
 }
+*/
+async function ocultarPersonaje(nombre) {
 
+    if (!nombre) {
+
+        console.warn("[SE] OCULTAR sin nombre.");
+
+        return;
+    }
+
+    const id =
+        `personaje-${normalizarId(nombre)}`;
+
+    const elemento =
+        document.getElementById(id);
+
+    if (!elemento) {
+
+        console.warn(
+            `[SE] No se puede ocultar "${nombre}" porque no está visible.`
+        );
+
+        return;
+    }
+
+    elemento.classList.add("saliendo");
+
+    await esperarTransicion(elemento);
+
+    elemento.remove();
+
+    delete Engine.personajes[normalizarId(nombre)];
+}
 
 // ============================================================
 // 14. FONDO + PERSONAJE COMO COMANDO
@@ -1003,7 +1161,7 @@ ejecutarComando = function(instruccion) {
 
     break;
 
-        case "OCULTAR":
+        /*case "OCULTAR":
             if (p[0] === "TODOS") {
                 document.querySelectorAll(".personaje").forEach(el => el.remove());
                 Engine.personajes = {};
@@ -1012,6 +1170,43 @@ ejecutarComando = function(instruccion) {
             }
             ejecutarSiguiente();
             break;
+        */
+
+        case "OCULTAR":
+
+    if (p[0] === "TODOS") {
+
+        const elementos = Array.from(
+            document.querySelectorAll(".personaje")
+        );
+
+        elementos.forEach(el => {
+            el.classList.add("saliendo");
+        });
+
+        Promise.all(
+            elementos.map(el => esperarTransicion(el))
+        ).then(() => {
+
+            elementos.forEach(el => el.remove());
+
+            Engine.personajes = {};
+
+            ejecutarSiguiente();
+
+        });
+
+    } else {
+
+        ocultarPersonaje(p[0]).then(() => {
+
+            ejecutarSiguiente();
+
+        });
+
+    }
+
+    break;
 
         case "PUZZLE":
             abrirPuzzle(p[0]);
