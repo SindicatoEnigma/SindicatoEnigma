@@ -1413,12 +1413,25 @@ function escribirTexto(elemento, texto) {
 
         Engine.indiceTexto++;
 
-        elemento.textContent =
+        /*elemento.textContent =
             Engine.textoActual.substring(0, Engine.indiceTexto);
 
         // Mantenemos visible la parte más reciente del texto.
         elemento.scrollTop = elemento.scrollHeight;
+        */
+        elemento.textContent =
+    Engine.textoActual.substring(0, Engine.indiceTexto);
 
+// Reproducimos un pequeño sonido al escribir cada carácter.
+const caracter =
+    Engine.textoActual[Engine.indiceTexto - 1];
+
+if (caracter && /\S/.test(caracter)) {
+    AudioEngine.type();
+}
+
+// Mantenemos visible la parte más reciente del texto.
+elemento.scrollTop = elemento.scrollHeight;
         if (Engine.indiceTexto >= Engine.textoActual.length) {
 
             clearInterval(Engine.temporizadorTexto);
