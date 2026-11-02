@@ -18,8 +18,13 @@ const AudioEngine = {
     musicEnabled: true,
     soundEnabled: true,
 
+    //music: null,
+    //currentTrack: null,
     music: null,
-    currentTrack: null,
+currentTrack: null,
+
+// Contexto compartido para todos los efectos.
+audioContext: null,
 
     musicVolume: 0.45,
 
@@ -239,7 +244,84 @@ const AudioEngine = {
     // --------------------------------------------------------
     // EFECTOS DE SONIDO
     // --------------------------------------------------------
+    // --------------------------------------------------------
+// CONTEXTO DE AUDIO COMPARTIDO
+// --------------------------------------------------------
 
+getAudioContext() {
+
+    if (!this.audioContext) {
+
+        const AudioContextClass =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+        if (!AudioContextClass) {
+            console.warn("[AUDIO] AudioContext no disponible.");
+            return null;
+        }
+
+        this.audioContext = new AudioContextClass();
+    }
+
+    return this.audioContext;
+},
+
+// --------------------------------------------------------
+// REPRODUCIR EFECTO SONORO
+// --------------------------------------------------------
+
+playTone(frecuencia, duracion, volumen) {
+
+    if (!this.soundEnabled) return;
+
+    const context = this.getAudioContext();
+
+    if (!context) return;
+
+    const reproducir = () => {
+
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+
+        const ahora = context.currentTime;
+
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(
+            frecuencia,
+            ahora
+        );
+
+        gain.gain.setValueAtTime(0, ahora);
+
+        gain.gain.linearRampToValueAtTime(
+            volumen,
+            ahora + 0.003
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            ahora + duracion
+        );
+
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+
+        oscillator.start(ahora);
+        oscillator.stop(ahora + duracion + 0.005);
+    };
+
+    if (context.state === "suspended") {
+
+        context.resume().then(reproducir).catch(error => {
+            console.warn("[AUDIO] No se pudo activar el sonido:", error);
+        });
+
+    } else {
+
+        reproducir();
+    }
+},
     toggleSound() {
 
         this.soundEnabled = !this.soundEnabled;
@@ -251,39 +333,22 @@ const AudioEngine = {
     // CLICK
     // --------------------------------------------------------
 
-    click() {
+    // --------------------------------------------------------
+// SONIDO DE CLIC
+// --------------------------------------------------------
 
-        if (!this.soundEnabled) return;
+click() {
 
-        try {
+    this.playTone(650, 0.045, 0.035);
+},
 
-            const context = new (
-                window.AudioContext ||
-                window.webkitAudioContext
-            )();
+// --------------------------------------------------------
+// SONIDO DE ESCRITURA
+// --------------------------------------------------------
 
-            const oscillator = context.createOscillator();
-            const gain = context.createGain();
+type() {
 
-            oscillator.frequency.value = 650;
-            gain.gain.value = 0.035;
-
-            oscillator.connect(gain);
-            gain.connect(context.destination);
-
-            oscillator.start();
-
-            oscillator.stop(context.currentTime + 0.045);
-
-        } catch (error) {
-
-            console.warn(
-                "[AUDIO] No se pudo reproducir click:",
-                error
-            );
-
-        }
-    }
+    this.playTone(900, 0.018, 0.008);
 };
 
 AudioEngine.init();
