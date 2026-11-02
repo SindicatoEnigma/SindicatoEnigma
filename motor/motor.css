@@ -253,9 +253,9 @@ button:hover {
 */
 .personaje {
     position: absolute;
-    bottom: 30%;
-    max-width: 45%;
-    max-height: 45%;
+    bottom: 18%;
+    max-width: 35%;
+    max-height: 40%;
     object-fit: contain;
     transition:
         opacity 250ms ease,
@@ -267,6 +267,24 @@ button:hover {
 
 .personaje.no-habla {
     filter: brightness(0.55);
+}
+
+.personaje.hablando {
+    animation: pequeno-impulso 180ms ease-out;
+}
+
+@keyframes pequeno-impulso {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.01);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 .personaje.izquierda {
