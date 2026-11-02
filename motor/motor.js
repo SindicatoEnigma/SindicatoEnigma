@@ -1091,8 +1091,9 @@ ejecutarComando = function(instruccion) {
         [EL normal]
         [EL normal derecha]
     */
-    const personajesConocidos = ["EL", "MARGARET"];
-
+    //const personajesConocidos = ["EL", "MARGARET"];
+    const personajesConocidos =
+    Engine.caso.personajes || [];
     /*if (personajesConocidos.includes(comando)) {
 
         const expresion = p[0] || "normal";
