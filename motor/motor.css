@@ -253,9 +253,9 @@ button:hover {
 */
 .personaje {
     position: absolute;
-    bottom: 13%;
+    bottom: 15%;
     max-width: 40%;
-    max-height: 55%;
+    max-height: 45%;
     object-fit: contain;
     transition:
         opacity 250ms ease,
