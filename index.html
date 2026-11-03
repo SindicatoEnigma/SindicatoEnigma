@@ -1,152 +1,359 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-
-    <!--
-        viewport es importante para que la interfaz sea realmente móvil.
-        El proyecto está pensado primero para Android, pero también funciona
-        en pantallas grandes.
-    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Sindicato Enigma</title>
 
-    <!-- Hoja de estilos principal -->
     <link rel="stylesheet" href="motor/motor.css">
 </head>
 
 <body>
-    <!--
-        Todo el juego se dibuja dentro de este contenedor.
-        JavaScript cambia su contenido y visibilidad según el estado actual.
-    -->
-    <main id="app">
 
-        <!-- PANTALLA DE INICIO -->
-        <section id="pantalla-inicio" class="pantalla activa">
-            <div class="logo-inicio">
-                <div class="logo-se">SE</div>
-                <h1>SINDICATO ENIGMA</h1>
-                <p>Archivo de investigaciones extraordinarias</p>
-                <button id="btn-iniciar">Abrir archivo</button>
-            </div>
-        </section>
+<main id="app">
 
-        <!-- ARCHIVO DE CASOS -->
-        <section id="pantalla-archivo" class="pantalla">
-            <header class="encabezado">
-                <div>
-                    <span class="etiqueta">ARCHIVO</span>
-                    <h2>Casos del Sindicato</h2>
-                </div>
-                <button id="btn-config" class="boton-icono" title="Configuración">⚙</button>
-            </header>
+    <!-- ================================= -->
+    <!-- PORTAL PRINCIPAL                  -->
+    <!-- ================================= -->
 
-            <div id="lista-casos" class="lista-casos">
-                <!-- JavaScript inserta aquí los expedientes -->
-            </div>
-        </section>
+    <div id="portal">
 
-        <!-- MENÚ DE CAPÍTULO -->
-        <section id="pantalla-capitulo" class="pantalla">
-            <header class="encabezado">
-                <button id="btn-volver-archivo" class="boton-secundario">← Archivo</button>
-                <div>
-                    <span id="capitulo-etiqueta" class="etiqueta">CAPÍTULO</span>
-                    <h2 id="capitulo-titulo">Investigación</h2>
-                </div>
-            </header>
+        <!-- ENCABEZADO -->
+        <header id="portal-encabezado">
+            <h1>SINDICATO ENIGMA</h1>
+            <p>Archivo de investigaciones extraordinarias</p>
+        </header>
 
-            <div id="lista-partes" class="lista-partes">
-                <!-- JavaScript inserta aquí las partes -->
-            </div>
-        </section>
+        <!-- CUERPO DEL PORTAL -->
+        <div id="portal-cuerpo">
 
-        <!-- ESCENA NARRATIVA -->
-        <section id="pantalla-historia" class="pantalla pantalla-historia">
-            <div id="escena" class="escena">
+            <!-- MENÚ LATERAL -->
+            <aside id="portal-menu">
 
-                <!--
-                    El fondo se coloca mediante CSS/JavaScript.
-                    Los personajes se mantienen encima del fondo.
-                -->
-                <div id="capa-personajes" class="capa-personajes"></div>
+                <h2>MENÚ</h2>
 
-                <!-- Caja de diálogo -->
-                <div id="dialogo" class="dialogo oculto">
-                    <div id="nombre-personaje" class="nombre-personaje"></div>
-                    <div id="texto-dialogo" class="texto-dialogo"></div>
-                    <div id="indicador-avance" class="indicador-avance">▼</div>
-                </div>
+                <nav id="navegacion-principal">
 
-                <!-- Documento largo -->
-                <div id="documento" class="documento oculto">
-                    <div id="texto-documento" class="texto-documento"></div>
-                    <button id="btn-cerrar-documento" class="boton-secundario">Cerrar</button>
-                </div>
+                    <button class="opcion-menu"
+                            data-seccion="historias">
+                        Historias
+                    </button>
 
-                <!-- Botones de control -->
-                <div class="controles-historia">
-                    <button id="btn-menu-historia" class="boton-control">☰</button>
-                    <div class="controles-audio">
-                        <button id="btn-musica" class="boton-control">♫</button>
-                        <button id="btn-sonido" class="boton-control">🔊</button>
+                    <button class="opcion-menu"
+                            data-seccion="minijuegos">
+                        Minijuegos
+                    </button>
+
+                    <button class="opcion-menu"
+                            data-seccion="noticias">
+                        Noticias
+                    </button>
+
+                    <button class="opcion-menu"
+                            data-seccion="herramientas">
+                        Herramientas
+                    </button>
+
+                    <button class="opcion-menu"
+                            data-seccion="nosotros">
+                        Nosotros
+                    </button>
+
+                </nav>
+
+            </aside>
+
+            <!-- CONTENIDO VARIABLE -->
+            <section id="portal-contenido">
+
+                <div id="contenido-portal">
+
+                    <!-- NOTICIAS SERÁ LA SECCIÓN INICIAL -->
+                    <div id="seccion-noticias"
+                         class="seccion-portal">
+
+                        <h2>Noticias</h2>
+
+                        <div id="lista-noticias">
+                            <!-- Aquí se cargarán las noticias -->
+                        </div>
+
                     </div>
-                </div>
-            </div>
-        </section>
 
-        <!-- PANTALLA DE MINIJUEGO -->
-        <section id="pantalla-puzzle" class="pantalla">
-            <div class="puzzle-contenedor">
-                <header class="encabezado">
-                    <div>
-                        <span class="etiqueta">MINIJUEGO</span>
-                        <h2 id="puzzle-titulo">Puzzle</h2>
+                    <!-- HISTORIAS -->
+                    <div id="seccion-historias"
+                         class="seccion-portal oculto">
+
+                        <h2>Historias</h2>
+
+                        <div id="lista-historias">
+                            <!-- Aquí se cargarán las historias -->
+                        </div>
+
                     </div>
-                </header>
 
-                <div id="puzzle-contenido" class="puzzle-contenido">
-                    <!-- El módulo del puzzle se monta aquí -->
+                    <!-- MINIJUEGOS -->
+                    <div id="seccion-minijuegos"
+                         class="seccion-portal oculto">
+
+                        <h2>Minijuegos</h2>
+
+                        <div id="lista-minijuegos">
+                            <!-- Aquí se cargarán los minijuegos -->
+                        </div>
+
+                    </div>
+
+                    <!-- HERRAMIENTAS -->
+                    <div id="seccion-herramientas"
+                         class="seccion-portal oculto">
+
+                        <h2>Herramientas</h2>
+
+                        <div id="lista-herramientas">
+                            <!-- Aquí se cargarán las herramientas -->
+                        </div>
+
+                    </div>
+
+                    <!-- NOSOTROS -->
+                    <div id="seccion-nosotros"
+                         class="seccion-portal oculto">
+
+                        <h2>Nosotros</h2>
+
+                        <div id="contenido-nosotros">
+                            <!-- Aquí se presentará el Sindicato -->
+                        </div>
+
+                    </div>
+
                 </div>
 
-                <button id="btn-salir-puzzle" class="boton-secundario">
-                    Salir del minijuego
+            </section>
+
+        </div>
+
+        <!-- PIE DE PÁGINA -->
+        <footer id="portal-pie">
+
+            <p>
+                Sindicato Enigma
+                |
+                <a href="#" target="_blank">Redes sociales</a>
+                |
+                <a href="#" target="_blank">Contacto</a>
+            </p>
+
+        </footer>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- SISTEMA DE HISTORIAS Y MINIJUEGOS -->
+    <!-- ================================= -->
+
+    <!-- PANTALLA DE INICIO ANTIGUA -->
+    <section id="pantalla-inicio" class="pantalla">
+        <div class="logo-inicio">
+            <div class="logo-se">SE</div>
+            <h1>SINDICATO ENIGMA</h1>
+            <p>Archivo de investigaciones extraordinarias</p>
+            <button id="btn-iniciar">Abrir archivo</button>
+        </div>
+    </section>
+
+
+    <!-- ARCHIVO DE CASOS -->
+    <section id="pantalla-archivo" class="pantalla">
+
+        <header class="encabezado">
+            <div>
+                <span class="etiqueta">ARCHIVO</span>
+                <h2>Casos del Sindicato</h2>
+            </div>
+
+            <button id="btn-config"
+                    class="boton-icono"
+                    title="Configuración">⚙</button>
+        </header>
+
+        <div id="lista-casos" class="lista-casos">
+            <!-- JavaScript inserta aquí los expedientes -->
+        </div>
+
+    </section>
+
+
+    <!-- MENÚ DE CAPÍTULO -->
+    <section id="pantalla-capitulo" class="pantalla">
+
+        <header class="encabezado">
+
+            <button id="btn-volver-archivo"
+                    class="boton-secundario">
+                ← Archivo
+            </button>
+
+            <div>
+                <span id="capitulo-etiqueta"
+                      class="etiqueta">CAPÍTULO</span>
+
+                <h2 id="capitulo-titulo">Investigación</h2>
+            </div>
+
+        </header>
+
+        <div id="lista-partes" class="lista-partes">
+            <!-- JavaScript inserta aquí las partes -->
+        </div>
+
+    </section>
+
+
+    <!-- ESCENA NARRATIVA -->
+    <section id="pantalla-historia"
+             class="pantalla pantalla-historia">
+
+        <div id="escena" class="escena">
+
+            <div id="capa-personajes"
+                 class="capa-personajes"></div>
+
+            <!-- DIÁLOGO -->
+            <div id="dialogo" class="dialogo oculto">
+
+                <div id="nombre-personaje"
+                     class="nombre-personaje"></div>
+
+                <div id="texto-dialogo"
+                     class="texto-dialogo"></div>
+
+                <div id="indicador-avance"
+                     class="indicador-avance">▼</div>
+
+            </div>
+
+            <!-- DOCUMENTO -->
+            <div id="documento" class="documento oculto">
+
+                <div id="texto-documento"
+                     class="texto-documento"></div>
+
+                <button id="btn-cerrar-documento"
+                        class="boton-secundario">
+                    Cerrar
                 </button>
+
             </div>
-        </section>
 
-        <!-- CONFIGURACIÓN -->
-        <section id="pantalla-config" class="pantalla">
-            <div class="config-contenedor">
-                <header class="encabezado">
-                    <button id="btn-cerrar-config" class="boton-secundario">← Volver</button>
-                    <div>
-                        <span class="etiqueta">SISTEMA</span>
-                        <h2>Configuración</h2>
-                    </div>
-                </header>
+            <!-- CONTROLES DE HISTORIA -->
+            <div class="controles-historia">
 
-                <label class="opcion-config">
-                    <input type="checkbox" id="config-musica" checked>
-                    Música
-                </label>
+                <button id="btn-menu-historia"
+                        class="boton-control">☰</button>
 
-                <label class="opcion-config">
-                    <input type="checkbox" id="config-sonido" checked>
-                    Efectos de sonido
-                </label>
+                <div class="controles-audio">
+
+                    <button id="btn-musica"
+                            class="boton-control">♫</button>
+
+                    <button id="btn-sonido"
+                            class="boton-control">🔊</button>
+
+                </div>
+
             </div>
-        </section>
 
-    </main>
+        </div>
 
-    <!--
-        audio.js se carga antes que motor.js porque motor.js utiliza
-        el objeto AudioEngine que se define allí.
-    -->
-    <script src="motor/audio.js"></script>
-    <script src="motor/motor.js"></script>
+    </section>
+
+
+    <!-- PANTALLA DE MINIJUEGO -->
+    <section id="pantalla-puzzle" class="pantalla">
+
+        <div class="puzzle-contenedor">
+
+            <header class="encabezado">
+
+                <div>
+                    <span class="etiqueta">MINIJUEGO</span>
+                    <h2 id="puzzle-titulo">Puzzle</h2>
+                </div>
+
+            </header>
+
+            <div id="puzzle-contenido"
+                 class="puzzle-contenido">
+                <!-- Aquí se monta el módulo del puzzle -->
+            </div>
+
+            <button id="btn-salir-puzzle"
+                    class="boton-secundario">
+                Salir del minijuego
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- CONFIGURACIÓN -->
+    <section id="pantalla-config" class="pantalla">
+
+        <div class="config-contenedor">
+
+            <header class="encabezado">
+
+                <button id="btn-cerrar-config"
+                        class="boton-secundario">
+                    ← Volver
+                </button>
+
+                <div>
+                    <span class="etiqueta">SISTEMA</span>
+                    <h2>Configuración</h2>
+                </div>
+
+            </header>
+
+            <label class="opcion-config">
+
+                <input type="checkbox"
+                       id="config-musica"
+                       checked>
+
+                Música
+
+            </label>
+
+            <label class="opcion-config">
+
+                <input type="checkbox"
+                       id="config-sonido"
+                       checked>
+
+                Efectos de sonido
+
+            </label>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- ================================= -->
+<!-- ARCHIVOS JAVASCRIPT               -->
+<!-- ================================= -->
+
+<script src="motor/audio.js"></script>
+<script src="motor/motor.js"></script>
+
 </body>
 </html>
