@@ -72,6 +72,13 @@ const Engine = {
 // ============================================================
 
 const UI = {
+        // Portal principal.
+    portal: document.getElementById("portal"),
+    listaHistorias: document.getElementById("lista-historias"),
+    listaMinijuegos: document.getElementById("lista-minijuegos"),
+    listaNoticias: document.getElementById("lista-noticias"),
+    listaHerramientas: document.getElementById("lista-herramientas"),
+    contenidoNosotros: document.getElementById("contenido-nosotros"),
     inicio: document.getElementById("pantalla-inicio"),
     archivo: document.getElementById("pantalla-archivo"),
     capitulo: document.getElementById("pantalla-capitulo"),
@@ -102,13 +109,13 @@ const UI = {
 // 3. CAMBIO DE PANTALLA
 // ============================================================
 
-function mostrarPantalla(pantalla) {
+/*function mostrarPantalla(pantalla) {
 
     /*
         Todas las pantallas tienen la clase "pantalla".
         Quitamos "activa" de todas y se la damos únicamente
         a la pantalla que queremos mostrar.
-    */
+    
 
     document.querySelectorAll(".pantalla").forEach(elemento => {
         elemento.classList.remove("activa");
@@ -116,7 +123,88 @@ function mostrarPantalla(pantalla) {
 
     pantalla.classList.add("activa");
 }
+*/
+// ============================================================
+// 3. CAMBIO DE PANTALLA Y NAVEGACIÓN
+// ============================================================
 
+// Mostrar una experiencia a pantalla completa.
+function mostrarPantalla(pantalla) {
+
+    // Ocultamos el portal.
+    UI.portal.style.display = "none";
+
+    // Ocultamos todas las pantallas anteriores.
+    document.querySelectorAll(".pantalla").forEach(elemento => {
+        elemento.classList.remove("activa");
+    });
+
+    // Activamos únicamente la pantalla solicitada.
+    pantalla.classList.add("activa");
+}
+
+
+// Regresar al portal principal.
+function mostrarPortal() {
+
+    document.querySelectorAll(".pantalla").forEach(elemento => {
+        elemento.classList.remove("activa");
+    });
+
+    UI.portal.style.display = "flex";
+}
+
+
+// Mostrar una sección del portal.
+function mostrarSeccionPortal(nombre) {
+
+    mostrarPortal();
+
+    // Ocultamos todas las secciones.
+    document.querySelectorAll(".seccion-portal").forEach(seccion => {
+        seccion.classList.add("oculto");
+    });
+
+    // Mostramos la sección seleccionada.
+    const seccion = document.getElementById(
+        `seccion-${nombre}`
+    );
+
+    if (!seccion) {
+        console.warn("[SE] Sección no encontrada:", nombre);
+        return;
+    }
+
+    seccion.classList.remove("oculto");
+
+    // Acciones específicas de cada sección.
+    switch (nombre) {
+
+        case "historias":
+            mostrarHistoriasPortal();
+            break;
+
+        case "minijuegos":
+            UI.listaMinijuegos.textContent =
+                "Próximamente encontrarás aquí los minijuegos independientes.";
+            break;
+
+        case "noticias":
+            UI.listaNoticias.textContent =
+                "Aquí aparecerán las noticias del Sindicato Enigma.";
+            break;
+
+        case "herramientas":
+            UI.listaHerramientas.textContent =
+                "Esta sección estará disponible próximamente.";
+            break;
+
+        case "nosotros":
+            UI.contenidoNosotros.textContent =
+                "Conoce el proyecto, sus colaboradores y sus creadores.";
+            break;
+    }
+}
 
 // ============================================================
 // 4. CARGA INICIAL
@@ -125,6 +213,20 @@ function mostrarPantalla(pantalla) {
 document.addEventListener("DOMContentLoaded", () => {
 
     console.log("[SE] Motor iniciado.");
+        // Conectar las opciones del menú principal.
+    document.querySelectorAll(".opcion-menu").forEach(boton => {
+
+        boton.addEventListener("click", () => {
+
+            AudioEngine.click();
+
+            const seccion = boton.dataset.seccion;
+
+            mostrarSeccionPortal(seccion);
+
+        });
+
+    });
 
     // Botones principales.
     document.getElementById("btn-iniciar").addEventListener("click", () => {
@@ -229,6 +331,8 @@ async function cargarCasoDemo() {
             y usamos un objeto mínimo para que el programa no se rompa.
         */
         Engine.caso = {
+                // Al terminar la carga, entramos al portal en Noticias.
+    mostrarSeccionPortal("noticias");
             id: "demo",
             titulo: "Caso de demostración",
             descripcion: "No se pudo cargar la configuración.",
@@ -242,7 +346,7 @@ async function cargarCasoDemo() {
 // 6. ARCHIVO DE CASOS
 // ============================================================
 
-function mostrarArchivo() {
+/*function mostrarArchivo() {
 
     mostrarPantalla(UI.archivo);
 
@@ -258,7 +362,7 @@ function mostrarArchivo() {
         archivo indice.json con todos los casos publicados.
     */
 
-    const expediente = document.createElement("button");
+    /*const expediente = document.createElement("button");
     expediente.className = "expediente";
 
     expediente.innerHTML = `
@@ -277,13 +381,66 @@ function mostrarArchivo() {
 
     UI.listaCasos.appendChild(expediente);
 }
+*/
+// ============================================================
+// 6. CATÁLOGO DE HISTORIAS EN EL PORTAL
+// ============================================================
 
+function mostrarArchivo() {
+
+    // El antiguo archivo ahora será el catálogo de historias.
+    mostrarSeccionPortal("historias");
+}
+
+
+function mostrarHistoriasPortal() {
+
+    UI.listaHistorias.innerHTML = "";
+
+    if (!Engine.caso) {
+
+        UI.listaHistorias.textContent = "Cargando historias...";
+
+        return;
+    }
+
+    // Crear la tarjeta de la historia.
+    const expediente = document.createElement("button");
+
+    expediente.className = "expediente";
+
+    const titulo = document.createElement("h3");
+    titulo.textContent = Engine.caso.titulo;
+
+    const descripcion = document.createElement("p");
+    descripcion.textContent = Engine.caso.descripcion;
+
+    expediente.appendChild(titulo);
+    expediente.appendChild(descripcion);
+
+    expediente.addEventListener("click", () => {
+
+        AudioEngine.click();
+
+        if (Engine.caso.capitulos.length > 0) {
+
+            mostrarCapitulo(
+                Engine.caso,
+                Engine.caso.capitulos[0]
+            );
+
+        }
+
+    });
+
+    UI.listaHistorias.appendChild(expediente);
+}
 
 // ============================================================
 // 7. MENÚ DE CAPÍTULO
 // ============================================================
 
-function mostrarCapitulo(caso, capitulo) {
+/*function mostrarCapitulo(caso, capitulo) {
 
     Engine.caso = caso;
     Engine.capitulo = capitulo;
@@ -319,7 +476,107 @@ function mostrarCapitulo(caso, capitulo) {
         UI.listaPartes.appendChild(boton);
     });
 }
+*/
+// ============================================================
+// 7. CAPÍTULOS DENTRO DEL PORTAL
+// ============================================================
 
+function mostrarCapitulo(caso, capitulo) {
+
+    Engine.caso = caso;
+    Engine.capitulo = capitulo;
+
+    // Regresamos al portal.
+    mostrarPortal();
+
+    // Dejamos visible únicamente la sección Historias.
+    document.querySelectorAll(".seccion-portal").forEach(seccion => {
+        seccion.classList.add("oculto");
+    });
+
+    document.getElementById("seccion-historias")
+        .classList.remove("oculto");
+
+    // Limpiamos el contenido anterior.
+    UI.listaHistorias.innerHTML = "";
+
+    // Botón para regresar al catálogo.
+    const volver = document.createElement("button");
+
+    volver.className = "boton-secundario";
+    volver.textContent = "← Volver a historias";
+
+    volver.addEventListener("click", () => {
+
+        AudioEngine.click();
+
+        mostrarHistoriasPortal();
+
+    });
+
+    UI.listaHistorias.appendChild(volver);
+
+    // Título del capítulo.
+    const titulo = document.createElement("h3");
+
+    titulo.textContent = capitulo.titulo;
+
+    titulo.style.marginTop = "25px";
+
+    UI.listaHistorias.appendChild(titulo);
+
+    // Descripción del capítulo.
+    const descripcion = document.createElement("p");
+
+    descripcion.textContent = capitulo.descripcion || "";
+
+    UI.listaHistorias.appendChild(descripcion);
+
+    // Lista de partes.
+    capitulo.partes.forEach((parte, indice) => {
+
+        const boton = document.createElement("button");
+
+        boton.className = "item-parte";
+
+        const numero = document.createElement("span");
+
+        numero.className = "numero-parte";
+
+        numero.textContent =
+            String(indice + 1).padStart(2, "0");
+
+        const informacion = document.createElement("span");
+
+        const nombre = document.createElement("strong");
+
+        nombre.textContent = parte.titulo;
+
+        const tipo = document.createElement("span");
+
+        tipo.className = "tipo-parte";
+        tipo.textContent = parte.tipo;
+
+        informacion.appendChild(nombre);
+        informacion.appendChild(document.createElement("br"));
+        informacion.appendChild(tipo);
+
+        boton.appendChild(numero);
+        boton.appendChild(informacion);
+
+        boton.addEventListener("click", () => {
+
+            AudioEngine.click();
+
+            cargarParte(parte);
+
+        });
+
+        UI.listaHistorias.appendChild(boton);
+
+    });
+
+}
 
 // ============================================================
 // 8. CARGAR UNA PARTE .TXT
