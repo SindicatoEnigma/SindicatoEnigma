@@ -302,43 +302,48 @@ document.addEventListener("DOMContentLoaded", () => {
 // ============================================================
 // 5. CASO DE DEMOSTRACIÓN
 // ============================================================
+// ============================================================
+// 5. CASO DE DEMOSTRACIÓN
+// ============================================================
 
 async function cargarCasoDemo() {
 
-    /*
-        En producción podemos tener un archivo índice con muchos casos.
-        Para que este prototipo sea fácil de estudiar, dejamos un caso
-        directamente definido aquí.
-    */
-
     try {
-        const respuesta = await fetch("historias/halloween/configuracion.json");
+
+        const respuesta = await fetch(
+            "historias/halloween/configuracion.json"
+        );
 
         if (!respuesta.ok) {
             throw new Error("No se encontró configuracion.json");
         }
 
         Engine.caso = await respuesta.json();
-        //Engine.extensionImagen = Engine.caso.extensionImagen || ".png";
 
-        console.log("[SE] Caso cargado:", Engine.caso.titulo);
+        console.log(
+            "[SE] Caso cargado:",
+            Engine.caso.titulo
+        );
 
     } catch (error) {
-        console.error("[SE] Error cargando caso:", error);
 
-        /*
-            Si el archivo no carga, mostramos información en consola
-            y usamos un objeto mínimo para que el programa no se rompa.
-        */
+        console.error(
+            "[SE] Error cargando caso:",
+            error
+        );
+
         Engine.caso = {
-                // Al terminar la carga, entramos al portal en Noticias.
-    mostrarSeccionPortal("noticias");
             id: "demo",
             titulo: "Caso de demostración",
             descripcion: "No se pudo cargar la configuración.",
+            personajes: [],
             capitulos: []
         };
+
     }
+
+    // Al terminar la carga, entramos al portal en Noticias.
+    mostrarSeccionPortal("noticias");
 }
 
 
@@ -346,42 +351,7 @@ async function cargarCasoDemo() {
 // 6. ARCHIVO DE CASOS
 // ============================================================
 
-/*function mostrarArchivo() {
 
-    mostrarPantalla(UI.archivo);
-
-    UI.listaCasos.innerHTML = "";
-
-    if (!Engine.caso) {
-        UI.listaCasos.textContent = "Cargando archivo...";
-        return;
-    }
-
-    /*
-        En una versión futura, esta lista se generará desde un
-        archivo indice.json con todos los casos publicados.
-    */
-
-    /*const expediente = document.createElement("button");
-    expediente.className = "expediente";
-
-    expediente.innerHTML = `
-        <h3>${escapeHTML(Engine.caso.titulo)}</h3>
-        <p>${escapeHTML(Engine.caso.descripcion)}</p>
-    `;
-
-    expediente.addEventListener("click", () => {
-        AudioEngine.click();
-
-        // Para este prototipo abrimos el primer capítulo.
-        if (Engine.caso.capitulos.length > 0) {
-            mostrarCapitulo(Engine.caso, Engine.caso.capitulos[0]);
-        }
-    });
-
-    UI.listaCasos.appendChild(expediente);
-}
-*/
 // ============================================================
 // 6. CATÁLOGO DE HISTORIAS EN EL PORTAL
 // ============================================================
