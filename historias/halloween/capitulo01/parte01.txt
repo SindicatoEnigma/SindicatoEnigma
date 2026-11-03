@@ -93,5 +93,11 @@ MARGARET: por favor, estoy muy preocupada por mis niñas
 
 [MUSICA DETENER]
 
+[MUSICA DETENER]
+
+[SECUENCIA]
+TIPO: GUION
+SIGUIENTE: capitulo01/parte02.txt
+[FIN SECUENCIA]
 
 [FIN PARTE]
