@@ -39,6 +39,8 @@ const Engine = {
 
     // Lista de instrucciones de la parte.
     instrucciones: [],
+    // Información de la secuencia que se ejecutará al terminar la parte.
+secuencia: null,
 
     // Índice de la instrucción actual.
     indice: 0,
@@ -537,17 +539,14 @@ function mostrarCapitulo(caso, capitulo) {
 // ============================================================
 // 8. CARGAR UNA PARTE .TXT
 // ============================================================
-
-async function cargarParte(parte) {
+async function cargarParte(parte, rutaPersonalizada = null) {
 
     /*
-        La ruta se construye a partir de:
-        historias/halloween/capitulo01/parte01.txt
-
-        Esto permite que cada parte sea un archivo independiente.
+        Si recibimos una ruta personalizada, la utilizamos.
+        De lo contrario, construimos la ruta habitual.
     */
 
-    const ruta =
+    const ruta = rutaPersonalizada ||
         `historias/${Engine.caso.id}/${Engine.capitulo.id}/${parte.archivo}`;
 
     console.log("[SE] Cargando:", ruta);
@@ -565,10 +564,16 @@ async function cargarParte(parte) {
         Engine.parte = parte;
 
         /*
-            parsearGuion convierte el texto plano en una lista
-            de instrucciones que el motor puede ejecutar.
+            El parser ahora devuelve dos elementos:
+            - instrucciones: diálogos, personajes, fondos, etc.
+            - secuencia: información para continuar la historia.
         */
-        Engine.instrucciones = parsearGuion(texto);
+
+        const resultado = parsearGuion(texto);
+
+        Engine.instrucciones = resultado.instrucciones;
+        Engine.secuencia = resultado.secuencia;
+
         Engine.indice = 0;
 
         limpiarEscena();
@@ -593,38 +598,25 @@ async function cargarParte(parte) {
 // 9. PARSER DEL GUIÓN
 // ============================================================
 
+
+    // ============================================================
+// 9. PARSER DEL GUIÓN
+// ============================================================
+
 function parsearGuion(texto) {
 
-    /*
-        El parser es una de las piezas más importantes del sistema.
+    const lineas =
+        texto.replace(/\r\n/g, "\n").split("\n");
 
-        Ejemplo de entrada:
+    const instrucciones = [];
 
-        [FONDO casa]
-
-        [EL normal]
-        EL: Buenas noches.
-
-        El resultado será algo parecido a:
-
-        [
-            { tipo: "comando", comando: "FONDO", parametros: ["casa"] },
-            { tipo: "comando", comando: "EL", parametros: ["normal"] },
-            { tipo: "dialogo", personaje: "EL", texto: "Buenas noches." }
-        ]
-
-        De esta manera el motor no necesita interpretar todo el texto
-        cada vez que avanza.
-    */
-
-    const lineas = texto.replace(/\r\n/g, "\n").split("\n");
-    const resultado = [];
+    let secuencia = null;
 
     let i = 0;
 
     while (i < lineas.length) {
 
-        let linea = lineas[i].trim();
+        const linea = lineas[i].trim();
 
         // Ignorar líneas vacías.
         if (!linea) {
@@ -638,15 +630,94 @@ function parsearGuion(texto) {
             continue;
         }
 
-        // Comando entre corchetes.
-        if (linea.startsWith("[") && linea.endsWith("]")) {
+        // ====================================================
+        // BLOQUE SECUENCIA
+        // ====================================================
 
-            const contenido = linea.slice(1, -1).trim();
+        if (linea === "[SECUENCIA]") {
 
-            // Comando de bloque DOCUMENTO.
-            if (contenido.startsWith("DOCUMENTO ")) {
+            secuencia = {};
 
-                const nombre = contenido.substring("DOCUMENTO ".length).trim();
+            i++;
+
+            while (
+                i < lineas.length &&
+                lineas[i].trim() !== "[FIN SECUENCIA]"
+            ) {
+
+                const contenido = lineas[i].trim();
+
+                if (
+                    contenido &&
+                    !contenido.startsWith("#")
+                ) {
+
+                    const separador =
+                        contenido.indexOf(":");
+
+                    if (separador > 0) {
+
+                        const clave =
+                            contenido
+                                .substring(0, separador)
+                                .trim()
+                                .toUpperCase();
+
+                        const valor =
+                            contenido
+                                .substring(separador + 1)
+                                .trim();
+
+                        secuencia[clave] = valor;
+                    }
+                }
+
+                i++;
+            }
+
+            // Saltar [FIN SECUENCIA].
+            if (
+                i < lineas.length &&
+                lineas[i].trim() === "[FIN SECUENCIA]"
+            ) {
+
+                i++;
+
+            } else {
+
+                console.warn(
+                    "[SE] Falta [FIN SECUENCIA]."
+                );
+            }
+
+            continue;
+        }
+
+        // ====================================================
+        // COMANDOS ENTRE CORCHETES
+        // ====================================================
+
+        if (
+            linea.startsWith("[") &&
+            linea.endsWith("]")
+        ) {
+
+            const contenido =
+                linea.slice(1, -1).trim();
+
+            // =================================================
+            // BLOQUE DOCUMENTO
+            // =================================================
+
+            if (
+                contenido.startsWith("DOCUMENTO ")
+            ) {
+
+                const nombre =
+                    contenido
+                        .substring("DOCUMENTO ".length)
+                        .trim();
+
                 const bloque = [];
 
                 i++;
@@ -655,65 +726,82 @@ function parsearGuion(texto) {
                     i < lineas.length &&
                     lineas[i].trim() !== "[FIN DOCUMENTO]"
                 ) {
+
                     bloque.push(lineas[i]);
+
                     i++;
                 }
 
-                resultado.push({
+                instrucciones.push({
                     tipo: "documento",
                     nombre: nombre,
                     texto: bloque.join("\n").trim()
                 });
 
-                i++;
+                // Saltar [FIN DOCUMENTO].
+                if (
+                    i < lineas.length &&
+                    lineas[i].trim() === "[FIN DOCUMENTO]"
+                ) {
+                    i++;
+                }
+
                 continue;
             }
 
-            const partes = contenido.split(/\s+/);
+            // =================================================
+            // COMANDO NORMAL
+            // =================================================
 
-            resultado.push({
+            const partes =
+                contenido.split(/\s+/);
+
+            instrucciones.push({
                 tipo: "comando",
                 comando: partes[0].toUpperCase(),
                 parametros: partes.slice(1)
             });
 
             i++;
+
             continue;
         }
 
-        // Línea de diálogo: PERSONAJE: texto
-        const separador = linea.indexOf(":");
+        // ====================================================
+        // DIÁLOGO
+        // ====================================================
+
+        const separador =
+            linea.indexOf(":");
 
         if (separador > 0) {
 
-            const personaje = linea
-                .substring(0, separador)
-                .trim();
+            const personaje =
+                linea
+                    .substring(0, separador)
+                    .trim();
 
-            const textoDialogo = linea
-                .substring(separador + 1)
-                .trim();
+            const textoDialogo =
+                linea
+                    .substring(separador + 1)
+                    .trim();
 
-            resultado.push({
+            instrucciones.push({
                 tipo: "dialogo",
                 personaje: personaje,
                 texto: textoDialogo
             });
 
             i++;
+
             continue;
         }
 
-        /*
-            Cualquier línea que no sea comando ni diálogo se considera
-            narración. Esto permite escribir:
+        // ====================================================
+        // NARRACIÓN
+        // ====================================================
 
-            [NARRADOR]
-            La puerta se abrió.
-
-            sin necesitar una sintaxis especial de cierre.
-        */
-        resultado.push({
+        instrucciones.push({
             tipo: "narracion",
             texto: linea
         });
@@ -721,7 +809,44 @@ function parsearGuion(texto) {
         i++;
     }
 
-    return resultado;
+    // ========================================================
+    // COMPATIBILIDAD CON FIN PARTE
+    // ========================================================
+
+    /*
+        Si existe una SECUENCIA, esta será la encargada
+        de decidir qué ocurre al terminar la parte.
+
+        Por eso eliminamos un posible [FIN PARTE]
+        que haya quedado en las instrucciones.
+    */
+
+    if (secuencia) {
+
+        for (
+            let j = instrucciones.length - 1;
+            j >= 0;
+            j--
+        ) {
+
+            const instruccion =
+                instrucciones[j];
+
+            if (
+                instruccion.tipo === "comando" &&
+                instruccion.comando === "FIN" &&
+                instruccion.parametros[0] === "PARTE"
+            ) {
+
+                instrucciones.splice(j, 1);
+            }
+        }
+    }
+
+    return {
+        instrucciones: instrucciones,
+        secuencia: secuencia
+    };
 }
 
 
@@ -1720,10 +1845,106 @@ function finalizarParte() {
 
     console.log("[SE] Fin de parte.");
 
+    // Recuperamos la secuencia guardada al cargar el guion.
+    const secuencia = Engine.secuencia;
+
+    // Limpiamos la secuencia para evitar reutilizarla accidentalmente.
+    Engine.secuencia = null;
+
     /*
-        Si hay una siguiente parte, podríamos cargarla automáticamente.
-        En esta versión dejamos que el jugador regrese al menú para
-        mantener clara la selección manual de capítulos/partes.
+        SECUENCIA: GUION
+        Carga automáticamente otra parte de la historia.
+    */
+
+    if (secuencia && secuencia.TIPO === "GUION") {
+
+        const ruta = secuencia.SIGUIENTE;
+
+        if (!ruta) {
+
+            console.error("[SE] La secuencia GUION no tiene SIGUIENTE.");
+
+            alert("Error: falta indicar el siguiente guion.");
+
+            mostrarCapitulo(Engine.caso, Engine.capitulo);
+
+            return;
+        }
+
+        /*
+            La ruta debe tener esta estructura:
+            capitulo01/parte02.txt
+
+            Comprobamos que el capítulo y la parte existan
+            en configuracion.json antes de cargar el archivo.
+        */
+
+        const segmentos = ruta.split("/");
+
+        if (
+            segmentos.length !== 2 ||
+            segmentos.some(segmento =>
+                !segmento ||
+                segmento === "." ||
+                segmento === ".."
+            )
+        ) {
+
+            console.error("[SE] Ruta de secuencia no válida:", ruta);
+
+            alert("Error: la ruta del siguiente guion no es válida.");
+
+            mostrarCapitulo(Engine.caso, Engine.capitulo);
+
+            return;
+        }
+
+        const idCapitulo = segmentos[0];
+        const nombreArchivo = segmentos[1];
+
+        const siguienteCapitulo = Engine.caso.capitulos.find(
+            capitulo => capitulo.id === idCapitulo
+        );
+
+        if (!siguienteCapitulo) {
+
+            console.error("[SE] No existe el capítulo:", idCapitulo);
+
+            alert("Error: no se encontró el capítulo indicado.");
+
+            mostrarCapitulo(Engine.caso, Engine.capitulo);
+
+            return;
+        }
+
+        const siguienteParte = siguienteCapitulo.partes.find(
+            parte => parte.archivo === nombreArchivo
+        );
+
+        if (!siguienteParte) {
+
+            console.error("[SE] No existe la parte:", nombreArchivo);
+
+            alert("Error: no se encontró la parte indicada.");
+
+            mostrarCapitulo(Engine.caso, Engine.capitulo);
+
+            return;
+        }
+
+        // Actualizamos el capítulo actual.
+        Engine.capitulo = siguienteCapitulo;
+
+        console.log("[SE] Continuando automáticamente:", ruta);
+
+        cargarParte(siguienteParte, `historias/${Engine.caso.id}/${ruta}`);
+
+        return;
+    }
+
+    /*
+        Si no hay secuencia, conservamos el comportamiento anterior.
+        Esto mantiene la compatibilidad con guiones antiguos.
     */
 
     const continuar = confirm(
