@@ -109,21 +109,7 @@ const UI = {
 // 3. CAMBIO DE PANTALLA
 // ============================================================
 
-/*function mostrarPantalla(pantalla) {
 
-    /*
-        Todas las pantallas tienen la clase "pantalla".
-        Quitamos "activa" de todas y se la damos únicamente
-        a la pantalla que queremos mostrar.
-    
-
-    document.querySelectorAll(".pantalla").forEach(elemento => {
-        elemento.classList.remove("activa");
-    });
-
-    pantalla.classList.add("activa");
-}
-*/
 // ============================================================
 // 3. CAMBIO DE PANTALLA Y NAVEGACIÓN
 // ============================================================
@@ -1004,73 +990,7 @@ async function cambiarFondo(nombre) {
     console.log("[SE] Personaje:", nombre, expresion, lado);
 }
 */
-/*async function mostrarPersonaje(
-    nombre,
-    expresion,
-    lado = "izquierda"
-) {
 
-    const id = normalizarId(nombre);
-
-    let elemento =
-        document.getElementById(`personaje-${id}`);
-
-    if (!elemento) {
-
-        elemento = document.createElement("img");
-
-        elemento.id = `personaje-${id}`;
-        elemento.className =
-            "personaje entrando";
-
-        UI.capaPersonajes.appendChild(elemento);
-
-        requestAnimationFrame(() => {
-            elemento.classList.remove("entrando");
-        });
-    }
-
-    elemento.classList.remove(
-        "izquierda",
-        "derecha"
-    );
-
-    elemento.classList.add(lado);
-
-    const rutaBase =
-        `recursos/${Engine.caso.id}/personajes/` +
-        `${nombre}/${nombre}_${expresion}`;
-
-    const ruta =
-        await buscarImagen(rutaBase);
-
-    if (!ruta) {
-
-        console.warn(
-            `[SE] No se encontró la expresión: ` +
-            `${nombre}_${expresion}`
-        );
-
-        return;
-    }
-
-    elemento.src = ruta;
-
-    Engine.personajes[id] = {
-        nombre: nombre,
-        expresion: expresion,
-        lado: lado
-    };
-
-    console.log(
-        "[SE] Personaje cargado:",
-        nombre,
-        expresion,
-        lado,
-        ruta
-    );
-}
-*/
 async function mostrarPersonaje(
     nombre,
     expresion,
@@ -1321,35 +1241,7 @@ ejecutarComando = function(instruccion) {
     //const personajesConocidos = ["EL", "MARGARET"];
     const personajesConocidos =
     Engine.caso.personajes || [];
-    /*if (personajesConocidos.includes(comando)) {
-
-        const expresion = p[0] || "normal";
-        const lado = p[1] || "izquierda";
-
-        mostrarPersonaje(comando, expresion, lado);
-
-        ejecutarSiguiente();
-        return;
-    }
-    */
-    /*if (personajesConocidos.includes(comando)) {
-
-    const expresion = p[0] || "normal";
-    const lado = p[1] || "izquierda";
-
-    mostrarPersonaje(
-        comando,
-        expresion,
-        lado
-    ).then(() => {
-
-        ejecutarSiguiente();
-
-    });
-
-    return;
-    }
-    */
+    
     if (personajesConocidos.includes(comando)) {
 
     const expresion = p[0] || "normal";
@@ -1586,40 +1478,7 @@ function mostrarNarracion(texto) {
 // 18. EFECTO DE ESCRITURA
 // ============================================================
 
-/*function escribirTexto(elemento, texto) {
 
-    
-        Si había un texto escribiéndose, lo detenemos.
-    
-    if (Engine.temporizadorTexto) {
-        clearInterval(Engine.temporizadorTexto);
-    }
-
-    Engine.textoActual = texto;
-    Engine.indiceTexto = 0;
-    Engine.escribiendo = true;
-
-    elemento.textContent = "";
-
-    Engine.temporizadorTexto = setInterval(() => {
-
-        Engine.indiceTexto++;
-
-        elemento.textContent =
-            Engine.textoActual.substring(0, Engine.indiceTexto);
-
-        if (Engine.indiceTexto >= Engine.textoActual.length) {
-
-            clearInterval(Engine.temporizadorTexto);
-
-            Engine.temporizadorTexto = null;
-            Engine.escribiendo = false;
-
-            UI.indicadorAvance.textContent = "▼";
-        }
-
-    }, 20);
-}*/
 function escribirTexto(elemento, texto) {
 
     // Si había un texto escribiéndose, lo detenemos.
@@ -1676,49 +1535,7 @@ elemento.scrollTop = elemento.scrollHeight;
 // 19. AVANZAR
 // ============================================================
 
-/*function avanzar() {
 
-    /*
-        Si el texto todavía se está escribiendo, el primer toque
-        lo completa inmediatamente.
-
-        Esto evita obligar al jugador a esperar.
-    
-    if (Engine.escribiendo) {
-
-        clearInterval(Engine.temporizadorTexto);
-
-        UI.textoDialogo.textContent = Engine.textoActual;
-
-        Engine.temporizadorTexto = null;
-        Engine.escribiendo = false;
-
-        return;
-    }
-
-    AudioEngine.click();
-
-    UI.dialogo.classList.add("oculto");
-
-    ejecutarSiguiente();
-}
-
-if (Engine.escribiendo) {
-
-    clearInterval(Engine.temporizadorTexto);
-
-    UI.textoDialogo.textContent = Engine.textoActual;
-
-    // Desplazamos hasta el final del texto.
-    UI.textoDialogo.scrollTop =
-        UI.textoDialogo.scrollHeight;
-
-    Engine.temporizadorTexto = null;
-    Engine.escribiendo = false;
-
-    return;
-}
-*/
 
 // ============================================================
 // 19. AVANZAR
@@ -1987,66 +1804,7 @@ function escapeHTML(texto) {
 // 26. NORMALIZACIÓN DE IDS
 // ============================================================
 
-/*function normalizarId(texto) {
-    function buscarImagen(rutaBase) {
 
-    return new Promise((resolver) => {
-
-        let indice = 0;
-
-        function probarSiguiente() {
-
-            if (indice >= Engine.extensionesImagen.length) {
-                console.warn(
-                    "[SE] No se encontró la imagen:",
-                    rutaBase
-                );
-
-                resolver(null);
-                return;
-            }
-
-            const extension =
-                Engine.extensionesImagen[indice];
-
-            const ruta =
-                rutaBase + extension;
-
-            const imagen = new Image();
-
-            imagen.onload = () => {
-                console.log("[SE] Imagen encontrada:", ruta);
-                resolver(ruta);
-            };
-
-            imagen.onerror = () => {
-                indice++;
-                probarSiguiente();
-            };
-
-            imagen.src = ruta;
-        }
-
-        probarSiguiente();
-    });
-    }
-
-    /*
-        Convierte nombres como:
-        "EL" -> "el"
-        "Señora Margaret" -> "señora-margaret"
-
-        Así podemos utilizarlos de forma segura como IDs HTML.
-    
-
-    return texto
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "");
-}
-*/
 // ============================================================
 // 26. NORMALIZACIÓN DE IDS
 // ============================================================
