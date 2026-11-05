@@ -63,6 +63,15 @@ secuencia: null,
     // Guarda la escena anterior cuando abrimos un puzzle.
     escenaAntesPuzzle: null,
 
+    // Referencia al minijuego que está abierto.
+juegoFrame: null,
+
+// Secuencia que debe continuar cuando termine el minijuego.
+secuenciaJuego: null,
+
+    // Resultado recibido del minijuego.
+resultadoJuego: null,
+
     // Configuración visual de rutas.
     //extensionImagen: ".svg"
     extensionesImagen: [".png", ".jpg", ".jpeg", ".webp", ".svg"]
@@ -215,6 +224,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
     });
+
+    // Recibir resultados enviados por los minijuegos.
+window.addEventListener(
+    "message",
+    recibirResultadoMinijuego
+);
 
     // Botones principales.
     document.getElementById("btn-iniciar").addEventListener("click", () => {
@@ -1041,80 +1056,7 @@ async function cambiarFondo(nombre) {
 // 13. PERSONAJES
 // ============================================================
 
-/*function mostrarPersonaje(nombre, expresion, lado = "izquierda") {
 
-    const id = normalizarId(nombre);
-
-    /*
-        Si el personaje ya existe, cambiamos solamente su imagen.
-        Así evitamos que la expresión provoque un salto de posición.
-    
-    let elemento = document.getElementById(`personaje-${id}`);
-
-    if (!elemento) {
-
-        elemento = document.createElement("img");
-
-        elemento.id = `personaje-${id}`;
-        elemento.className = "personaje entrando";
-
-        UI.capaPersonajes.appendChild(elemento);
-
-        // La clase se quita después de la animación de entrada.
-        requestAnimationFrame(() => {
-            elemento.classList.remove("entrando");
-        });
-    }
-
-    const ladoAnterior = elemento.classList.contains("derecha")
-        ? "derecha"
-        : "izquierda";
-
-    elemento.classList.remove("izquierda", "derecha");
-    elemento.classList.add(lado);
-
-    const ruta =
-        `recursos/${Engine.caso.id}/personajes/${nombre}/${nombre}_${expresion}${Engine.extensionImagen}`;
-
-    /*
-        Regla de robustez:
-        si una expresión no existe, conservamos la imagen anterior.
-    
-    const imagenAnterior = elemento.src;
-
-    elemento.onerror = () => {
-
-        console.warn(
-            `[SE] No existe la expresión: ${ruta}. ` +
-            `Se conserva la última imagen válida.`
-        );
-
-        if (imagenAnterior) {
-            elemento.src = imagenAnterior;
-        } else {
-            /*
-                Primera aparición sin imagen:
-                no mostramos una imagen rota.
-            
-            elemento.remove();
-        }
-    };
-
-    elemento.onload = () => {
-        elemento.onerror = null;
-    };
-
-    elemento.src = ruta;
-
-    Engine.personajes[id] = {
-        nombre: nombre,
-        expresion: expresion,
-        lado: lado
-    };
-
-    console.log("[SE] Personaje:", nombre, expresion, lado);
-}
-*/
 
 async function mostrarPersonaje(
     nombre,
@@ -1748,13 +1690,14 @@ function cerrarDocumento() {
 // 22. MINIJUEGOS
 // ============================================================
 
+
+// ============================================================
+// 22. MINIJUEGOS
+// ============================================================
+
+// Puzzle de demostración antiguo.
 function abrirPuzzle(idPuzzle) {
 
-    /*
-        Guardamos una referencia del estado actual.
-        En una versión avanzada se puede guardar un snapshot
-        completo de la escena.
-    */
     Engine.escenaAntesPuzzle = {
         indice: Engine.indice,
         personajes: structuredClone(Engine.personajes),
@@ -1765,18 +1708,115 @@ function abrirPuzzle(idPuzzle) {
 
     UI.puzzleTitulo.textContent = idPuzzle;
 
-    /*
-        Por ahora tenemos un "adaptador" de demostración.
-        Más adelante cada juego será un módulo independiente:
-
-        minijuegos/crucigrama/crucigrama.js
-        minijuegos/sudoku/sudoku.js
-        etc.
-    */
     montarPuzzleDemo(idPuzzle);
 }
 
 
+// Abrir un minijuego independiente dentro de un iframe.
+function abrirMinijuego(secuencia) {
+
+    const archivo = secuencia.ARCHIVO;
+
+    if (!archivo) {
+        console.error("[SE] La secuencia JUEGO no tiene ARCHIVO.");
+        alert("Error: falta indicar el archivo del minijuego.");
+        Engine.secuenciaJuego = null;
+        mostrarCapitulo(Engine.caso, Engine.capitulo);
+        return;
+    }
+
+    const url = new URL(archivo, document.baseURI);
+
+    if (url.origin !== window.location.origin) {
+        console.error("[SE] El minijuego debe pertenecer al mismo sitio.");
+        alert("Error: la dirección del minijuego no es válida.");
+        Engine.secuenciaJuego = null;
+        mostrarCapitulo(Engine.caso, Engine.capitulo);
+        return;
+    }
+
+    if (secuencia.DATOS) {
+        url.searchParams.set("datos", secuencia.DATOS);
+    }
+
+    const iframe = document.createElement("iframe");
+
+    iframe.title = secuencia.TITULO || "Minijuego";
+    iframe.src = url.href;
+
+    Engine.juegoFrame = iframe;
+
+    UI.puzzleTitulo.textContent =
+        secuencia.TITULO || "Minijuego";
+
+    UI.puzzleContenido.replaceChildren(iframe);
+
+    mostrarPantalla(UI.puzzle);
+
+    console.log("[SE] Minijuego abierto:", url.href);
+}
+
+
+// Recibir el resultado enviado por el minijuego.
+function recibirResultadoMinijuego(evento) {
+
+    if (!Engine.juegoFrame) return;
+
+    if (evento.source !== Engine.juegoFrame.contentWindow) {
+        return;
+    }
+
+    if (evento.origin !== window.location.origin) {
+        return;
+    }
+
+    const mensaje = evento.data;
+
+    if (
+        !mensaje ||
+        mensaje.tipo !== "SE_MINIJUEGO_RESULTADO"
+    ) {
+        return;
+    }
+
+    const resultado = mensaje.resultado;
+
+    if (
+        !resultado ||
+        resultado.completado !== true
+    ) {
+        console.warn("[SE] Resultado de minijuego no válido.");
+        return;
+    }
+
+    console.log("[SE] Resultado recibido:", resultado);
+
+    Engine.resultadoJuego = resultado;
+
+    const secuencia = Engine.secuenciaJuego;
+
+    Engine.juegoFrame = null;
+    Engine.secuenciaJuego = null;
+
+    UI.puzzleContenido.replaceChildren();
+
+    if (secuencia && secuencia.SIGUIENTE) {
+
+        Engine.secuencia = {
+            TIPO: "GUION",
+            SIGUIENTE: secuencia.SIGUIENTE
+        };
+
+        finalizarParte();
+
+    } else {
+
+        mostrarCapitulo(Engine.caso, Engine.capitulo);
+    }
+}
+
+
+// Demo provisional del minijuego.
 function montarPuzzleDemo(idPuzzle) {
 
     UI.puzzleContenido.innerHTML = `
@@ -1805,37 +1845,22 @@ function montarPuzzleDemo(idPuzzle) {
 
             document.getElementById("resultado-puzzle").textContent =
                 "Resultado devuelto: COMPLETADO";
-
-            /*
-                En el sistema definitivo el puzzle devolverá un objeto,
-                por ejemplo:
-
-                {
-                    estado: "completado",
-                    palabra: "HECATE",
-                    codigo: "4721"
-                }
-
-                La historia podría utilizar ese resultado.
-            */
         });
 }
 
 
+// Salir del minijuego sin avanzar la historia.
+
 function salirPuzzle() {
 
-    /*
-        Al salir regresamos a la escena narrativa.
-        El motor continúa desde la siguiente instrucción.
-    */
+    Engine.juegoFrame = null;
+    Engine.secuenciaJuego = null;
+    Engine.resultadoJuego = null;
 
-    mostrarPantalla(UI.historia);
+    UI.puzzleContenido.replaceChildren();
 
-    Engine.escenaAntesPuzzle = null;
-
-    ejecutarSiguiente();
+    mostrarCapitulo(Engine.caso, Engine.capitulo);
 }
-
 
 // ============================================================
 // 23. FINALIZACIÓN
@@ -1855,6 +1880,22 @@ function finalizarParte() {
         SECUENCIA: GUION
         Carga automáticamente otra parte de la historia.
     */
+
+    /*
+    SECUENCIA: JUEGO
+    Abre un minijuego independiente.
+*/
+
+if (secuencia && secuencia.TIPO === "JUEGO") {
+
+    Engine.secuenciaJuego = secuencia;
+
+    console.log("[SE] Iniciando minijuego.");
+
+    abrirMinijuego(secuencia);
+
+    return;
+}
 
     if (secuencia && secuencia.TIPO === "GUION") {
 
