@@ -89,15 +89,17 @@ MARGARET: la puerta trasera estaba abierta y con el cristal roto, creo que algui
 [MARGARET preocupadaa]
 MARGARET: por favor, estoy muy preocupada por mis niñas 
 
-
-
-[MUSICA DETENER]
-
-[MUSICA DETENER]
+[EL normall derecha]
+EL: Margaret, antes de inspeccionar la casa, necesitamos organizar los datos de su declaración. Hay algunas cuestiones que quiero revisar.
 
 [SECUENCIA]
-TIPO: GUION
+TIPO: JUEGO
+TITULO: Las primeras pistas
+ARCHIVO: minijuegos/crucigrama/prueba.html
+DATOS: datos/crucigrama_001.txt
 SIGUIENTE: capitulo01/parte02.txt
 [FIN SECUENCIA]
 
-[FIN PARTE]
+
+
+[MUSICA DETENER]
