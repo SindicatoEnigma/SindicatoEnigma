@@ -1333,14 +1333,19 @@ function comprobarFinal(){
 /* ============================================================
    CONTINUAR
    ============================================================ */
-
 $("continuar").onclick = () => {
+    const resultado = {
+        completado: S.terminado,
+        codigo: S.datos.final.codigo || ""
+    };
 
-  alert(
-    "En la integración con el motor narrativo, " +
-    "CONTINUAR devolverá el resultado al motor."
-  );
-
+    window.parent.postMessage(
+        {
+            tipo: "SE_MINIJUEGO_RESULTADO",
+            resultado: resultado
+        },
+        window.location.origin
+    );
 };
 
 
