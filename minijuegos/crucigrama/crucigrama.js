@@ -77,7 +77,11 @@ async function iniciar(){
 
   try{
 
-    const r = await fetch("datos/crucigrama_001.txt");
+    const parametros = new URLSearchParams(window.location.search);
+
+const archivoDatos = parametros.get("datos") || "datos/crucigrama_001.txt";
+
+const r = await fetch(archivoDatos);
 
     if(!r.ok){
       throw Error("No se pudo cargar el TXT.");
