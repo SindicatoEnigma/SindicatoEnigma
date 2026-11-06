@@ -30,6 +30,9 @@ Una hipótesis no es un hecho.
 EL: Y recuerden esa última línea. Una investigación seria separa evidencia de interpretación.
 
 [SECUENCIA]
-TIPO: GUION
+TIPO: JUEGO
+TITULO: Las primeras pistas
+ARCHIVO: minijuegos/nonograma.html
+DATOS: datos/crucigrama002.txt
 SIGUIENTE: capitulo01/parte03.txt
 [FIN SECUENCIA]
