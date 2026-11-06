@@ -96,7 +96,7 @@ EL: Margaret, antes de inspeccionar la casa, necesitamos organizar los datos de 
 TIPO: JUEGO
 TITULO: Las primeras pistas
 ARCHIVO: minijuegos/crucigrama/prueba.html
-DATOS: datos/crucigrama002.txt
+DATOS: minijuegos/crucigrama/datos/crucigrama002.txt
 SIGUIENTE: capitulo01/parte02.txt
 [FIN SECUENCIA]
 
