@@ -8,7 +8,6 @@
 [EL normal]
 EL: Tenemos una primera pista, pero todavía necesitamos interpretarla.
 
-[PUZZLE crucigrama_001]
 
 [EL normal]
 EL: Excelente. El minijuego devolvió el control a la historia.
