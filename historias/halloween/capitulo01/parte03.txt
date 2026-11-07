@@ -15,6 +15,6 @@ EL: Excelente. El minijuego devolvió el control a la historia.
 [SECUENCIA]
 TIPO: JUEGO
 TITULO: Las primeras pistas
-ARCHIVO: minijuegos/sopa_letras.html
-DATOS: ../assets/sopa_letras/sopaprueba02.txt
+ARCHIVO: minijuegos/zudoku.html
+DATOS: ../assets/zudoku/zudokuprueba002.txt
 [FIN SECUENCIA]
