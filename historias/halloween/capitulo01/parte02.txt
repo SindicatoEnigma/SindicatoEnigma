@@ -33,6 +33,6 @@ EL: Y recuerden esa última línea. Una investigación seria separa evidencia de
 TIPO: JUEGO
 TITULO: Las primeras pistas
 ARCHIVO: minijuegos/nonograma.html
-DATOS: datos/crucigrama002.txt
+DATOS: ../assets/nonograma/nonoprueba02.txt
 SIGUIENTE: capitulo01/parte03.txt
 [FIN SECUENCIA]
