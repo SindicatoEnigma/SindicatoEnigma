@@ -1,5 +1,8 @@
 // MOTOR DE SOPA DE LETRAS v0.1 - Sindicato Enigma
-const DATA_URL="../assets/sopa_letras/sopa_prueba.txt";
+const parametros = new URLSearchParams(window.location.search);
+
+const DATA_URL = parametros.get("datos") ||
+    "../assets/sopa_letras/sopa_prueba.txt";
 const boardEl=document.getElementById("board"), wordListEl=document.getElementById("word-list");
 const timerEl=document.getElementById("timer"), errorsEl=document.getElementById("errors");
 const statusEl=document.getElementById("status"), finishEl=document.getElementById("finish");
@@ -80,7 +83,38 @@ function selectCell(cell){
   if(cell.memberships.length===0){cell.classList.add("wrong","locked");errors++;errorsEl.textContent=errors;return}
   cell.classList.add("correct","locked");
   for(const m of cell.memberships){const w=words[m.wordIndex];w.revealed.add(m.letterIndex);const slot=document.getElementById(`word-${m.wordIndex}-letter-${m.letterIndex}`);if(slot)slot.textContent=w.answer[m.letterIndex];checkWord(m.wordIndex)}
-  if(words.every(w=>w.complete)){finished=true;stopTimer();finalTimeEl.textContent=formatTime(elapsed);finalErrorsEl.textContent=errors;finishEl.classList.remove("hidden");statusEl.textContent="Expediente resuelto."}
+  if (words.every(w => w.complete)) {
+    finished = true;
+    stopTimer();
+
+    finalTimeEl.textContent = formatTime(elapsed);
+    finalErrorsEl.textContent = errors;
+    statusEl.textContent = "Expediente resuelto.";
+
+    // Si se ejecuta dentro del motor narrativo:
+    if (window.parent !== window) {
+
+        window.parent.postMessage(
+            {
+                tipo: "SE_MINIJUEGO_RESULTADO",
+                resultado: {
+                    completado: true,
+                    tiempo: formatTime(elapsed),
+                    errores: errors,
+                    nombre: gameData.name,
+                    palabrasEncontradas: words.length
+                }
+            },
+            window.location.origin
+        );
+
+    } else {
+
+        // Si se ejecuta independientemente:
+        finishEl.classList.remove("hidden");
+
+    }
+  }
 }
 function checkWord(wi){
   const w=words[wi];if(w.complete||w.revealed.size!==w.answer.length)return;w.complete=true;document.getElementById(`word-${wi}`).classList.add("complete");
