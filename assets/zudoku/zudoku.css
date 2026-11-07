@@ -15,6 +15,15 @@ button{font:inherit;touch-action:manipulation}
 .cell.same-number{background:rgba(210,50,50,.32)}
 .cell.selected{background:#ffe3e3!important;box-shadow:inset 0 0 0 3px #b00000;z-index:2}
 .cell.locked{color:#111;font-weight:800}.cell.incorrect{color:#c40000;font-weight:800}
+.cell.correct{
+ background:#bfe8c7!important;
+ color:#14532d;
+ font-weight:800;
+}
+
+.cell.correct.selected{
+ box-shadow:inset 0 0 0 3px #278545;
+}
 .cell .notes{position:absolute;inset:2px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);pointer-events:none}
 .note{display:flex;align-items:center;justify-content:center; color: #1e4f70;font-size:clamp(7px,1.9vw,11px);line-height:1}
 .controls{width:min(92vw,500px);flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:5px}
