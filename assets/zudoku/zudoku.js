@@ -1,5 +1,7 @@
 /* ZUDOKU - MOTOR v0.1 - Sindicato Enigma */
-const PUZZLE_FILE="../assets/zudoku/zudoku_prueba.txt";
+const parametros = new URLSearchParams(window.location.search);
+const PUZZLE_FILE = parametros.get("datos") ||
+    "../assets/zudoku/zudoku_prueba.txt";
 const MAX_HINTS=3;
 let solution=[],initialClues=new Set(),cells=[],selectedCell=null,notesMode=false;
 let errors=0,hintsUsed=0,elapsedSeconds=0,timerInterval=null,gameFinished=false;
@@ -39,7 +41,16 @@ function startGame(){
 function buildBoard(){
  boardEl.innerHTML="";cells=[];
  for(let row=0;row<9;row++)for(let col=0;col<9;col++){
-  const cell={row,col,value:null,notes:new Set(),locked:false,incorrect:false,element:null};
+  const cell={
+  row,
+  col,
+  value:null,
+  notes:new Set(),
+  locked:false,
+  incorrect:false,
+  correct:false,
+  element:null
+};
   if(initialClues.has(`${row},${col}`)){cell.value=solution[row][col];cell.locked=true}
   const el=document.createElement("div");el.className="cell";
   if((Math.floor(row/3)+Math.floor(col/3))%2===1)el.classList.add("sector-gray");
@@ -75,21 +86,50 @@ function enterNumber(number){
  if(notesMode){toggleNote(number);return}
  selectedCell.notes.clear();
  if(number===solution[selectedCell.row][selectedCell.col]){
-  selectedCell.value=number;selectedCell.incorrect=false;selectedCell.locked=true;
+  selectedCell.value=number;
+  selectedCell.incorrect=false;
+  selectedCell.locked=true;
+  selectedCell.correct=true;
+
   clearPeerNotes(number,selectedCell);
-  renderCell(selectedCell);updateHighlights();updateNumberButtons();showMessage("Correcto.");checkCompletion();
+
+  renderCell(selectedCell);
+  updateHighlights();
+  updateNumberButtons();
+  showMessage("Correcto.");
+  checkCompletion();
  }else{
   selectedCell.value=number;selectedCell.incorrect=true;errors++;updateCounters();renderCell(selectedCell);updateHighlights();showMessage("Respuesta incorrecta.");
  }
 }
 function clearPeerNotes(number,origin){
  for(const cell of cells){
-  if(cell===origin)continue;
+  if(cell===origin || cell.locked)continue;
+
   const sameRow=cell.row===origin.row;
   const sameCol=cell.col===origin.col;
-  const sameSector=Math.floor(cell.row/3)===Math.floor(origin.row/3)&&Math.floor(cell.col/3)===Math.floor(origin.col/3);
+
+  const sameSector=
+   Math.floor(cell.row/3)===Math.floor(origin.row/3)&&
+   Math.floor(cell.col/3)===Math.floor(origin.col/3);
+
   if(sameRow||sameCol||sameSector){
-   if(cell.notes.delete(number))renderCell(cell);
+
+   let changed=false;
+
+   // Eliminar la nota del número correcto.
+   if(cell.notes.delete(number)){
+    changed=true;
+   }
+
+   // Eliminar una respuesta incorrecta del mismo número.
+   if(cell.value===number && cell.incorrect){
+    cell.value=null;
+    cell.incorrect=false;
+    changed=true;
+   }
+
+   if(changed)renderCell(cell);
   }
  }
 }
@@ -108,11 +148,20 @@ function useHint(){
  const available=cells.filter(c=>!c.locked&&c.value===null);
  if(!available.length){showMessage("No hay casillas vacías.");return}
  const target=available[Math.floor(Math.random()*available.length)];
- target.value=solution[target.row][target.col];target.notes.clear();target.incorrect=false;target.locked=true;
+ target.value=solution[target.row][target.col];
+target.notes.clear();
+target.incorrect=false;
+target.correct=true;
+target.locked=true;
  hintsUsed++;selectedCell=target;renderCell(target);updateCounters();updateNumberButtons();updateHighlights();showMessage("Pista revelada.");checkCompletion();
 }
 function renderCell(cell){
- const el=cell.element,notesEl=el.querySelector(".notes");el.classList.toggle("locked",cell.locked);el.classList.toggle("incorrect",cell.incorrect);
+ const el=cell.element;
+const notesEl=el.querySelector(".notes");
+
+el.classList.toggle("locked",cell.locked);
+el.classList.toggle("incorrect",cell.incorrect);
+el.classList.toggle("correct",cell.correct);
  for(let n=1;n<=9;n++){const note=notesEl.querySelector(`[data-note="${n}"]`);note.textContent=cell.value===null&&cell.notes.has(n)?n:"";}
  let valueEl=el.querySelector(".value");if(!valueEl){valueEl=document.createElement("span");valueEl.className="value";el.insertBefore(valueEl,notesEl)}
  valueEl.textContent=cell.value===null?"":cell.value;
@@ -130,6 +179,39 @@ function checkCompletion(){
 function formatTime(s){return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`}
 function showMessage(t){messageEl.textContent=t}
 notesBtn.addEventListener("click",toggleNotesMode);deleteBtn.addEventListener("click",deleteSelected);hintBtn.addEventListener("click",useHint);
-restartBtn.addEventListener("click",startGame);
-menuBtn.addEventListener("click",()=>{if(document.referrer)history.back();else window.location.href="../index.html"});
+const embedded = window.parent !== window;
+
+if(embedded){
+  restartBtn.textContent="CONTINUAR";
+  menuBtn.classList.add("hidden");
+}
+
+restartBtn.addEventListener("click",()=>{
+  if(embedded){
+    window.parent.postMessage(
+      {
+        tipo:"SE_MINIJUEGO_RESULTADO",
+        resultado:{
+          completado:true,
+          tiempo:formatTime(elapsedSeconds),
+          errores:errors,
+          pistas:hintsUsed,
+          nombre:puzzleInfo.nombre
+        }
+      },
+      window.location.origin
+    );
+  }else{
+    startGame();
+  }
+});
+
+menuBtn.addEventListener("click",()=>{
+  if(document.referrer){
+    history.back();
+  }else{
+    window.location.href="../index.html";
+  }
+});
+
 loadPuzzle();
