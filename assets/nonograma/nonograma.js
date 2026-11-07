@@ -1,4 +1,7 @@
-const DATA_URL="../assets/nonograma/nonograma_prueba.txt";const puzzle=document.getElementById("puzzle"),timer=document.getElementById("timer"),errorsEl=document.getElementById("errors"),status=document.getElementById("status"),hint=document.getElementById("hint"),finish=document.getElementById("finish"),finalTime=document.getElementById("final-time"),finalErrors=document.getElementById("final-errors"),menu=document.getElementById("menu");let data,cells=[],rowClues=[],colClues=[],errors=0,elapsed=0,timerId=null,done=false;
+const parametros = new URLSearchParams(window.location.search);
+
+const DATA_URL = parametros.get("datos") ||
+    "../assets/nonograma/nonograma_prueba.txt";const puzzle=document.getElementById("puzzle"),timer=document.getElementById("timer"),errorsEl=document.getElementById("errors"),status=document.getElementById("status"),hint=document.getElementById("hint"),finish=document.getElementById("finish"),finalTime=document.getElementById("final-time"),finalErrors=document.getElementById("final-errors"),menu=document.getElementById("menu");let data,cells=[],rowClues=[],colClues=[],errors=0,elapsed=0,timerId=null,done=false;
 function value(lines,key){let x=(lines||[]).find(v=>v.toLowerCase().startsWith(key.toLowerCase()+"="));return x?x.slice(x.indexOf("=")+1).trim():""}function clue(s){s=s.includes("=")?s.slice(s.indexOf("=")+1).trim():s.trim();if(!s||s==="0")return[];let a=s.split(/\s+/).map(Number);if(!a.every(n=>Number.isInteger(n)&&n>0))throw Error("Pista inválida: "+s);return a}function calc(line){let out=[],n=0;for(let x of line){if(x===1)n++;else if(n){out.push(n);n=0}}if(n)out.push(n);return out}function same(a,b){return a.length===b.length&&a.every((x,i)=>x===b[i])}
 function parse(text){let sec={},cur=null;for(let raw of text.split(/\r?\n/)){let l=raw.trim();if(!l||l.startsWith("#"))continue;let m=l.match(/^\[([^\]]+)\]$/);if(m){cur=m[1].toUpperCase();sec[cur]=[];continue}if(cur)sec[cur].push(l)}let rows=+value(sec.NONOGRAMA,"filas"),cols=+value(sec.NONOGRAMA,"columnas"),sol=(sec.SOLUCION||[]).map(x=>x.split(/\s+/).map(Number));if(!rows||!cols||sol.length!==rows||!sol.every(r=>r.length===cols)||!sol.every(r=>r.every(x=>x===0||x===1)))throw Error("SOLUCION no coincide con las dimensiones.");let rc=(sec.FILAS||[]).map(clue),cc=(sec.COLUMNAS||[]).map(clue);if(rc.length!==rows||cc.length!==cols)throw Error("Cantidad de pistas incorrecta.");if(!rc.every((x,i)=>same(x,calc(sol[i]))))throw Error("Las pistas de filas no coinciden con la solución.");for(let c=0;c<cols;c++){let col=[];for(let r=0;r<rows;r++)col.push(sol[r][c]);if(!same(cc[c],calc(col)))throw Error("Las pistas de columnas no coinciden con la solución.")}return{name:value(sec.NONOGRAMA,"nombre")||"Nonograma",rows,cols,sol,rc,cc,msg:value(sec.FINAL,"mensaje")}}
 async function load(){stop();try{let r=await fetch(DATA_URL,{cache:"no-store"});if(!r.ok)throw Error("No se pudo cargar el TXT.");data=parse(await r.text());errors=elapsed=0;done=false;errorsEl.textContent=0;timer.textContent="00:00";finish.classList.add("hidden");hint.disabled=false;build();markAutoX();fit();start();status.textContent=data.name}catch(e){console.error(e);status.textContent="Error al cargar el nonograma: "+e.message}}
@@ -10,7 +13,54 @@ function colDone(c){for(let r=0;r<data.rows;r++)if(data.sol[r][c]&&!cell(r,c).cl
 function markAutoX(){for(let r=0;r<data.rows;r++)if(rowDone(r)){rowClues[r].classList.add("complete");for(let c=0;c<data.cols;c++){let b=cell(r,c);if(data.sol[r][c]===0&&b.dataset.locked!=="1"){b.classList.add("auto-x");b.dataset.locked="1"}}}for(let c=0;c<data.cols;c++)if(colDone(c)){colClues[c].classList.add("complete");for(let r=0;r<data.rows;r++){let b=cell(r,c);if(data.sol[r][c]===0&&b.dataset.locked!=="1"){b.classList.add("auto-x");b.dataset.locked="1"}}}}
 function check(r,c){markAutoX()}
 function allClues(){markAutoX()}
-function finishCheck(){let ok=cells.every(b=>!data.sol[+b.dataset.r][+b.dataset.c]||b.classList.contains("black"));if(!ok)return;allClues();if(rowClues.every(x=>x.classList.contains("complete"))&&colClues.every(x=>x.classList.contains("complete"))){done=true;stop();finalTime.textContent=fmt(elapsed);finalErrors.textContent=errors;finish.classList.remove("hidden");hint.disabled=true;status.textContent=data.msg||"Expediente resuelto."}}
+function finishCheck() {
+    let ok = cells.every(b =>
+        !data.sol[+b.dataset.r][+b.dataset.c] ||
+        b.classList.contains("black")
+    );
+
+    if (!ok) return;
+
+    allClues();
+
+    if (
+        rowClues.every(x => x.classList.contains("complete")) &&
+        colClues.every(x => x.classList.contains("complete"))
+    ) {
+        done = true;
+        stop();
+
+        finalTime.textContent = fmt(elapsed);
+        finalErrors.textContent = errors;
+        hint.disabled = true;
+
+        status.textContent = data.msg || "Expediente resuelto.";
+
+        // Si se abrió dentro del motor narrativo:
+        if (window.parent !== window) {
+
+            window.parent.postMessage(
+                {
+                    tipo: "SE_MINIJUEGO_RESULTADO",
+                    resultado: {
+                        completado: true,
+                        tiempo: fmt(elapsed),
+                        errores: errors,
+                        nombre: data.name,
+                        mensaje: data.msg || ""
+                    }
+                },
+                window.location.origin
+            );
+
+        } else {
+
+            // Si se abrió de manera independiente:
+            finish.classList.remove("hidden");
+
+        }
+    }
+}
 function useHint(){if(done)return;let a=cells.filter(b=>b.dataset.locked!=="1"&&data.sol[+b.dataset.r][+b.dataset.c]);if(!a.length){hint.disabled=true;return}let b=a[Math.floor(Math.random()*a.length)];b.classList.add("black");b.dataset.locked="1";check(+b.dataset.r,+b.dataset.c);finishCheck()}
 function start(){timerId=setInterval(()=>{elapsed++;timer.textContent=fmt(elapsed)},1000)}function stop(){if(timerId!==null){clearInterval(timerId);timerId=null}}function fmt(s){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
 function fit(){if(!data)return;let w=document.querySelector(".puzzle-wrap").getBoundingClientRect(),size=Math.floor(Math.min(w.width/(data.cols+1),w.height/(data.rows+1)));puzzle.style.setProperty("--cell-size",Math.max(8,size)+"px")}window.addEventListener("resize",fit);hint.onclick=useHint;menu.onclick=()=>location.href="../index.html";load();
