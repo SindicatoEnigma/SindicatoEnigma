@@ -1,1 +1,9 @@
+[SECUENCIA]
+TIPO: JUEGO
+TITULO: Las primeras pistas
+ARCHIVO: minijuegos/sopa_letras.html
+DATOS: ../assets/sopa_letras/sopaprueba02.txt
+[FIN SECUENCIA]
+
+
 
