@@ -16,5 +16,5 @@ EL: Excelente. El minijuego devolvió el control a la historia.
 TIPO: JUEGO
 TITULO: Las primeras pistas
 ARCHIVO: minijuegos/sopa_letras.html
-DATOS: assets/sopa_letras/sopa_prueba.txt
+DATOS: ../assets/sopa_letras/sopaprueba02.txt
 [FIN SECUENCIA]
