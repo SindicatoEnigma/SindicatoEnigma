@@ -16,5 +16,5 @@ EL: Excelente. El minijuego devolvió el control a la historia.
 TIPO: JUEGO
 TITULO: Las primeras pistas
 ARCHIVO: minijuegos/zudoku.html
-DATOS: ../assets/zudoku/zudokuprueba002.txt
+DATOS: ../assets/zudoku/zudokuprueba02.txt
 [FIN SECUENCIA]
