@@ -1,0 +1,5 @@
+[CONEXION3]
+nombre=Expediente 001
+modo=tiempo
+minutos=3
+meta=0

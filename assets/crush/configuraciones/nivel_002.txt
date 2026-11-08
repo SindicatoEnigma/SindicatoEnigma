@@ -1,0 +1,5 @@
+[CONEXION3]
+nombre=Expediente 002
+modo=puntos
+minutos=0
+meta=5000
