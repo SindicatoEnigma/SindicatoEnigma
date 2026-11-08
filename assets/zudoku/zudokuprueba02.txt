@@ -1,6 +1,6 @@
 [ZUDOKU]
-nombre=El expediente de prueba dos dos dos
-autor=Sindicato Enigma
+nombre=El expediente dos 
+autor=Sindicato dos
 
 [TABLERO]
 5 3 4 6 7 8 9 1 2
@@ -27,4 +27,4 @@ autor=Sindicato Enigma
 9,9
 
 [FINAL]
-mensaje=¡Has completado el Zudoku!
+mensaje=¡Has completado el dos!
