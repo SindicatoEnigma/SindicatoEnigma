@@ -1,1 +1,12 @@
+[CONEXION3]
+nombre=Expediente 001
+modo=tiempo
+minutos=3
+meta=0
 
+[FIGURAS]
+figura1=assets/crush/imagenes/figura_1.svg
+figura2=assets/crush/imagenes/figura_2.svg
+figura3=assets/crush/imagenes/figura_3.svg
+figura4=assets/crush/imagenes/figura_4.svg
+figura5=assets/crush/imagenes/figura_5.svg
