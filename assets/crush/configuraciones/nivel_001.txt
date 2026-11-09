@@ -5,8 +5,8 @@ minutos=3
 meta=0
 
 [FIGURAS]
-figura1=assets/crush/imagenes/figura_1.svg
-figura2=assets/crush/imagenes/figura_2.svg
-figura3=assets/crush/imagenes/figura_3.svg
-figura4=assets/crush/imagenes/figura_4.svg
-figura5=assets/crush/imagenes/figura_5.svg
+figura1=assets/crush/imagenes/el.png
+figura2=assets/crush/imagenes/margaret.png
+figura3=assets/crush/imagenes/Anna.png
+figura4=assets/crush/imagenes/sali.png
+figura5=assets/crush/imagenes/sindicatoenigma.png
