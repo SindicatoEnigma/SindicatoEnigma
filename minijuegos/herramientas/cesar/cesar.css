@@ -1,0 +1,219 @@
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    min-height: 100%;
+    background: #171717;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 15px;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #171717;
+    color: #eee;
+}
+
+.container {
+    width: 100%;
+    max-width: 650px;
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    padding: 15px 5px 22px;
+    border-bottom: 2px solid #777;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 17px;
+    letter-spacing: 3px;
+    margin: 0 0 12px;
+    color: #aaa;
+}
+
+.header h2 {
+    font-size: clamp(22px, 6vw, 30px);
+    letter-spacing: 2px;
+    margin: 0;
+    color: #fff;
+}
+
+.header p {
+    font-size: 12px;
+    color: #aaa;
+    margin: 8px 0 0;
+}
+
+.panel {
+    margin-bottom: 20px;
+}
+
+.panel label,
+.shift-control label {
+    display: block;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+    color: #ddd;
+}
+
+textarea {
+    display: block;
+    width: 100%;
+    min-height: 145px;
+    padding: 12px;
+    resize: vertical;
+    border: 2px solid #666;
+    border-radius: 4px;
+    background: #242424;
+    color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    outline: none;
+}
+
+textarea:focus,
+input:focus {
+    border-color: #bbb;
+}
+
+textarea::placeholder {
+    color: #888;
+}
+
+.counter,
+.alphabet-status,
+.copy-status {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 7px;
+    text-align: right;
+}
+
+.shift-panel {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 18px;
+    padding: 15px 5px 20px;
+    margin-bottom: 10px;
+    border-top: 1px solid #555;
+    border-bottom: 1px solid #555;
+}
+
+.arrow-button {
+    width: 55px;
+    height: 55px;
+    border: 2px solid #888;
+    border-radius: 4px;
+    background: #292929;
+    color: white;
+    font-size: 32px;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.arrow-button:active,
+.copy-button:active {
+    transform: scale(.95);
+}
+
+.shift-control {
+    width: 130px;
+    text-align: center;
+}
+
+.shift-control label {
+    font-size: 10px;
+    text-align: center;
+}
+
+.shift-control input {
+    width: 100%;
+    height: 55px;
+    border: 2px solid #888;
+    border-radius: 4px;
+    background: #242424;
+    color: white;
+    text-align: center;
+    font-size: 25px;
+    font-weight: bold;
+    outline: none;
+}
+
+.alphabet-input {
+    min-height: 65px;
+    text-align: center;
+    font-size: 18px;
+    letter-spacing: 2px;
+    font-weight: bold;
+}
+
+.alphabet-status {
+    text-align: left;
+}
+
+.alphabet-status.error {
+    color: #ff7777;
+}
+
+.copy-button {
+    width: 100%;
+    min-height: 45px;
+    margin-top: 10px;
+    border: 1px solid #999;
+    border-radius: 4px;
+    background: #ddd;
+    color: #111;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.copy-status {
+    min-height: 14px;
+    text-align: center;
+}
+
+footer {
+    text-align: center;
+    border-top: 1px solid #555;
+    margin-top: 30px;
+    padding: 15px 0;
+    color: #777;
+    font-size: 10px;
+    letter-spacing: 2px;
+}
+
+@media (max-width: 380px) {
+    body {
+        padding: 10px;
+    }
+
+    .shift-panel {
+        gap: 12px;
+    }
+
+    .arrow-button {
+        width: 48px;
+        height: 48px;
+    }
+
+    .shift-control {
+        width: 115px;
+    }
+
+    .shift-control input {
+        height: 48px;
+    }
+}
