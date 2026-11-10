@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#171717">
+    <title>Decodificador César | Sindicato Enigma</title>
+    <link rel="stylesheet" href="cesar.css">
+</head>
+
+<body>
+
+<main class="container">
+
+    <header class="header">
+        <h1>SINDICATO ENIGMA</h1>
+        <h2>DECODIFICADOR CÉSAR</h2>
+        <p>Herramienta de criptoanálisis</p>
+    </header>
+
+    <section class="panel">
+
+        <label for="inputText">TEXTO DE ENTRADA</label>
+
+        <textarea
+            id="inputText"
+            maxlength="100000"
+            placeholder="Escribe o pega aquí el texto que deseas transformar..."
+            spellcheck="false"
+        ></textarea>
+
+        <div class="counter">
+            <span id="charCounter">0 / 100,000 caracteres</span>
+        </div>
+
+    </section>
+
+    <section class="shift-panel">
+
+        <button id="decreaseBtn" class="arrow-button" type="button"
+            aria-label="Disminuir desplazamiento">
+            ←
+        </button>
+
+        <div class="shift-control">
+            <label for="shiftInput">DESPLAZAMIENTO</label>
+            <input
+                id="shiftInput"
+                type="number"
+                step="1"
+                value="0"
+                inputmode="numeric"
+            >
+        </div>
+
+        <button id="increaseBtn" class="arrow-button" type="button"
+            aria-label="Aumentar desplazamiento">
+            →
+        </button>
+
+    </section>
+
+    <section class="panel">
+
+        <label for="alphabetInput">ALFABETO BASE</label>
+
+        <textarea
+            id="alphabetInput"
+            class="alphabet-input"
+            rows="2"
+            spellcheck="false"
+            autocomplete="off"
+        >ABCDEFGHIJKLMNOPQRSTUVWXYZ</textarea>
+
+        <div id="alphabetStatus" class="alphabet-status">
+            26 caracteres disponibles.
+        </div>
+
+    </section>
+
+    <section class="panel">
+
+        <label for="outputText">TEXTO TRANSFORMADO</label>
+
+        <textarea
+            id="outputText"
+            readonly
+            placeholder="Aquí aparecerá automáticamente el resultado..."
+        ></textarea>
+
+        <button id="copyBtn" class="copy-button" type="button">
+            COPIAR RESULTADO
+        </button>
+
+        <div id="copyStatus" class="copy-status" aria-live="polite"></div>
+
+    </section>
+
+    <footer>
+        <p>SINDICATO ENIGMA · HERRAMIENTAS</p>
+    </footer>
+
+</main>
+
+<script src="cesar.js"></script>
+
+</body>
+</html>
