@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizador de frecuencias | Sindicato Enigma</title>
+    <link rel="stylesheet" href="frecuencias.css">
+</head>
+<body>
+
+    <main class="contenedor">
+        <header>
+            <h1>SINDICATO ENIGMA</h1>
+            <h2>Analizador de frecuencias</h2>
+            <p>Cuenta y ordena las apariciones de cada carácter.</p>
+        </header>
+
+        <section class="panel">
+            <label for="textoEntrada">TEXTO PARA ANALIZAR</label>
+
+            <textarea
+                id="textoEntrada"
+                maxlength="100000"
+                placeholder="Escribe o pega aquí el texto..."
+            ></textarea>
+
+            <div class="contador">
+                <span id="contador">0 / 100000 caracteres</span>
+            </div>
+
+            <label for="modalidad">MODALIDAD DE ANÁLISIS</label>
+
+            <select id="modalidad">
+                <option value="letras">Solo letras</option>
+                <option value="todos">Todos los caracteres</option>
+            </select>
+
+            <button id="botonAnalizar">ANALIZAR FRECUENCIAS</button>
+        </section>
+
+        <section class="panel">
+            <label for="resultado">RESULTADO DEL ANÁLISIS</label>
+
+            <div class="resumen" id="resumen">
+                Esperando análisis...
+            </div>
+
+            <textarea
+                id="resultado"
+                readonly
+                placeholder="Aquí aparecerán los resultados ordenados de mayor a menor..."
+            ></textarea>
+
+            <button id="botonCopiar" class="boton-secundario">
+                COPIAR FRECUENCIAS
+            </button>
+
+            <p id="mensaje" class="mensaje"></p>
+        </section>
+
+        <footer>
+            SINDICATO ENIGMA · HERRAMIENTA DE CRIPTOANÁLISIS
+        </footer>
+    </main>
+
+    <script src="frecuencias.js"></script>
+</body>
+</html>
