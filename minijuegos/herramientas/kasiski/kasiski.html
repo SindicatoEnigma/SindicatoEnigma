@@ -235,7 +235,17 @@
 
 </main>
   
-  
+  <script>
+window.onerror = function(mensaje, archivo, linea, columna) {
+  alert(
+    "ERROR DE JAVASCRIPT:\n" +
+    mensaje +
+    "\nLínea: " + linea +
+    "\nColumna: " + columna
+  );
+  return false;
+};
+  </script>
 
   
 
