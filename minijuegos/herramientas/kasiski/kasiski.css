@@ -1,0 +1,424 @@
+
+:root {
+  --fondo: #111214;
+  --panel: #1b1d20;
+  --panel2: #24272b;
+  --borde: #393d42;
+  --texto: #e8e8e8;
+  --suave: #a4a8ad;
+  --rojo: #a83232;
+  --rojo-hover: #c04444;
+  --verde: #86c995;
+  --amarillo: #e4c477;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 18px;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.contenedor {
+  max-width: 950px;
+  width: 100%;
+  margin: auto;
+}
+
+.encabezado {
+  text-align: center;
+  margin: 15px 0 30px;
+}
+
+.marca {
+  color: #c44b4b;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 4px;
+}
+
+h1 {
+  font-size: clamp(26px, 5vw, 38px);
+  margin: 10px 0;
+}
+
+.subtitulo {
+  color: var(--texto);
+  margin: 8px 0;
+}
+
+.nota {
+  color: var(--suave);
+  font-size: 12px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 17px;
+}
+
+h2 {
+  font-size: 20px;
+  margin: 0 0 12px;
+}
+
+h3 {
+  font-size: 16px;
+  margin: 0 0 12px;
+  color: #d56a6a;
+}
+
+.ayuda {
+  color: var(--suave);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 8px 0 15px;
+}
+
+.texto-grande {
+  width: 100%;
+  min-height: 170px;
+  resize: vertical;
+  padding: 13px;
+  background: #101113;
+  border: 1px solid var(--borde);
+  border-radius: 7px;
+  color: var(--texto);
+  font: 14px/1.6 monospace;
+}
+
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  min-width: 0;
+  padding: 11px;
+  background: #101113;
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  outline: none;
+  font-size: 15px;
+}
+
+input:focus,
+textarea:focus {
+  border-color: var(--rojo);
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.radio {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: normal;
+  margin: 12px 0;
+}
+
+.radio input {
+  accent-color: var(--rojo);
+}
+
+.configuracion {
+  margin: 16px 0;
+}
+
+.dos-columnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.subpanel {
+  background: #151719;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+}
+
+.fila {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+
+.fila input {
+  flex: 1;
+}
+
+button {
+  border: 0;
+  border-radius: 6px;
+  padding: 12px 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.principal {
+  width: 100%;
+  background: var(--rojo);
+  color: white;
+  margin-top: 12px;
+}
+
+.principal:hover:not(:disabled) {
+  background: var(--rojo-hover);
+}
+
+.secundario {
+  background: var(--panel2);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+}
+
+.secundario:hover {
+  background: #34383e;
+}
+
+.barra {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin: 9px 0;
+  color: var(--suave);
+  font-size: 12px;
+}
+
+.resultado-info {
+  background: #151719;
+  border: 1px solid var(--borde);
+  border-radius: 7px;
+  padding: 13px;
+  margin-top: 13px;
+  line-height: 1.6;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.lista-simple {
+  margin-top: 10px;
+  color: var(--suave);
+  font-size: 13px;
+}
+
+.tabla-contenedor {
+  width: 100%;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 300px;
+}
+
+th,
+td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--borde);
+}
+
+th {
+  color: #d56a6a;
+  background: #151719;
+}
+
+td {
+  overflow-wrap: anywhere;
+}
+
+.secuencia-card {
+  background: #151719;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 13px;
+  margin: 12px 0;
+}
+
+.secuencia-titulo {
+  font-weight: bold;
+  font-size: 17px;
+  letter-spacing: 2px;
+  overflow-wrap: anywhere;
+}
+
+.secuencia-detalle {
+  color: var(--suave);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 8px 0;
+}
+
+.secuencia-card label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: normal;
+  margin: 8px 0 0;
+}
+
+.secuencia-card input {
+  accent-color: var(--rojo);
+}
+
+.grupo {
+  background: #151719;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 13px;
+  margin: 12px 0;
+}
+
+.grupo textarea {
+  width: 100%;
+  min-height: 95px;
+  background: #101113;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  color: var(--texto);
+  padding: 11px;
+  font: 14px/1.6 monospace;
+  resize: vertical;
+}
+
+.grupo h3 {
+  margin-bottom: 8px;
+}
+
+.grupo-info {
+  color: var(--suave);
+  font-size: 12px;
+  margin: 6px 0;
+}
+
+.clave-input {
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  font-weight: bold;
+  text-align: center;
+  font-size: 20px !important;
+}
+
+.acciones {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+
+.candidato {
+  background: #151719;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 12px 0;
+}
+
+.candidato-destacado {
+  border-color: #8b713d;
+}
+
+.candidato button {
+  margin-top: 8px;
+}
+
+.candidato small {
+  color: var(--suave);
+  line-height: 1.6;
+}
+
+.tabla-desplazamientos {
+  max-height: 420px;
+  overflow: auto;
+  border: 1px solid var(--borde);
+  border-radius: 7px;
+  margin-top: 12px;
+}
+
+.tabla-desplazamientos table {
+  min-width: 450px;
+}
+
+.tabla-desplazamientos tr.mejor {
+  background: #263328;
+}
+
+.tabla-desplazamientos button {
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+.exito {
+  color: var(--verde);
+  font-weight: bold;
+}
+
+.advertencia {
+  color: var(--amarillo);
+}
+
+.error {
+  color: #e58b8b;
+}
+
+footer {
+  color: #747980;
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 20px 5px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 10px;
+  }
+
+  .panel {
+    padding: 14px;
+  }
+
+  .dos-columnas {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .fila {
+    align-items: stretch;
+  }
+
+  .fila button {
+    padding: 10px;
+  }
+
+  .acciones button {
+    flex: 1;
+  }
+}
