@@ -1,0 +1,239 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Método de Kasiski | Sindicato Enigma</title>
+  <link rel="stylesheet" href="kasiski.css">
+</head>
+<body>
+<main class="contenedor">
+
+  <header class="encabezado">
+    <p class="marca">SINDICATO ENIGMA</p>
+    <h1>Método de Kasiski</h1>
+    <p class="subtitulo">Herramienta de análisis criptográfico</p>
+    <p class="nota">Análisis de cifrados polialfabéticos · Vigenère</p>
+  </header>
+
+  <section class="panel">
+    <h2>1. Texto cifrado</h2>
+    <p class="ayuda">
+      Introduce el mensaje cifrado. Para el análisis se utilizarán
+      solamente letras A-Z. Los espacios, signos y números se
+      conservarán para reconstruir el resultado final.
+    </p>
+
+    <textarea id="textoOriginal" class="texto-grande"
+      maxlength="100000"
+      placeholder="Pega aquí el mensaje cifrado..."></textarea>
+
+    <div class="barra">
+      <span id="contador">0 / 100000 caracteres</span>
+      <button id="limpiar" class="secundario">Limpiar</button>
+    </div>
+
+    <button id="analizarTexto" class="principal">Analizar texto</button>
+
+    <div id="resumenTexto" class="resultado-info"></div>
+  </section>
+
+  <section class="panel">
+    <h2>2. Detector de secuencias repetidas</h2>
+    <p class="ayuda">
+      Busca secuencias que aparezcan al menos dos veces.
+      Las posiciones se cuentan sobre el texto normalizado.
+    </p>
+
+    <div class="subpanel">
+      <h3>Modo de búsqueda</h3>
+
+      <label class="radio">
+        <input type="radio" name="modoBusqueda" value="automatico" checked>
+        Búsqueda automática
+      </label>
+
+      <label class="radio">
+        <input type="radio" name="modoBusqueda" value="manual">
+        Búsqueda manual
+      </label>
+
+      <div id="opcionesAutomaticas" class="configuracion">
+        <div class="dos-columnas">
+          <label>
+            Longitud mínima
+            <input id="longitudMinima" type="number" min="2" max="20" value="3">
+          </label>
+          <label>
+            Longitud máxima
+            <input id="longitudMaxima" type="number" min="2" max="20" value="5">
+          </label>
+        </div>
+      </div>
+
+      <div id="opcionesManuales" class="configuracion" hidden>
+        <label>
+          Longitud exacta de la secuencia
+          <input id="longitudManual" type="number" min="2" max="100" value="3">
+        </label>
+      </div>
+
+      <button id="buscarSecuencias" class="principal">
+        Buscar secuencias
+      </button>
+    </div>
+
+    <div id="resultadosSecuencias"></div>
+  </section>
+
+  <section class="panel">
+    <h2>3. Distancias y máximo común divisor</h2>
+    <p class="ayuda">
+      Selecciona las secuencias que deseas utilizar.
+      Todas las distancias consecutivas de cada secuencia
+      seleccionada participarán en el cálculo.
+    </p>
+
+    <div id="resumenSeleccion" class="resultado-info">
+      Todavía no hay secuencias seleccionadas.
+    </div>
+
+    <div class="subpanel">
+      <h3>Agregar distancia manual</h3>
+      <div class="fila">
+        <input id="distanciaManual" type="number" min="1"
+          placeholder="Ej. 12">
+        <button id="agregarDistancia" class="secundario">
+          Agregar
+        </button>
+      </div>
+      <div id="distanciasManuales" class="lista-simple"></div>
+    </div>
+
+    <button id="calcularMCD" class="principal">
+      Calcular con selección
+    </button>
+
+    <div id="resultadoMCD"></div>
+  </section>
+
+  <section class="panel">
+    <h2>4. Longitud de clave</h2>
+    <p class="ayuda">
+      Se evaluarán posibles longitudes según la divisibilidad
+      de las distancias. El MCD es una pista, no una garantía
+      de que la clave tenga exactamente esa longitud.
+    </p>
+
+    <div id="candidatosClave"></div>
+
+    <div class="subpanel">
+      <h3>Introducir longitud manualmente</h3>
+      <div class="fila">
+        <input id="longitudElegida" type="number" min="1"
+          max="100" placeholder="Longitud">
+        <button id="usarLongitud" class="secundario">
+          Usar longitud
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>5. Separación del mensaje en grupos</h2>
+    <p class="ayuda">
+      Cada grupo contiene las letras que ocupan la misma
+      posición dentro del ciclo de la clave. Puedes editar
+      los grupos antes de continuar.
+    </p>
+
+    <div id="gruposMensaje"></div>
+    <button id="separarGrupos" class="principal" disabled>
+      Separar mensaje en grupos
+    </button>
+  </section>
+
+  <section class="panel">
+    <h2>6. Frecuencias por grupo</h2>
+    <p class="ayuda">
+      Se analizarán las letras de cada grupo por separado.
+      Los resultados se ordenarán por frecuencia descendente.
+    </p>
+
+    <button id="analizarGrupos" class="principal" disabled>
+      Analizar todos los grupos
+    </button>
+
+    <div id="resultadosGrupos"></div>
+  </section>
+
+  <section class="panel">
+    <h2>7. Recuperación de la clave</h2>
+    <p class="ayuda">
+      Se probarán los 26 desplazamientos César de cada grupo.
+      La puntuación estadística compara las frecuencias
+      resultantes con las frecuencias habituales del español.
+      Una puntuación menor indica una mejor coincidencia.
+    </p>
+
+    <button id="recuperarClave" class="principal" disabled>
+      Calcular desplazamientos
+    </button>
+
+    <div id="resultadosClave"></div>
+
+    <div class="subpanel">
+      <h3>Clave candidata</h3>
+      <p class="ayuda">
+        Puedes modificar manualmente cualquier letra.
+        La posición de cada letra corresponde a un grupo.
+      </p>
+
+      <label for="claveFinal">Clave Vigenère</label>
+      <input id="claveFinal" class="clave-input"
+        type="text" placeholder="Ej. SOL">
+
+      <div id="estadoClave" class="resultado-info"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>8. Descifrado y comprobación</h2>
+    <p class="ayuda">
+      El mensaje original se reconstruirá conservando
+      espacios, números, signos y saltos de línea.
+    </p>
+
+    <button id="descifrar" class="principal" disabled>
+      Descifrar mensaje
+    </button>
+
+    <label for="mensajeDescifrado">Mensaje descifrado</label>
+    <textarea id="mensajeDescifrado" class="texto-grande"
+      placeholder="Aquí aparecerá el mensaje descifrado..."></textarea>
+
+    <div class="acciones">
+      <button id="copiarMensaje" class="secundario">
+        Copiar mensaje
+      </button>
+      <button id="copiarClave" class="secundario">
+        Copiar clave
+      </button>
+    </div>
+
+    <button id="comprobar" class="principal" disabled>
+      Comprobar mediante recifrado
+    </button>
+
+    <div id="resultadoComprobacion" class="resultado-info"></div>
+  </section>
+
+  <footer>
+    SINDICATO ENIGMA · LABORATORIO CRIPTOGRÁFICO
+  </footer>
+
+</main>
+<script src="kasiski.js"></script>
+</body>
+</html>
