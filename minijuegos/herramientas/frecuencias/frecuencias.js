@@ -164,7 +164,15 @@ function analizarLongitudPalabras(texto) {
   }
 
   const resultados = Array.from(frecuencias.entries())
-    .sort((a, b) => a[0] - b[0]);
+  .sort((a, b) => {
+    // Primero, mayor número de repeticiones.
+    if (b[1] !== a[1]) {
+      return b[1] - a[1];
+    }
+
+    // En caso de empate, menor longitud primero.
+    return a[0] - b[0];
+  });
 
   let salida = "LONGITUD DE PALABRAS\n";
   salida += "----------------------------------------\n";
