@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#151515">
+  <title>Cifrador Vigenère | Sindicato Enigma</title>
+  <link rel="stylesheet" href="vigenere.css">
+</head>
+<body>
+  <main class="contenedor">
+    <header class="encabezado">
+      <div class="sello">SE</div>
+      <p class="marca">SINDICATO ENIGMA</p>
+      <h1>Cifrador Vigenère</h1>
+      <p class="subtitulo">Sistema de cifrado polialfabético</p>
+    </header>
+
+    <section class="panel">
+      <label for="mensaje">MENSAJE DE ENTRADA</label>
+      <textarea
+        id="mensaje"
+        maxlength="100000"
+        placeholder="Escribe aquí el mensaje que deseas cifrar o descifrar..."
+      ></textarea>
+      <div class="contador" id="contador">0 / 100000 caracteres</div>
+
+      <label for="clave">CONTRASEÑA / CLAVE</label>
+      <input
+        type="text"
+        id="clave"
+        maxlength="100"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Ejemplo: ENIGMA"
+      >
+      <p class="ayuda">
+        Utiliza únicamente letras de la A a la Z. No se admite la Ñ.
+      </p>
+
+      <div class="botones">
+        <button id="btnCifrar" class="btn-principal">
+          Cifrar
+        </button>
+        <button id="btnDescifrar" class="btn-secundario">
+          Descifrar
+        </button>
+      </div>
+
+      <p id="estado" class="estado" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel resultado-panel">
+      <div class="titulo-resultado">
+        <label for="resultado">RESULTADO</label>
+        <span id="tipoResultado">Sin resultado</span>
+      </div>
+
+      <textarea
+        id="resultado"
+        maxlength="100000"
+        placeholder="Aquí aparecerá el resultado..."
+        readonly
+      ></textarea>
+
+      <button id="btnCopiar" class="btn-copiar" disabled>
+        Copiar resultado
+      </button>
+    </section>
+
+    <footer>
+      <p>Sindicato Enigma · Herramientas criptográficas</p>
+    </footer>
+  </main>
+
+  <script src="vigenere.js"></script>
+</body>
+</html>
