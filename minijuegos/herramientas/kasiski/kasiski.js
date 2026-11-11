@@ -417,7 +417,7 @@ function mostrarDistanciasManuales() {
 
     fila.append(texto, boton);
     zona.appendChild(fila);
-  });
+  }
 }
 
 
