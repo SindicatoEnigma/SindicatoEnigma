@@ -1,4 +1,5 @@
 
+alert("PRUEBA: JAVASCRIPT DE KASISKI CARGADO");
 "use strict";
  
 // =====================================================
