@@ -239,6 +239,11 @@
 alert("PRUEBA: EL HTML ESTA EJECUTANDOSE");
   </script>
   
-<script src="kasiski.js?v=2"></script>
+<script
+  src="kasiski.js?v=2"
+  onload="alert('EL ARCHIVO JAVASCRIPT SE CARGO')"
+  onerror="alert('ERROR: NO SE PUDO CARGAR EL ARCHIVO JAVASCRIPT')">
+</script>
+  
 </body>
 </html>
