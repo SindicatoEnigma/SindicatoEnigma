@@ -191,8 +191,8 @@ button {
 
 .salida {
   width: 100%;
-  min-height: 80px;
-  max-height: 380px;
+  min-height: 260px;
+  max-height: 600px;
   resize: vertical;
   white-space: pre;
   overflow: auto;
