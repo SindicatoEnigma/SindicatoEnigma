@@ -389,6 +389,7 @@ $("agregarDistancia").addEventListener("click", () => {
   actualizarEstadoBotones();
 });
 
+
 function mostrarDistanciasManuales() {
   const zona = $("distanciasManuales");
   zona.innerHTML = "";
@@ -417,7 +418,8 @@ function mostrarDistanciasManuales() {
     fila.append(texto, boton);
     zona.appendChild(fila);
   });
-});
+}
+
 
 // =====================================================
 // 7. MÁXIMO COMÚN DIVISOR Y EUCLIDES
