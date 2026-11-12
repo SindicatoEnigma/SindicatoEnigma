@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Laboratorio de Documentos | Sindicato Enigma</title>
+
+    <link rel="stylesheet" href="documentos.css">
+
+    <!-- Motor de reconocimiento OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <script src="documentos.js" defer></script>
+</head>
+
+<body>
+
+    <main class="contenedor">
+
+        <header class="encabezado">
+            <div class="sello">SE</div>
+
+            <p class="subtitulo">SINDICATO ENIGMA</p>
+            <h1>Laboratorio de Documentos</h1>
+
+            <p class="descripcion">
+                Sistema de reconocimiento y extracción de texto de imágenes.
+            </p>
+        </header>
+
+        <section class="panel">
+
+            <div class="numero-seccion">01 — DOCUMENTO</div>
+
+            <h2>Seleccionar imagen</h2>
+
+            <p class="instruccion">
+                Carga una imagen que contenga texto impreso.
+                Se admiten fotografías y capturas de pantalla.
+            </p>
+
+            <label for="entradaImagen" class="zona-carga" id="zonaCarga">
+                <span class="icono-carga">＋</span>
+                <strong>Seleccionar imagen</strong>
+                <span>Presiona aquí o arrastra una imagen</span>
+                <small>Formatos compatibles según el navegador</small>
+            </label>
+
+            <input
+                type="file"
+                id="entradaImagen"
+                accept="image/*"
+                hidden
+            >
+
+            <div class="vista-previa" id="contenedorVista" hidden>
+                <p class="etiqueta">DOCUMENTO CARGADO</p>
+
+                <img id="imagenVista" alt="Vista previa del documento">
+
+                <p id="nombreImagen" class="nombre-imagen"></p>
+
+                <button type="button" id="btnQuitarImagen" class="boton boton-secundario">
+                    Quitar imagen
+                </button>
+            </div>
+
+        </section>
+
+        <section class="panel">
+
+            <div class="numero-seccion">02 — RECONOCIMIENTO</div>
+
+            <h2>Extraer texto</h2>
+
+            <p class="instruccion">
+                El motor OCR examinará la imagen e intentará reconocer
+                los caracteres que aparecen en ella.
+            </p>
+
+            <button
+                type="button"
+                id="btnReconocer"
+                class="boton boton-principal"
+                disabled
+            >
+                Iniciar reconocimiento
+            </button>
+
+            <div class="progreso-contenedor" id="contenedorProgreso" hidden>
+
+                <div class="progreso-textos">
+                    <span id="estadoProceso">Preparando...</span>
+                    <span id="porcentaje">0%</span>
+                </div>
+
+                <progress id="barraProgreso" value="0" max="100"></progress>
+
+            </div>
+
+            <p id="mensajeEstado" class="mensaje-estado" role="status" aria-live="polite">
+                Esperando una imagen.
+            </p>
+
+        </section>
+
+        <section class="panel">
+
+            <div class="numero-seccion">03 — RESULTADO</div>
+
+            <h2>Texto reconocido</h2>
+
+            <p class="instruccion">
+                Puedes editar el resultado manualmente para corregir
+                los caracteres que el sistema haya confundido.
+            </p>
+
+            <textarea
+                id="textoResultado"
+                placeholder="El texto reconocido aparecerá aquí..."
+                spellcheck="false"
+            ></textarea>
+
+            <div class="acciones">
+
+                <button
+                    type="button"
+                    id="btnCopiar"
+                    class="boton boton-principal"
+                    disabled
+                >
+                    Copiar texto
+                </button>
+
+                <button
+                    type="button"
+                    id="btnLimpiar"
+                    class="boton boton-secundario"
+                >
+                    Limpiar todo
+                </button>
+
+            </div>
+
+            <p id="mensajeCopia" class="mensaje-copia" aria-live="polite"></p>
+
+        </section>
+
+        <footer class="pie">
+            <p>SINDICATO ENIGMA</p>
+            <span>LABORATORIO DE INVESTIGACIÓN DIGITAL</span>
+        </footer>
+
+    </main>
+
+</body>
+</html>
