@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -37,8 +36,8 @@
             <h2>Seleccionar imagen</h2>
 
             <p class="instruccion">
-                Carga una imagen que contenga texto impreso.
-                Se admiten fotografías y capturas de pantalla.
+                Carga una imagen que contenga texto. Funciona mejor con texto impreso,
+                aunque también intenta reconocer letra manuscrita.
             </p>
 
             <label for="entradaImagen" class="zona-carga" id="zonaCarga">
@@ -76,9 +75,29 @@
             <h2>Extraer texto</h2>
 
             <p class="instruccion">
-                El motor OCR examinará la imagen e intentará reconocer
-                los caracteres que aparecen en ella.
+                Ajusta los parámetros si el resultado no es bueno (especialmente útil en letra manuscrita).
             </p>
+
+            <!-- Controles de ajuste -->
+            <div class="controles-ocr">
+                <div class="control-grupo">
+                    <label for="rangoUmbral">
+                        Umbral de binarización: <span id="valorUmbral">145</span>
+                    </label>
+                    <input type="range" id="rangoUmbral" min="110" max="180" value="145">
+                </div>
+
+                <div class="control-grupo">
+                    <label for="selectPSM">Modo de segmentación (PSM)</label>
+                    <select id="selectPSM">
+                        <option value="6">6 — Bloque uniforme (recomendado)</option>
+                        <option value="4">4 — Columna de texto</option>
+                        <option value="3">3 — Automático</option>
+                        <option value="11">11 — Texto disperso</option>
+                        <option value="12">12 — Texto disperso + orientación</option>
+                    </select>
+                </div>
+            </div>
 
             <button
                 type="button"
@@ -103,6 +122,12 @@
             <p id="mensajeEstado" class="mensaje-estado" role="status" aria-live="polite">
                 Esperando una imagen.
             </p>
+
+            <!-- Vista de la imagen preprocesada -->
+            <div id="vistaProcesada" class="vista-procesada" hidden>
+                <p class="etiqueta">IMAGEN PREPROCESADA (lo que analiza el OCR)</p>
+                <img id="imagenProcesada" alt="Imagen preprocesada">
+            </div>
 
         </section>
 
