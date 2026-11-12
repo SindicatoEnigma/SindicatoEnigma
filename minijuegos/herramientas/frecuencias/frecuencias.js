@@ -60,8 +60,6 @@ function prepararTexto(texto, modalidad) {
   let caracteres = separarCaracteres(texto.normalize("NFC"));
 
   if (modalidad === "letras") {
-    // En esta modalidad se eliminan espacios, números y signos
-    // ANTES de construir pares, triples y cuádruples.
     caracteres = caracteres.filter(esLetra);
   }
 
@@ -80,8 +78,6 @@ function contarSecuencias(caracteres, longitud) {
       );
     }
   } else {
-    // Ventana deslizante: avanza una posición cada vez.
-    // Esto permite contar coincidencias superpuestas.
     for (let i = 0; i <= caracteres.length - longitud; i++) {
       const secuencia = caracteres
         .slice(i, i + longitud)
@@ -96,8 +92,6 @@ function contarSecuencias(caracteres, longitud) {
 
   let resultados = Array.from(frecuencias.entries());
 
-  // Letras individuales: mostrar todas las frecuencias.
-  // Pares, triples y cuádruples: mostrar sólo repeticiones > 1.
   if (longitud > 1) {
     resultados = resultados.filter(item => item[1] > 1);
   }
@@ -149,7 +143,7 @@ function generarTextoFrecuencias(resultados, longitud) {
   return texto;
 }
 
-// Analiza palabras completas de forma independiente.
+// Analiza palabras completas según su cantidad de letras.
 function analizarLongitudPalabras(texto) {
   const palabras = texto.normalize("NFC").match(/\p{L}[\p{L}\p{M}]*/gu) || [];
   const frecuencias = new Map();
@@ -164,15 +158,13 @@ function analizarLongitudPalabras(texto) {
   }
 
   const resultados = Array.from(frecuencias.entries())
-  .sort((a, b) => {
-    // Primero, mayor número de repeticiones.
-    if (b[1] !== a[1]) {
-      return b[1] - a[1];
-    }
+    .sort((a, b) => {
+      if (b[1] !== a[1]) {
+        return b[1] - a[1];
+      }
 
-    // En caso de empate, menor longitud primero.
-    return a[0] - b[0];
-  });
+      return a[0] - b[0];
+    });
 
   let salida = "LONGITUD DE PALABRAS\n";
   salida += "----------------------------------------\n";
@@ -190,6 +182,61 @@ function analizarLongitudPalabras(texto) {
 
   salida += "----------------------------------------\n";
   salida += `Total de palabras: ${palabras.length}\n`;
+
+  return salida;
+}
+
+// NUEVA FUNCIÓN: analiza la frecuencia de palabras completas.
+function analizarFrecuenciaPalabras(texto) {
+  const palabras = texto.normalize("NFC")
+    .match(/\p{L}[\p{L}\p{M}]*/gu) || [];
+
+  const frecuencias = new Map();
+
+  for (const palabra of palabras) {
+    const palabraNormalizada = palabra.toLocaleLowerCase("es");
+
+    frecuencias.set(
+      palabraNormalizada,
+      (frecuencias.get(palabraNormalizada) || 0) + 1
+    );
+  }
+
+  // Conserva únicamente las palabras que aparecen más de una vez.
+  const resultados = Array.from(frecuencias.entries())
+    .filter(item => item[1] > 1);
+
+  // Ordena de mayor a menor frecuencia.
+  // En caso de empate, ordena alfabéticamente.
+  resultados.sort((a, b) => {
+    if (b[1] !== a[1]) {
+      return b[1] - a[1];
+    }
+
+    return a[0].localeCompare(b[0], "es");
+  });
+
+  let salida = "FRECUENCIA DE PALABRAS\n";
+  salida += "----------------------------------------\n";
+  salida += "Palabra                  Repeticiones\n";
+  salida += "----------------------------------------\n";
+
+  if (resultados.length === 0) {
+    salida += "No se encontraron palabras repetidas.\n";
+    return salida;
+  }
+
+  const ancho = Math.max(
+    "Palabra".length,
+    ...resultados.map(item => item[0].length)
+  );
+
+  for (const [palabra, cantidad] of resultados) {
+    salida += palabra.padEnd(ancho + 4) + cantidad + "\n";
+  }
+
+  salida += "----------------------------------------\n";
+  salida += `Palabras distintas repetidas: ${resultados.length}\n`;
 
   return salida;
 }
@@ -237,7 +284,15 @@ function analizar() {
     "analizarPalabras"
   ).checked;
 
-  if (tiposSeleccionados.length === 0 && !incluirPalabras) {
+  const incluirFrecuenciaPalabras = document.getElementById(
+    "analizarFrecuenciaPalabras"
+  ).checked;
+
+  if (
+    tiposSeleccionados.length === 0 &&
+    !incluirPalabras &&
+    !incluirFrecuenciaPalabras
+  ) {
     alert("Selecciona al menos un tipo de análisis.");
     return;
   }
@@ -271,11 +326,19 @@ function analizar() {
     }
   }
 
-  // El análisis de palabras utiliza siempre el texto original.
+  // Análisis de longitud de palabras.
   if (incluirPalabras) {
     bloques.push({
       titulo: "Longitud de palabras",
       contenido: analizarLongitudPalabras(texto)
+    });
+  }
+
+  // NUEVO: análisis de frecuencia de palabras.
+  if (incluirFrecuenciaPalabras) {
+    bloques.push({
+      titulo: "Frecuencia de palabras",
+      contenido: analizarFrecuenciaPalabras(texto)
     });
   }
 
@@ -284,7 +347,6 @@ function analizar() {
   ).checked;
 
   if (resultadosJuntos) {
-    // Todos los análisis aparecen dentro de un único cuadro.
     const contenidoCompleto = bloques
       .map(bloque => bloque.contenido)
       .join("\n\n");
@@ -295,7 +357,6 @@ function analizar() {
 
     textoParaCopiar = contenidoCompleto;
   } else {
-    // Cada análisis aparece en su propio cuadro.
     for (const bloque of bloques) {
       contenedorResultados.appendChild(
         crearBloque(bloque.titulo, bloque.contenido)
@@ -344,7 +405,6 @@ botonCopiar.addEventListener("click", async () => {
     await navigator.clipboard.writeText(textoParaCopiar);
     mensajeCopiado.textContent = "Resultados copiados correctamente.";
   } catch (error) {
-    // Alternativa para navegadores que no permiten Clipboard API.
     const auxiliar = document.createElement("textarea");
     auxiliar.value = textoParaCopiar;
     document.body.appendChild(auxiliar);
