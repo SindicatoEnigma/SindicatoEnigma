@@ -245,10 +245,12 @@ async function iniciarReconocimiento() {
 
     } finally {
 
-        procesando = false;
+    procesando = false;
 
-        cambiarEstadoBotones(false);
-    }
+    cambiarEstadoBotones(false);
+
+    actualizarBotonCopiar();
+}
 }
 
 
