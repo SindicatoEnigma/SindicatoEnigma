@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#151515">
+  <title>Descifrador Monoalfabético | Sindicato Enigma</title>
+  <link rel="stylesheet" href="monoalfabetico.css">
+</head>
+<body>
+
+  <main class="contenedor">
+
+    <header class="encabezado">
+      <p class="marca">SINDICATO ENIGMA</p>
+      <h1>Descifrador Monoalfabético</h1>
+      <p class="subtitulo">
+        Analiza, investiga y prueba sustituciones carácter por carácter.
+      </p>
+    </header>
+
+    <section class="modulo">
+      <h2>1. Texto cifrado</h2>
+      <p class="descripcion">
+        Introduce el mensaje que deseas analizar.
+      </p>
+
+      <textarea
+        id="textoEntrada"
+        placeholder="Escribe o pega aquí el texto cifrado..."
+        spellcheck="false"
+      ></textarea>
+
+      <div class="informacion">
+        <span id="contador">0 caracteres</span>
+      </div>
+
+      <div class="acciones">
+        <button id="btnAnalizar" class="boton principal">
+          Analizar texto
+        </button>
+        <button id="btnLimpiar" class="boton secundario">
+          Limpiar
+        </button>
+      </div>
+    </section>
+
+    <section class="modulo">
+      <h2>2. Análisis de frecuencias</h2>
+      <p class="descripcion">
+        Caracteres encontrados, ordenados de mayor a menor frecuencia.
+      </p>
+
+      <div id="resumen" class="resumen">
+        Esperando el análisis del texto.
+      </div>
+
+      <div class="tabla-contenedor">
+        <table>
+          <thead>
+            <tr>
+              <th>Carácter</th>
+              <th>Frecuencia</th>
+              <th>Porcentaje</th>
+            </tr>
+          </thead>
+          <tbody id="tablaFrecuencias">
+            <tr>
+              <td colspan="3" class="vacio">
+                No hay resultados.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="modulo">
+      <h2>3. Tabla de sustituciones</h2>
+      <p class="descripcion">
+        Escribe el carácter que consideras que corresponde a cada carácter cifrado.
+        Deja el campo vacío si todavía no tienes una hipótesis.
+      </p>
+
+      <div class="leyenda">
+        <span>Carácter cifrado</span>
+        <span>Carácter original supuesto</span>
+      </div>
+
+      <div id="tablaSustituciones" class="lista-sustituciones">
+        <p class="vacio">Primero analiza un texto.</p>
+      </div>
+
+      <p class="nota">
+        Cada destino debe ser único. Para introducir caracteres especiales:
+        ␠ = espacio, ↵ = salto de línea, ⇥ = tabulación.
+        También puedes escribir directamente otros caracteres.
+      </p>
+    </section>
+
+    <section class="modulo">
+      <h2>4. Texto descifrado provisional</h2>
+      <p class="descripcion">
+        El resultado cambiará automáticamente conforme edites las sustituciones.
+      </p>
+
+      <textarea
+        id="textoResultado"
+        readonly
+        placeholder="Aquí aparecerá el texto transformado..."
+      ></textarea>
+
+      <button id="btnCopiarResultado" class="boton secundario">
+        Copiar resultado provisional
+      </button>
+    </section>
+
+    <section class="modulo">
+      <h2>5. Confirmar solución</h2>
+      <p class="descripcion">
+        Comprueba que las correspondencias sean coherentes y guarda la tabla
+        de sustituciones actual.
+      </p>
+
+      <div id="mensajeEstado" class="mensaje-estado" aria-live="polite">
+        Todavía no se ha confirmado ninguna solución.
+      </div>
+
+      <button id="btnConfirmar" class="boton principal">
+        Confirmar descifrado
+      </button>
+
+      <div id="resultadoConfirmado" class="confirmado oculto">
+        <h3>Correspondencias confirmadas</h3>
+
+        <div class="tabla-contenedor">
+          <table>
+            <thead>
+              <tr>
+                <th>Carácter cifrado</th>
+                <th>Carácter original</th>
+              </tr>
+            </thead>
+            <tbody id="tablaConfirmada"></tbody>
+          </table>
+        </div>
+
+        <h3>Mensaje confirmado</h3>
+        <textarea id="textoConfirmado" readonly></textarea>
+
+        <button id="btnCopiarConfirmado" class="boton secundario">
+          Copiar mensaje confirmado
+        </button>
+
+        <button id="btnEditar" class="boton secundario">
+          Seguir editando
+        </button>
+      </div>
+    </section>
+
+    <footer class="pie">
+      <p>SINDICATO ENIGMA</p>
+      <span>Investigación · Lógica · Criptografía</span>
+    </footer>
+
+  </main>
+
+  <script src="monoalfabetico.js"></script>
+</body>
+</html>
