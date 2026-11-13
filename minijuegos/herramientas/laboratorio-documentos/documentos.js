@@ -1,14 +1,15 @@
 /* =========================================================
    SINDICATO ENIGMA
    LABORATORIO DE DOCUMENTOS OCR
-   VERSIÓN 4.1 - DETECCIÓN CORREGIDA Y DIAGNÓSTICO
+   VERSIÓN 4.2
 
    - Cinco variantes de imagen.
-   - Detección visual de bloques y líneas.
+   - Detección de bloques y después de líneas.
    - OCR exclusivamente PSM 7.
-   - Recortes ampliados antes del reconocimiento.
-   - Respaldo con imagen completa si falla la detección.
+   - Reconocimiento individual de cada línea.
+   - Cinco transcripciones completas.
    - Comparación y consenso de caracteres.
+   - Sin cambios en HTML ni CSS.
    ========================================================= */
 
 
@@ -216,18 +217,15 @@ function convertirEscalaGrises(canvas, contraste = 1) {
     return canvas;
 }
 
-
 function crearImagenOriginal(original) {
     return clonarCanvas(original);
 }
-
 
 function crearImagenContraste(original) {
     return convertirEscalaGrises(
         clonarCanvas(original), 1.18
     );
 }
-
 
 function crearImagenEnfocada(original) {
     const canvas = clonarCanvas(original);
@@ -279,7 +277,6 @@ function crearImagenEnfocada(original) {
     return canvas;
 }
 
-
 function crearImagenSinRuido(original) {
     const canvas = document.createElement("canvas");
 
@@ -298,7 +295,6 @@ function crearImagenSinRuido(original) {
 
     return canvas;
 }
-
 
 function crearImagenAdaptativa(original) {
     const canvas = clonarCanvas(original);
@@ -396,7 +392,6 @@ function crearImagenAdaptativa(original) {
     return canvas;
 }
 
-
 function crearVariantes(original) {
     return [
         crearImagenOriginal(original),
@@ -409,7 +404,7 @@ function crearVariantes(original) {
 
 
 /* =========================================================
-   6. DETECCIÓN DE TEXTO CON UMBRAL TOLERANTE
+   6. DETECCIÓN VISUAL CON UMBRAL TOLERANTE
    ========================================================= */
 
 function obtenerMascaraFlexible(canvas, ajuste = 0) {
@@ -425,7 +420,6 @@ function obtenerMascaraFlexible(canvas, ajuste = 0) {
 
     const umbralBase = calcularUmbralOtsu(datos);
 
-    // Estimar el color del fondo utilizando las esquinas.
     const puntos = [
         0,
         (ancho - 1) * 4,
@@ -443,8 +437,6 @@ function obtenerMascaraFlexible(canvas, ajuste = 0) {
 
     const mediaBordes = sumaBordes / puntos.length;
 
-    // Fondo claro: texto oscuro.
-    // Fondo oscuro: texto claro.
     const textoOscuro = mediaBordes >= umbralBase;
 
     let umbral = umbralBase + ajuste;
@@ -477,7 +469,7 @@ function obtenerMascaraFlexible(canvas, ajuste = 0) {
 
 
 /* =========================================================
-   7. DETECTAR BANDAS HORIZONTALES
+   7. AGRUPAR FILAS ACTIVAS
    ========================================================= */
 
 function agruparFilas(proyeccion, ancho, alto) {
@@ -498,7 +490,6 @@ function agruparFilas(proyeccion, ancho, alto) {
     let inicio = null;
     let ultimaActiva = null;
 
-    // Permitir pequeños huecos entre trazos de una misma línea.
     const huecoMaximo = Math.max(
         2,
         Math.min(5, Math.round(alto * 0.0015))
@@ -535,14 +526,13 @@ function agruparFilas(proyeccion, ancho, alto) {
 
 
 /* =========================================================
-   8. DETECTAR LÍNEAS Y BLOQUES
+   8. DETECTAR BLOQUES Y DESPUÉS SUS LÍNEAS
    ========================================================= */
 
 function detectarLineas(canvas) {
     const ancho = canvas.width;
     const alto = canvas.height;
 
-    // Probar varios umbrales para evitar perder letras tenues.
     const ajustes = [0, -12, 12];
 
     let mejorResultado = null;
@@ -555,7 +545,9 @@ function detectarLineas(canvas) {
 
         const mascara = datosMascara.mascara;
 
-        const proyeccion = new Array(alto).fill(0);
+        // PRIMER PASO:
+        // Proyección horizontal para localizar regiones de texto.
+        const proyeccionGlobal = new Array(alto).fill(0);
 
         for (let y = 0; y < alto; y++) {
             let cantidad = 0;
@@ -564,47 +556,187 @@ function detectarLineas(canvas) {
                 cantidad += mascara[y * ancho + x];
             }
 
-            proyeccion[y] = cantidad;
+            proyeccionGlobal[y] = cantidad;
         }
 
-        let grupos = agruparFilas(
-            proyeccion,
+        const bandasGlobales = agruparFilas(
+            proyeccionGlobal,
             ancho,
             alto
-        );
-
-        // Descartar grupos excesivamente pequeños.
-        grupos = grupos.filter(grupo => {
-            const altura = grupo.y1 - grupo.y0;
-
+        ).filter(banda => {
+            const altura = banda.y1 - banda.y0;
             let pixeles = 0;
 
-            for (let y = grupo.y0; y < grupo.y1; y++) {
-                pixeles += proyeccion[y];
+            for (let y = banda.y0; y < banda.y1; y++) {
+                pixeles += proyeccionGlobal[y];
             }
 
             return altura >= 3 && pixeles >= 4;
         });
 
-        const puntuacion = grupos.length;
+        if (!bandasGlobales.length) continue;
+
+        const alturas = bandasGlobales.map(
+            banda => banda.y1 - banda.y0
+        );
+
+        const alturasOrdenadas = [...alturas].sort(
+            (a, b) => a - b
+        );
+
+        const alturaMediana =
+            alturasOrdenadas[
+                Math.floor(alturasOrdenadas.length / 2)
+            ] || 10;
+
+        // SEGUNDO PASO:
+        // Agrupar las bandas próximas para formar bloques.
+        const bloquesVerticales = [];
+
+        let bloqueActual = [];
+
+        const separacionBloques = Math.max(
+            alturaMediana * 1.8,
+            alturaMediana + 8
+        );
+
+        for (const banda of bandasGlobales) {
+            if (!bloqueActual.length) {
+                bloqueActual.push(banda);
+                continue;
+            }
+
+            const anterior =
+                bloqueActual[bloqueActual.length - 1];
+
+            const espacio = banda.y0 - anterior.y1;
+
+            if (espacio > separacionBloques) {
+                bloquesVerticales.push(bloqueActual);
+                bloqueActual = [banda];
+            } else {
+                bloqueActual.push(banda);
+            }
+        }
+
+        if (bloqueActual.length) {
+            bloquesVerticales.push(bloqueActual);
+        }
+
+        // TERCER PASO:
+        // Entrar en cada bloque y volver a detectar
+        // las líneas usando solamente su región vertical.
+        const bloquesFinales = [];
+        const lineasFinales = [];
+
+        for (
+            let indiceBloque = 0;
+            indiceBloque < bloquesVerticales.length;
+            indiceBloque++
+        ) {
+            const bandasBloque =
+                bloquesVerticales[indiceBloque];
+
+            const inicioBloque =
+                bandasBloque[0].y0;
+
+            const finalBloque =
+                bandasBloque[bandasBloque.length - 1].y1;
+
+            const altoBloque =
+                finalBloque - inicioBloque;
+
+            const proyeccionBloque =
+                new Array(altoBloque).fill(0);
+
+            for (
+                let y = inicioBloque;
+                y < finalBloque;
+                y++
+            ) {
+                proyeccionBloque[y - inicioBloque] =
+                    proyeccionGlobal[y];
+            }
+
+            const bandasLinea = agruparFilas(
+                proyeccionBloque,
+                ancho,
+                altoBloque
+            ).filter(linea => {
+                const altura = linea.y1 - linea.y0;
+                let pixeles = 0;
+
+                for (let y = linea.y0; y < linea.y1; y++) {
+                    pixeles +=
+                        proyeccionBloque[y];
+                }
+
+                return altura >= 3 && pixeles >= 4;
+            });
+
+            const lineasBloque = [];
+
+            for (const bandaLinea of bandasLinea) {
+                const y0 =
+                    inicioBloque + bandaLinea.y0;
+
+                const y1 =
+                    inicioBloque + bandaLinea.y1;
+
+                let x0 = ancho;
+                let x1 = -1;
+
+                for (let y = y0; y < y1; y++) {
+                    for (let x = 0; x < ancho; x++) {
+                        if (mascara[y * ancho + x]) {
+                            if (x < x0) x0 = x;
+                            if (x > x1) x1 = x;
+                        }
+                    }
+                }
+
+                if (x1 < x0) continue;
+
+                const linea = {
+                    x0,
+                    y0,
+                    x1: x1 + 1,
+                    y1,
+                    centroY: (y0 + y1) / 2,
+                    bloque: indiceBloque
+                };
+
+                lineasBloque.push(linea);
+                lineasFinales.push(linea);
+            }
+
+            if (lineasBloque.length) {
+                bloquesFinales.push(lineasBloque);
+            }
+        }
+
+        const puntuacion = lineasFinales.length;
 
         if (
             !mejorResultado ||
             puntuacion > mejorResultado.lineas.length
         ) {
             mejorResultado = {
-                lineas: grupos,
-                mascara,
+                lineas: lineasFinales,
+                bloques: bloquesFinales,
+                alturaMediana,
                 umbral: datosMascara.umbral,
                 polaridad: datosMascara.textoOscuro
                     ? "Texto oscuro sobre fondo claro"
-                    : "Texto claro sobre fondo oscuro",
-                mediaBordes: datosMascara.mediaBordes
+                    : "Texto claro sobre fondo oscuro"
             };
         }
     }
 
-    if (!mejorResultado || !mejorResultado.lineas.length) {
+    if (
+        !mejorResultado ||
+        !mejorResultado.lineas.length
+    ) {
         return {
             lineas: [],
             bloques: [],
@@ -614,98 +746,10 @@ function detectarLineas(canvas) {
         };
     }
 
-    const mascara = mejorResultado.mascara;
-
-    const lineasFinales = [];
-
-    for (const linea of mejorResultado.lineas) {
-        let x0 = ancho;
-        let x1 = -1;
-
-        for (let y = linea.y0; y < linea.y1; y++) {
-            for (let x = 0; x < ancho; x++) {
-                if (mascara[y * ancho + x]) {
-                    if (x < x0) x0 = x;
-                    if (x > x1) x1 = x;
-                }
-            }
-        }
-
-        if (x1 >= x0) {
-            lineasFinales.push({
-                x0,
-                y0: linea.y0,
-                x1: x1 + 1,
-                y1: linea.y1,
-                centroY: (linea.y0 + linea.y1) / 2
-            });
-        }
-    }
-
-    if (!lineasFinales.length) {
-        return {
-            lineas: [],
-            bloques: [],
-            alturaMediana: 0,
-            umbral: mejorResultado.umbral,
-            polaridad: mejorResultado.polaridad
-        };
-    }
-
-    const alturas = lineasFinales.map(
-        linea => linea.y1 - linea.y0
-    );
-
-    const alturasOrdenadas = [...alturas].sort(
-        (a, b) => a - b
-    );
-
-    const alturaMediana =
-        alturasOrdenadas[
-            Math.floor(alturasOrdenadas.length / 2)
-        ] || 10;
-
-    // Agrupar líneas en bloques según el espacio vertical.
-    const bloques = [];
-
-    let bloqueActual = [];
-
-    for (const linea of lineasFinales) {
-        if (!bloqueActual.length) {
-            bloqueActual.push(linea);
-            continue;
-        }
-
-        const anterior = bloqueActual[
-            bloqueActual.length - 1
-        ];
-
-        const espacio = linea.y0 - anterior.y1;
-
-        if (espacio > alturaMediana * 1.8) {
-            bloques.push(bloqueActual);
-            bloqueActual = [linea];
-        } else {
-            bloqueActual.push(linea);
-        }
-    }
-
-    if (bloqueActual.length) {
-        bloques.push(bloqueActual);
-    }
-
-    lineasFinales.forEach(linea => {
-        const bloque = bloques.findIndex(grupo =>
-            grupo.includes(linea)
-        );
-
-        linea.bloque = Math.max(0, bloque);
-    });
-
     return {
-        lineas: lineasFinales,
-        bloques,
-        alturaMediana,
+        lineas: mejorResultado.lineas,
+        bloques: mejorResultado.bloques,
+        alturaMediana: mejorResultado.alturaMediana,
         umbral: mejorResultado.umbral,
         polaridad: mejorResultado.polaridad
     };
@@ -754,7 +798,6 @@ function recortarLinea(canvas, linea) {
 
     const ctx = recorte.getContext("2d");
 
-    // Fondo blanco para evitar recortes transparentes.
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, recorte.width, recorte.height);
 
@@ -763,23 +806,6 @@ function recortarLinea(canvas, linea) {
         x0, y0, ancho, alto,
         0, 0, recorte.width, recorte.height
     );
-
-    return recorte;
-}
-
-
-function prepararImagenCompleta(canvas) {
-    const recorte = document.createElement("canvas");
-
-    recorte.width = canvas.width;
-    recorte.height = canvas.height;
-
-    const ctx = recorte.getContext("2d");
-
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(0, 0, recorte.width, recorte.height);
-
-    ctx.drawImage(canvas, 0, 0);
 
     return recorte;
 }
@@ -816,12 +842,10 @@ function distanciaLevenshtein(a, b) {
     return matriz[a.length][b.length];
 }
 
-
 function porcentajeCoincidencia(a, b) {
     if (!a.length && !b.length) return 100;
 
     const distancia = distanciaLevenshtein(a, b);
-
     const longitud = Math.max(a.length, b.length);
 
     if (!longitud) return 100;
@@ -834,7 +858,7 @@ function porcentajeCoincidencia(a, b) {
 
 
 /* =========================================================
-   11. ALINEACIÓN DE CARACTERES
+   11. ALINEACIÓN Y CONSENSO DE CARACTERES
    ========================================================= */
 
 function obtenerConsensoColumnas(columnas) {
@@ -865,7 +889,6 @@ function obtenerConsensoColumnas(columnas) {
         return mejorCaracter;
     }).join("");
 }
-
 
 function alinearLectura(columnas, nuevoTexto, cantidadLecturas) {
     const textoActual = obtenerConsensoColumnas(columnas);
@@ -963,7 +986,6 @@ function alinearLectura(columnas, nuevoTexto, cantidadLecturas) {
     return nuevasColumnas;
 }
 
-
 function construirConsenso(lecturas) {
     const validas = lecturas.filter(
         texto => texto && texto.trim()
@@ -1015,14 +1037,14 @@ async function prepararOCR() {
             logger: mensaje => {
                 if (mensaje.status === "recognizing text") {
                     actualizarEstado(
-                        "Reconociendo texto..."
+                        "Reconociendo línea..."
                     );
                 }
             }
         }
     );
 
-    // ÚNICO MODO DE SEGMENTACIÓN UTILIZADO.
+    // ÚNICO MODO DE RECONOCIMIENTO UTILIZADO.
     await workerOCR.setParameters({
         tessedit_pageseg_mode: "7"
     });
@@ -1032,7 +1054,7 @@ async function prepararOCR() {
 
 
 /* =========================================================
-   13. RECONOCER UNA IMAGEN
+   13. RECONOCER UNA LÍNEA
    ========================================================= */
 
 async function reconocerImagen(worker, canvas) {
@@ -1049,6 +1071,7 @@ async function reconocerImagen(worker, canvas) {
 
 /* =========================================================
    14. ANALIZAR UNA VARIANTE
+   BLOQUES → LÍNEAS → OCR PSM 7
    ========================================================= */
 
 async function analizarVariante(
@@ -1058,10 +1081,11 @@ async function analizarVariante(
     progresoInicial,
     progresoTotal
 ) {
+    // Primero detectar bloques y después sus líneas.
     const deteccion = detectarLineas(canvas);
 
-    const lineas = deteccion.lineas || [];
     const bloques = deteccion.bloques || [];
+    const lineas = deteccion.lineas || [];
 
     const resultadosLineas = [];
 
@@ -1069,124 +1093,119 @@ async function analizarVariante(
     let lineasReconocidas = 0;
     let lineasIntentadas = 0;
 
-    let usoRespaldo = false;
-    let motivoRespaldo = "";
-
-    // Si no hay líneas, intentar con la imagen completa.
-    if (lineas.length === 0) {
-        usoRespaldo = true;
-        motivoRespaldo =
-            "El detector no encontró líneas. Se utilizó la imagen completa.";
-
-        const imagenCompleta = prepararImagenCompleta(canvas);
-
-        const lectura = await reconocerImagen(
-            worker,
-            imagenCompleta
-        );
-
-        lineasIntentadas = 1;
-
-        if (lectura.texto) {
-            lineasReconocidas = 1;
-            sumaConfianza += lectura.confianza;
-        }
-
+    if (!lineas.length) {
         return {
             nombre: VARIANTES[numeroVariante - 1],
-            texto: lectura.texto,
+            texto: "",
             lineas: [],
             bloques: [],
-            confianza: lectura.confianza,
+            alturaMediana: deteccion.alturaMediana || 0,
+            confianza: 0,
             lineasDetectadas: 0,
-            lineasIntentadas,
-            lineasReconocidas,
-            usoRespaldo,
-            motivoRespaldo,
+            lineasIntentadas: 0,
+            lineasReconocidas: 0,
+            usoRespaldo: false,
+            motivoRespaldo:
+                "No se encontraron líneas dentro de los bloques detectados.",
             umbral: deteccion.umbral,
             polaridad: deteccion.polaridad
         };
     }
 
-    // Reconocimiento individual de cada línea.
-    for (let i = 0; i < lineas.length; i++) {
-        const recorte = recortarLinea(
-            canvas,
-            lineas[i]
-        );
+    // Recorrer primero los bloques.
+    for (
+        let indiceBloque = 0;
+        indiceBloque < bloques.length;
+        indiceBloque++
+    ) {
+        const lineasDelBloque = bloques[indiceBloque];
 
-        let lectura = {
-            texto: "",
-            confianza: 0
-        };
+        // Después recorrer las líneas de ese bloque.
+        for (
+            let indiceLinea = 0;
+            indiceLinea < lineasDelBloque.length;
+            indiceLinea++
+        ) {
+            const linea = lineasDelBloque[indiceLinea];
 
-        lineasIntentadas++;
-
-        try {
-            lectura = await reconocerImagen(
-                worker,
-                recorte
+            const recorte = recortarLinea(
+                canvas,
+                linea
             );
-        } catch (error) {
-            console.error(
-                "Error al reconocer línea:",
-                error
+
+            let lectura = {
+                texto: "",
+                confianza: 0
+            };
+
+            lineasIntentadas++;
+
+            try {
+                // Reconocimiento individual con PSM 7.
+                lectura = await reconocerImagen(
+                    worker,
+                    recorte
+                );
+            } catch (error) {
+                console.error(
+                    "Error al reconocer línea:",
+                    error
+                );
+            }
+
+            if (lectura.texto) {
+                lineasReconocidas++;
+                sumaConfianza += lectura.confianza;
+            }
+
+            resultadosLineas.push({
+                ...linea,
+                texto: lectura.texto,
+                confianza: lectura.confianza
+            });
+
+            const avance =
+                progresoInicial +
+                (
+                    lineasIntentadas / lineas.length
+                ) * progresoTotal;
+
+            actualizarProgreso(avance);
+
+            actualizarEstado(
+                "Imagen " + numeroVariante +
+                " de 5 | Bloque " +
+                (indiceBloque + 1) +
+                " de " + bloques.length +
+                " | Línea " +
+                (indiceLinea + 1) +
+                " de " + lineasDelBloque.length
             );
         }
+    }
 
-        if (lectura.texto) {
-            lineasReconocidas++;
-            sumaConfianza += lectura.confianza;
-        }
+    // Reconstruir el texto respetando el orden de los bloques.
+    const textosBloques = [];
 
-        resultadosLineas.push({
-            ...lineas[i],
-            texto: lectura.texto,
-            confianza: lectura.confianza
-        });
+    for (
+        let indiceBloque = 0;
+        indiceBloque < bloques.length;
+        indiceBloque++
+    ) {
+        const lineasTexto = resultadosLineas
+            .filter(
+                linea => linea.bloque === indiceBloque
+            )
+            .map(linea => linea.texto.trim());
 
-        const avance =
-            progresoInicial +
-            ((i + 1) / lineas.length) * progresoTotal;
-
-        actualizarProgreso(avance);
-
-        actualizarEstado(
-            "Imagen " + numeroVariante +
-            " de 5 | Línea " + (i + 1) +
-            " de " + lineas.length
+        textosBloques.push(
+            lineasTexto.join("\n")
         );
     }
 
-    // Si todas las líneas resultaron vacías,
-    // intentar una vez con la imagen completa.
-    let textoCompleto = resultadosLineas
-        .map(linea => linea.texto)
-        .filter(Boolean)
-        .join("\n");
-
-    if (!textoCompleto.trim()) {
-        usoRespaldo = true;
-
-        motivoRespaldo =
-            "Las líneas fueron detectadas, pero ninguna produjo texto. " +
-            "Se intentó reconocer la imagen completa.";
-
-        const imagenCompleta = prepararImagenCompleta(canvas);
-
-        const lecturaCompleta = await reconocerImagen(
-            worker,
-            imagenCompleta
-        );
-
-        lineasIntentadas++;
-
-        if (lecturaCompleta.texto) {
-            textoCompleto = lecturaCompleta.texto;
-            lineasReconocidas++;
-            sumaConfianza += lecturaCompleta.confianza;
-        }
-    }
+    const textoCompleto = textosBloques
+        .filter(texto => texto.length > 0)
+        .join("\n\n");
 
     const confianzaMedia = lineasReconocidas
         ? sumaConfianza / lineasReconocidas
@@ -1197,12 +1216,13 @@ async function analizarVariante(
         texto: textoCompleto,
         lineas: resultadosLineas,
         bloques,
+        alturaMediana: deteccion.alturaMediana,
         confianza: confianzaMedia,
         lineasDetectadas: lineas.length,
         lineasIntentadas,
         lineasReconocidas,
-        usoRespaldo,
-        motivoRespaldo,
+        usoRespaldo: false,
+        motivoRespaldo: "",
         umbral: deteccion.umbral,
         polaridad: deteccion.polaridad
     };
@@ -1247,12 +1267,10 @@ function buscarLineaCorrespondiente(
     return mejor;
 }
 
-
 function crearTextoConsenso(resultados) {
     const original = resultados[0];
 
     if (!original || !original.lineas.length) {
-        // Si hubo respaldo, comparar las lecturas completas.
         return construirConsenso(
             resultados.map(r => r.texto)
         );
@@ -1443,12 +1461,11 @@ function mostrarResultados(resultados, consenso) {
             lectura.polaridad + "\n";
 
         salida +=
-            "Respaldo imagen completa: " +
-            (lectura.usoRespaldo ? "SÍ" : "NO") + "\n";
+            "Respaldo imagen completa: NO\n";
 
         if (lectura.motivoRespaldo) {
             salida +=
-                "Motivo: " +
+                "Diagnóstico: " +
                 lectura.motivoRespaldo + "\n";
         }
 
@@ -1551,12 +1568,7 @@ async function analizarDocumento() {
 
         actualizarProgreso(97);
 
-        // Construir consenso.
         const consenso = crearTextoConsenso(resultados);
-
-        // Guardar altura mediana para emparejamiento.
-        resultados[0].alturaMediana =
-            resultados[0].alturaMediana || 10;
 
         mostrarResultados(
             resultados,
