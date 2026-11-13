@@ -116,6 +116,7 @@ imagenInput.addEventListener("change", function (evento) {
         img.onload = function () {
 
             imagenCargada = img;
+            btnAnalizar.disabled = false;
 
             if (vistaPrevia) {
                 vistaPrevia.src = e.target.result;
