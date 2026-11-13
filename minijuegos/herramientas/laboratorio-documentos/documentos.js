@@ -926,6 +926,11 @@ async function reconocerBloques(
    16. PASADA 2: LÍNEAS CON PSM 7
    ========================================================= */
 
+
+/* =========================================================
+   16. PASADA 2: LÍNEAS CON PSM 7 Y PSM 13
+   ========================================================= */
+
 async function reconocerLineas(
     worker,
     canvas,
@@ -938,21 +943,57 @@ async function reconocerLineas(
     let reconocidos = 0;
 
     for (let i = 0; i < lineas.length; i++) {
+
+        // Recorte ligeramente ampliado para conservar
+        // mejor los bordes superiores e inferiores.
         const recorte = crearRecorte(
             canvas,
-            lineas[i]
+            lineas[i],
+            3
         );
 
-        const lectura = await reconocerRegion(
+        // Primer intento: PSM 7.
+        const lectura7 = await reconocerRegion(
             worker,
             recorte,
             7
         );
 
-        lecturas.push(lectura.texto);
+        // Segundo intento: PSM 13.
+        const lectura13 = await reconocerRegion(
+            worker,
+            recorte,
+            13
+        );
 
-        if (lectura.texto) {
-            sumaConfianza += lectura.confianza;
+        let mejorLectura;
+
+        // Si una lectura está vacía, elegir la otra.
+        if (!lectura7.texto && lectura13.texto) {
+            mejorLectura = lectura13;
+
+        } else if (!lectura13.texto && lectura7.texto) {
+            mejorLectura = lectura7;
+
+        } else if (!lectura7.texto && !lectura13.texto) {
+            mejorLectura = {
+                texto: "",
+                confianza: 0
+            };
+
+        } else {
+            // Si ambas contienen texto, elegir la de
+            // mayor confianza. En empate, conservar PSM 7.
+            mejorLectura =
+                lectura13.confianza > lectura7.confianza
+                    ? lectura13
+                    : lectura7;
+        }
+
+        lecturas.push(mejorLectura.texto);
+
+        if (mejorLectura.texto) {
+            sumaConfianza += mejorLectura.confianza;
             reconocidos++;
         }
 
@@ -967,10 +1008,12 @@ async function reconocerLineas(
         confianza: reconocidos
             ? sumaConfianza / reconocidos
             : 0,
-        intentos: lineas.length,
-        reconocidos
+        intentos: lineas.length * 2,
+        reconocidos,
+        lineasProcesadas: lineas.length
     };
 }
+
 
 
 /* =========================================================
