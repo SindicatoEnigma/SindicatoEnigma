@@ -1,15 +1,24 @@
-// ==================================================
+
+// ============================================================
 // SINDICATO ENIGMA
 // LABORATORIO DE DOCUMENTOS OCR
-// Tesseract.js v5
-// ==================================================
+// Version: 3.0 - Comparacion de imagen original y modificada
+//
+// Lecturas:
+// PSM 6: Bloques
+// PSM 7: Lineas
+//
+// Variantes:
+// A) Imagen original
+// B) Imagen en grises + contraste + ampliacion
+// ============================================================
 
 
-// ==================================================
+// ------------------------------------------------------------
 // 1. ELEMENTOS HTML
-// ==================================================
+// ------------------------------------------------------------
 
-const entradaImagen = document.getElementById("imagen");
+const imagenInput = document.getElementById("imagen");
 const nombreArchivo = document.getElementById("nombreArchivo");
 const vistaPrevia = document.getElementById("vistaPrevia");
 const contenedorVista = document.getElementById("contenedorVista");
@@ -22,7 +31,6 @@ const resultado = document.getElementById("resultado");
 const estado = document.getElementById("estado");
 const barraProgreso = document.getElementById("barraProgreso");
 const progresoContenedor = document.getElementById("progresoContenedor");
-
 const estadoResultado = document.getElementById("estadoResultado");
 const resumen = document.getElementById("resumen");
 
@@ -30,455 +38,390 @@ const totalBloques = document.getElementById("totalBloques");
 const totalLineas = document.getElementById("totalLineas");
 const totalPalabras = document.getElementById("totalPalabras");
 const totalCaracteres = document.getElementById("totalCaracteres");
-
 const confianza = document.getElementById("confianza");
 const coincidencia = document.getElementById("coincidencia");
 
+
+// ------------------------------------------------------------
+// 2. VARIABLES
+// ------------------------------------------------------------
+
+let archivoSeleccionado = null;
 let imagenCargada = null;
-let trabajando = false;
+let canvasOriginal = null;
+
+let worker = null;
+let idiomaWorker = null;
+let procesando = false;
 
 
-// ==================================================
-// 2. SELECCIÓN DE IMAGEN
-// ==================================================
+// ------------------------------------------------------------
+// 3. UTILIDADES DE INTERFAZ
+// ------------------------------------------------------------
 
-entradaImagen.addEventListener("change", () => {
+function mostrarEstado(mensaje) {
+    if (estado) {
+        estado.textContent = mensaje;
+    }
+}
 
-    const archivo = entradaImagen.files[0];
+function actualizarProgreso(valor) {
+    const porcentaje = Math.max(0, Math.min(100, valor));
+
+    if (barraProgreso) {
+        barraProgreso.style.width = porcentaje + "%";
+    }
+}
+
+function actualizarResumen(mensaje) {
+    if (resumen) {
+        resumen.textContent = mensaje;
+    }
+}
+
+function actualizarEstadistica(elemento, valor) {
+    if (elemento) {
+        elemento.textContent = valor;
+    }
+}
+
+
+// ------------------------------------------------------------
+// 4. CARGAR IMAGEN
+// ------------------------------------------------------------
+
+imagenInput.addEventListener("change", function (evento) {
+
+    const archivo = evento.target.files[0];
 
     if (!archivo) return;
 
     if (!archivo.type.startsWith("image/")) {
-
-        alert("Selecciona una imagen válida.");
-        entradaImagen.value = "";
+        mostrarEstado("Selecciona un archivo de imagen válido.");
         return;
+    }
+
+    archivoSeleccionado = archivo;
+
+    if (nombreArchivo) {
+        nombreArchivo.textContent = archivo.name;
     }
 
     const lector = new FileReader();
 
-    lector.onload = () => {
+    lector.onload = function (e) {
 
-        const imagen = new Image();
+        const img = new Image();
 
-        imagen.onload = () => {
+        img.onload = function () {
 
-            imagenCargada = imagen;
+            imagenCargada = img;
 
-            vistaPrevia.src = lector.result;
-            contenedorVista.hidden = false;
+            if (vistaPrevia) {
+                vistaPrevia.src = e.target.result;
+            }
 
-            nombreArchivo.textContent = archivo.name;
+            if (contenedorVista) {
+                contenedorVista.hidden = false;
+            }
 
-            btnAnalizar.disabled = false;
-            btnCopiar.disabled = true;
+            mostrarEstado("Imagen cargada correctamente.");
+            actualizarResumen("Imagen lista para analizar.");
 
-            resultado.value = "";
-            resumen.hidden = true;
-
-            estadoResultado.textContent = "Imagen preparada";
+            if (resultado) {
+                resultado.value = "";
+            }
         };
 
-        imagen.onerror = () => {
-            alert("No se pudo abrir la imagen.");
+        img.onerror = function () {
+            mostrarEstado("No se pudo cargar la imagen.");
         };
 
-        imagen.src = lector.result;
+        img.src = e.target.result;
     };
 
     lector.readAsDataURL(archivo);
 });
 
 
-// ==================================================
-// 3. PREPARAR IMAGEN
-// ==================================================
+// ------------------------------------------------------------
+// 5. PREPARAR IMAGEN ORIGINAL
+// ------------------------------------------------------------
 
-function crearImagenTrabajo(imagen) {
-
-    const MAXIMO = 2600;
-
-    let ancho = imagen.naturalWidth;
-    let alto = imagen.naturalHeight;
-
-    const escala = Math.min(
-        1,
-        MAXIMO / Math.max(ancho, alto)
-    );
-
-    ancho = Math.max(1, Math.round(ancho * escala));
-    alto = Math.max(1, Math.round(alto * escala));
+function prepararImagenOriginal(img) {
 
     const canvas = document.createElement("canvas");
+
+    const maximo = 2600;
+
+    let ancho = img.naturalWidth;
+    let alto = img.naturalHeight;
+
+    const proporcion = Math.min(
+        1,
+        maximo / Math.max(ancho, alto)
+    );
+
+    ancho = Math.round(ancho * proporcion);
+    alto = Math.round(alto * proporcion);
 
     canvas.width = ancho;
     canvas.height = alto;
 
-    const contexto = canvas.getContext("2d", {
-        willReadFrequently: true
-    });
+    const ctx = canvas.getContext("2d");
 
-    contexto.drawImage(
-        imagen,
-        0,
-        0,
-        ancho,
-        alto
-    );
+    ctx.drawImage(img, 0, 0, ancho, alto);
 
     return canvas;
 }
 
 
-// ==================================================
-// 4. UMBRAL AUTOMÁTICO
-// ==================================================
+// ------------------------------------------------------------
+// 6. MODIFICAR IMAGEN
+//
+// Tratamiento:
+// - Escala de grises
+// - Contraste moderado
+// - Ampliacion al 150%
+//
+// No se utiliza binarizacion Otsu.
+// Esto permite conservar detalles pequeños como acentos
+// y los puntos de la dieresis.
+// ------------------------------------------------------------
 
-function calcularUmbral(datos) {
+function modificarImagen(canvasBase) {
 
-    const histograma = new Array(256).fill(0);
-    const cantidad = datos.length / 4;
+    const factorAmpliacion = 1.5;
+    const factorContraste = 1.18;
 
-    for (let i = 0; i < datos.length; i += 4) {
+    const nuevoCanvas = document.createElement("canvas");
 
-        const gris = Math.round(
-            datos[i] * 0.299 +
-            datos[i + 1] * 0.587 +
-            datos[i + 2] * 0.114
-        );
+    nuevoCanvas.width = Math.round(
+        canvasBase.width * factorAmpliacion
+    );
 
-        histograma[gris]++;
-    }
+    nuevoCanvas.height = Math.round(
+        canvasBase.height * factorAmpliacion
+    );
 
-    let sumaTotal = 0;
-
-    for (let i = 0; i < 256; i++) {
-        sumaTotal += i * histograma[i];
-    }
-
-    let sumaFondo = 0;
-    let pesoFondo = 0;
-    let mejorVarianza = 0;
-    let umbral = 127;
-
-    for (let i = 0; i < 256; i++) {
-
-        pesoFondo += histograma[i];
-
-        if (pesoFondo === 0) continue;
-
-        const pesoTexto = cantidad - pesoFondo;
-
-        if (pesoTexto === 0) break;
-
-        sumaFondo += i * histograma[i];
-
-        const mediaFondo = sumaFondo / pesoFondo;
-
-        const mediaTexto =
-            (sumaTotal - sumaFondo) / pesoTexto;
-
-        const diferencia = mediaFondo - mediaTexto;
-
-        const varianza =
-            pesoFondo *
-            pesoTexto *
-            diferencia *
-            diferencia;
-
-        if (varianza > mejorVarianza) {
-
-            mejorVarianza = varianza;
-            umbral = i;
-        }
-    }
-
-    return umbral;
-}
-
-
-// ==================================================
-// 5. OBTENER MÁSCARA DE TEXTO
-// ==================================================
-
-function obtenerMascara(canvas) {
-
-    const contexto = canvas.getContext("2d", {
+    const ctx = nuevoCanvas.getContext("2d", {
         willReadFrequently: true
     });
 
-    const ancho = canvas.width;
-    const alto = canvas.height;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
 
-    const imagen = contexto.getImageData(
+    ctx.drawImage(
+        canvasBase,
         0,
         0,
-        ancho,
-        alto
+        nuevoCanvas.width,
+        nuevoCanvas.height
     );
 
-    const datos = imagen.data;
-    const umbral = calcularUmbral(datos);
+    const imagenDatos = ctx.getImageData(
+        0,
+        0,
+        nuevoCanvas.width,
+        nuevoCanvas.height
+    );
 
-    let sumaLuminosidad = 0;
-    let muestras = 0;
+    const pixeles = imagenDatos.data;
 
-    for (let i = 0; i < datos.length; i += 16) {
+    for (let i = 0; i < pixeles.length; i += 4) {
 
-        sumaLuminosidad +=
-            datos[i] * 0.299 +
-            datos[i + 1] * 0.587 +
-            datos[i + 2] * 0.114;
+        const rojo = pixeles[i];
+        const verde = pixeles[i + 1];
+        const azul = pixeles[i + 2];
 
-        muestras++;
+        // Conversion a escala de grises.
+        let gris =
+            0.299 * rojo +
+            0.587 * verde +
+            0.114 * azul;
+
+        // Contraste moderado.
+        gris = (gris - 128) * factorContraste + 128;
+
+        gris = Math.max(0, Math.min(255, gris));
+
+        pixeles[i] = gris;
+        pixeles[i + 1] = gris;
+        pixeles[i + 2] = gris;
     }
 
-    const fondoOscuro =
-        sumaLuminosidad / muestras < 127;
+    ctx.putImageData(imagenDatos, 0, 0);
 
-    const mascara = new Uint8Array(ancho * alto);
-
-    for (let y = 0; y < alto; y++) {
-
-        for (let x = 0; x < ancho; x++) {
-
-            const indice = (y * ancho + x) * 4;
-
-            const gris =
-                datos[indice] * 0.299 +
-                datos[indice + 1] * 0.587 +
-                datos[indice + 2] * 0.114;
-
-            const esTexto = fondoOscuro
-                ? gris > umbral
-                : gris < umbral;
-
-            mascara[y * ancho + x] =
-                esTexto ? 1 : 0;
-        }
-    }
-
-    return {
-        ancho,
-        alto,
-        mascara
-    };
+    return nuevoCanvas;
 }
 
 
-// ==================================================
-// 6. DETECTAR BLOQUES
-// ==================================================
+// ------------------------------------------------------------
+// 7. CREAR O REUTILIZAR TESSERACT
+// ------------------------------------------------------------
 
-function detectarBloques(canvas) {
+async function obtenerWorker() {
 
-    const { ancho, alto, mascara } =
-        obtenerMascara(canvas);
+    const selectorIdioma = document.getElementById("idioma");
 
-    const ocupacionFilas = new Array(alto).fill(0);
+    const idioma = selectorIdioma
+        ? selectorIdioma.value
+        : "spa+eng";
 
-    for (let y = 0; y < alto; y++) {
-
-        for (let x = 0; x < ancho; x++) {
-
-            ocupacionFilas[y] +=
-                mascara[y * ancho + x];
-        }
+    if (worker && idiomaWorker === idioma) {
+        return worker;
     }
 
-    const minimoPixeles = Math.max(
-        2,
-        Math.floor(ancho * 0.0007)
-    );
-
-    const filas = [];
-
-    let inicio = -1;
-    let fin = -1;
-
-    for (let y = 0; y < alto; y++) {
-
-        if (ocupacionFilas[y] >= minimoPixeles) {
-
-            if (inicio === -1) inicio = y;
-
-            fin = y;
-
-        } else if (inicio !== -1) {
-
-            filas.push({ inicio, fin });
-
-            inicio = -1;
-            fin = -1;
-        }
+    if (worker) {
+        await worker.terminate();
+        worker = null;
     }
 
-    if (inicio !== -1) {
-        filas.push({ inicio, fin });
-    }
+    mostrarEstado("Cargando motor OCR...");
 
-    if (filas.length === 0) return [];
+    worker = await Tesseract.createWorker(
+        idioma,
+        1,
+        {
+            logger: function (mensaje) {
 
-    const alturas = filas.map(
-        f => f.fin - f.inicio + 1
-    );
+                if (mensaje.status === "recognizing text") {
 
-    const orden = [...alturas].sort((a, b) => a - b);
+                    const porcentaje = mensaje.progress * 100;
 
-    const alturaMediana =
-        orden[Math.floor(orden.length / 2)];
-
-    const separacionMaxima = Math.max(
-        8,
-        Math.round(alturaMediana * 1.8)
-    );
-
-    const grupos = [];
-
-    let grupo = {
-        inicio: filas[0].inicio,
-        fin: filas[0].fin
-    };
-
-    for (let i = 1; i < filas.length; i++) {
-
-        const fila = filas[i];
-
-        const separacion =
-            fila.inicio - grupo.fin - 1;
-
-        if (separacion <= separacionMaxima) {
-
-            grupo.fin = fila.fin;
-
-        } else {
-
-            grupos.push(grupo);
-
-            grupo = {
-                inicio: fila.inicio,
-                fin: fila.fin
-            };
-        }
-    }
-
-    grupos.push(grupo);
-
-    const margenX = Math.max(
-        10,
-        Math.round(ancho * 0.01)
-    );
-
-    const margenY = Math.max(
-        8,
-        Math.round(alturaMediana * 0.8)
-    );
-
-    const bloques = [];
-
-    for (const grupo of grupos) {
-
-        let izquierda = ancho;
-        let derecha = -1;
-
-        for (
-            let y = grupo.inicio;
-            y <= grupo.fin;
-            y++
-        ) {
-
-            for (let x = 0; x < ancho; x++) {
-
-                if (mascara[y * ancho + x]) {
-
-                    izquierda = Math.min(izquierda, x);
-                    derecha = Math.max(derecha, x);
+                    actualizarProgreso(porcentaje);
                 }
             }
         }
+    );
 
-        if (derecha < izquierda) continue;
+    idiomaWorker = idioma;
 
-        const x = Math.max(
-            0,
-            izquierda - margenX
-        );
-
-        const y = Math.max(
-            0,
-            grupo.inicio - margenY
-        );
-
-        const xFinal = Math.min(
-            ancho,
-            derecha + margenX + 1
-        );
-
-        const yFinal = Math.min(
-            alto,
-            grupo.fin + margenY + 1
-        );
-
-        const bloque = {
-            x,
-            y,
-            ancho: xFinal - x,
-            alto: yFinal - y
-        };
-
-        if (bloque.ancho >= 8 && bloque.alto >= 5) {
-            bloques.push(bloque);
-        }
-    }
-
-    return bloques;
+    return worker;
 }
 
 
-// ==================================================
-// 7. CREAR RECORTES CON COORDENADAS
-// ==================================================
+// ------------------------------------------------------------
+// 8. RECONOCIMIENTO POR BLOQUES - PSM 6
+// ------------------------------------------------------------
 
-function crearRecorte(
-    canvasOriginal,
-    region,
-    margen = 3
-) {
+async function reconocerBloques(canvas, motor) {
 
-    const x = Math.max(
+    await motor.setParameters({
+        tessedit_pageseg_mode: "6"
+    });
+
+    const reconocimiento = await motor.recognize(canvas);
+
+    return reconocimiento.data;
+}
+
+
+// ------------------------------------------------------------
+// 9. EXTRAER LINEAS DE LA ESTRUCTURA TESSERACT
+// ------------------------------------------------------------
+
+function extraerLineas(datos) {
+
+    const lineas = [];
+
+    if (datos.blocks) {
+
+        for (const bloque of datos.blocks) {
+
+            if (!bloque.paragraphs) continue;
+
+            for (const parrafo of bloque.paragraphs) {
+
+                if (!parrafo.lines) continue;
+
+                for (const linea of parrafo.lines) {
+
+                    if (!linea.bbox) continue;
+
+                    const texto = (linea.text || "").trim();
+
+                    if (!texto) continue;
+
+                    lineas.push({
+                        texto: texto,
+                        bbox: linea.bbox,
+                        confianza: linea.confidence || 0
+                    });
+                }
+            }
+        }
+    }
+
+    // Compatibilidad con resultados que incluyan data.lines.
+    if (lineas.length === 0 && datos.lines) {
+
+        for (const linea of datos.lines) {
+
+            if (!linea.bbox) continue;
+
+            const texto = (linea.text || "").trim();
+
+            if (!texto) continue;
+
+            lineas.push({
+                texto: texto,
+                bbox: linea.bbox,
+                confianza: linea.confidence || 0
+            });
+        }
+    }
+
+    return lineas;
+}
+
+
+// ------------------------------------------------------------
+// 10. RECORTAR UNA LINEA
+// ------------------------------------------------------------
+
+function crearRecorteLinea(canvas, bbox) {
+
+    const margen = 5;
+
+    const x0 = Math.max(
         0,
-        Math.floor(region.x - margen)
+        Math.floor(bbox.x0 - margen)
     );
 
-    const y = Math.max(
+    const y0 = Math.max(
         0,
-        Math.floor(region.y - margen)
+        Math.floor(bbox.y0 - margen)
     );
 
-    const xFinal = Math.min(
-        canvasOriginal.width,
-        Math.ceil(region.x + region.ancho + margen)
+    const x1 = Math.min(
+        canvas.width,
+        Math.ceil(bbox.x1 + margen)
     );
 
-    const yFinal = Math.min(
-        canvasOriginal.height,
-        Math.ceil(region.y + region.alto + margen)
+    const y1 = Math.min(
+        canvas.height,
+        Math.ceil(bbox.y1 + margen)
     );
 
-    const ancho = Math.max(1, xFinal - x);
-    const alto = Math.max(1, yFinal - y);
+    const ancho = x1 - x0;
+    const alto = y1 - y0;
+
+    if (ancho <= 0 || alto <= 0) {
+        return null;
+    }
 
     const recorte = document.createElement("canvas");
 
     recorte.width = ancho;
     recorte.height = alto;
 
-    const contexto = recorte.getContext("2d");
+    const ctx = recorte.getContext("2d");
 
-    contexto.drawImage(
-        canvasOriginal,
-        x,
-        y,
+    ctx.drawImage(
+        canvas,
+        x0,
+        y0,
         ancho,
         alto,
         0,
@@ -487,34 +430,22 @@ function crearRecorte(
         alto
     );
 
-    // Ampliar regiones pequeñas para facilitar
-    // el reconocimiento de Tesseract.
-
+    // Ampliar lineas demasiado pequeñas.
     if (alto < 100) {
 
-        const escala = Math.min(
-            3,
-            100 / alto
-        );
+        const factor = Math.min(2.5, 100 / alto);
 
         const ampliado = document.createElement("canvas");
 
-        ampliado.width = Math.max(
-            1,
-            Math.round(ancho * escala)
-        );
+        ampliado.width = Math.round(ancho * factor);
+        ampliado.height = Math.round(alto * factor);
 
-        ampliado.height = Math.max(
-            1,
-            Math.round(alto * escala)
-        );
+        const ctxAmpliado = ampliado.getContext("2d");
 
-        const ctx = ampliado.getContext("2d");
+        ctxAmpliado.imageSmoothingEnabled = true;
+        ctxAmpliado.imageSmoothingQuality = "high";
 
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = "high";
-
-        ctx.drawImage(
+        ctxAmpliado.drawImage(
             recorte,
             0,
             0,
@@ -529,183 +460,113 @@ function crearRecorte(
 }
 
 
-// ==================================================
-// 8. VALIDAR COORDENADAS DE TESSERACT
-// ==================================================
+// ------------------------------------------------------------
+// 11. RECONOCIMIENTO POR LINEAS - PSM 7
+// ------------------------------------------------------------
 
-function obtenerRegion(bbox) {
+async function reconocerLineas(canvas, datosBloques, motor) {
 
-    if (!bbox) return null;
+    const lineas = extraerLineas(datosBloques);
 
-    const x0 = Number(bbox.x0);
-    const y0 = Number(bbox.y0);
-    const x1 = Number(bbox.x1);
-    const y1 = Number(bbox.y1);
+    if (lineas.length === 0) {
 
-    if (
-        !Number.isFinite(x0) ||
-        !Number.isFinite(y0) ||
-        !Number.isFinite(x1) ||
-        !Number.isFinite(y1)
-    ) {
-        return null;
+        return {
+            texto: datosBloques.text || "",
+            confianza: datosBloques.confidence || 0,
+            cantidad: 0,
+            alternativa: true
+        };
     }
 
-    const ancho = x1 - x0;
-    const alto = y1 - y0;
+    await motor.setParameters({
+        tessedit_pageseg_mode: "7"
+    });
 
-    if (ancho < 1 || alto < 1) {
-        return null;
+    const resultados = [];
+
+    let sumaConfianza = 0;
+    let cantidadConfianza = 0;
+
+    for (let i = 0; i < lineas.length; i++) {
+
+        const linea = lineas[i];
+
+        const recorte = crearRecorteLinea(
+            canvas,
+            linea.bbox
+        );
+
+        if (!recorte) continue;
+
+        const lectura = await motor.recognize(recorte);
+
+        const texto = (lectura.data.text || "").trim();
+
+        resultados.push(texto);
+
+        if (typeof lectura.data.confidence === "number") {
+
+            sumaConfianza += lectura.data.confidence;
+            cantidadConfianza++;
+        }
     }
+
+    const confianzaMedia = cantidadConfianza > 0
+        ? sumaConfianza / cantidadConfianza
+        : 0;
 
     return {
-        x: x0,
-        y: y0,
-        ancho,
-        alto
+        texto: resultados.join("\n"),
+        confianza: confianzaMedia,
+        cantidad: resultados.length,
+        alternativa: false
     };
 }
 
 
-// ==================================================
-// 9. EXTRAER LÍNEAS, PALABRAS Y SÍMBOLOS
-// ==================================================
-
-function extraerEstructura(datos) {
-
-    const lineasResultado = [];
-
-    const bloques = Array.isArray(datos.blocks)
-        ? datos.blocks
-        : [];
-
-    for (const bloque of bloques) {
-
-        const parrafos = Array.isArray(bloque.paragraphs)
-            ? bloque.paragraphs
-            : [];
-
-        for (const parrafo of parrafos) {
-
-            const lineas = Array.isArray(parrafo.lines)
-                ? parrafo.lines
-                : [];
-
-            for (const linea of lineas) {
-
-                const regionLinea =
-                    obtenerRegion(linea.bbox);
-
-                if (!regionLinea) continue;
-
-                const palabrasResultado = [];
-
-                const palabras = Array.isArray(linea.words)
-                    ? linea.words
-                    : [];
-
-                for (const palabra of palabras) {
-
-                    const regionPalabra =
-                        obtenerRegion(palabra.bbox);
-
-                    if (!regionPalabra) continue;
-
-                    const simbolosResultado = [];
-
-                    const simbolos = Array.isArray(palabra.symbols)
-                        ? palabra.symbols
-                        : [];
-
-                    for (const simbolo of simbolos) {
-
-                        const regionSimbolo =
-                            obtenerRegion(simbolo.bbox);
-
-                        if (!regionSimbolo) continue;
-
-                        simbolosResultado.push({
-                            texto: simbolo.text || "",
-                            region: regionSimbolo,
-                            confianza: Number(simbolo.confidence) || 0
-                        });
-                    }
-
-                    palabrasResultado.push({
-                        texto: palabra.text || "",
-                        region: regionPalabra,
-                        confianza: Number(palabra.confidence) || 0,
-                        simbolos: simbolosResultado
-                    });
-                }
-
-                lineasResultado.push({
-                    texto: linea.text || "",
-                    region: regionLinea,
-                    palabras: palabrasResultado
-                });
-            }
-        }
-    }
-
-    return lineasResultado;
-}
-
-
-// ==================================================
-// 10. COMPARAR DOS LECTURAS
-// ==================================================
-
-function normalizarTexto(texto) {
-
-    return (texto || "")
-        .replace(/\s+/g, " ")
-        .trim();
-}
+// ------------------------------------------------------------
+// 12. COMPARAR DOS TEXTOS
+// ------------------------------------------------------------
 
 function calcularCoincidencia(textoA, textoB) {
 
-    const a = normalizarTexto(textoA);
-    const b = normalizarTexto(textoB);
+    const a = textoA.replace(/\s+/g, " ").trim();
+    const b = textoB.replace(/\s+/g, " ").trim();
 
-    // Dos lecturas vacías no cuentan como coincidencia.
+    if (!a.length && !b.length) return 100;
 
-    if (!a.length || !b.length) return null;
+    if (!a.length || !b.length) return 0;
 
-    const filaAnterior = new Array(b.length + 1);
-    const filaActual = new Array(b.length + 1);
+    const anterior = new Array(b.length + 1);
+    const actual = new Array(b.length + 1);
 
     for (let j = 0; j <= b.length; j++) {
-        filaAnterior[j] = j;
+        anterior[j] = j;
     }
 
     for (let i = 1; i <= a.length; i++) {
 
-        filaActual[0] = i;
+        actual[0] = i;
 
         for (let j = 1; j <= b.length; j++) {
 
-            const costo =
-                a[i - 1] === b[j - 1] ? 0 : 1;
+            const costo = a[i - 1] === b[j - 1] ? 0 : 1;
 
-            filaActual[j] = Math.min(
-                filaAnterior[j] + 1,
-                filaActual[j - 1] + 1,
-                filaAnterior[j - 1] + costo
+            actual[j] = Math.min(
+                anterior[j] + 1,
+                actual[j - 1] + 1,
+                anterior[j - 1] + costo
             );
         }
 
         for (let j = 0; j <= b.length; j++) {
-            filaAnterior[j] = filaActual[j];
+            anterior[j] = actual[j];
         }
     }
 
-    const distancia = filaAnterior[b.length];
+    const distancia = anterior[b.length];
 
-    const longitud = Math.max(
-        a.length,
-        b.length
-    );
+    const longitud = Math.max(a.length, b.length);
 
     return Math.max(
         0,
@@ -714,774 +575,338 @@ function calcularCoincidencia(textoA, textoB) {
 }
 
 
-// ==================================================
-// 11. FUNCIONES AUXILIARES
-// ==================================================
+// ------------------------------------------------------------
+// 13. EJECUTAR LAS DOS PASADAS SOBRE UNA IMAGEN
+// ------------------------------------------------------------
 
-function actualizarProgreso(porcentaje, mensaje) {
+async function analizarVariante(canvas, nombre, motor) {
 
-    barraProgreso.style.width =
-        Math.min(100, Math.max(0, porcentaje)) + "%";
+    mostrarEstado("Analizando " + nombre + "...");
 
-    estado.textContent = mensaje;
+    // Primera lectura: PSM 6.
+    const datosBloques = await reconocerBloques(
+        canvas,
+        motor
+    );
+
+    const textoBloques = datosBloques.text || "";
+
+    const confianzaBloques = datosBloques.confidence || 0;
+
+    // Segunda lectura: PSM 7.
+    mostrarEstado("Reconociendo lineas de " + nombre + "...");
+
+    const lecturaLineas = await reconocerLineas(
+        canvas,
+        datosBloques,
+        motor
+    );
+
+    return {
+        nombre: nombre,
+
+        bloques: {
+            texto: textoBloques,
+            confianza: confianzaBloques
+        },
+
+        lineas: {
+            texto: lecturaLineas.texto,
+            confianza: lecturaLineas.confianza,
+            cantidad: lecturaLineas.cantidad,
+            alternativa: lecturaLineas.alternativa
+        },
+
+        estructura: extraerLineas(datosBloques),
+        datos: datosBloques
+    };
 }
 
 
-function obtenerPromedio(valores) {
+// ------------------------------------------------------------
+// 14. CONTAR ELEMENTOS
+// ------------------------------------------------------------
 
-    if (!valores.length) return null;
+function contarPalabras(texto) {
 
-    return valores.reduce(
-        (a, b) => a + b,
-        0
-    ) / valores.length;
+    return texto.trim()
+        ? texto.trim().split(/\s+/).length
+        : 0;
+}
+
+function contarCaracteres(texto) {
+    return texto.length;
+}
+
+function contarBloques(datos) {
+
+    if (!datos.blocks) return 0;
+
+    return datos.blocks.filter(b => b.paragraphs).length;
 }
 
 
-function formatearConfianza(valor) {
+// ------------------------------------------------------------
+// 15. MOSTRAR RESULTADOS
+// ------------------------------------------------------------
 
-    if (valor === null || !Number.isFinite(valor)) {
-        return "--";
+function construirResultado(original, modificada) {
+
+    let salida = "";
+
+    salida += "========================================\n";
+    salida += "SINDICATO ENIGMA - LABORATORIO OCR\n";
+    salida += "COMPARACION DE IMAGENES\n";
+    salida += "========================================\n\n";
+
+    // ORIGINAL - PSM 6.
+    salida += "LECTURA 1: IMAGEN ORIGINAL - BLOQUES PSM 6\n";
+    salida += "Confianza: " +
+        original.bloques.confianza.toFixed(1) + "%\n\n";
+
+    salida += original.bloques.texto;
+
+    salida += "\n\n========================================\n\n";
+
+    // ORIGINAL - PSM 7.
+    salida += "LECTURA 2: IMAGEN ORIGINAL - LINEAS PSM 7\n";
+    salida += "Confianza: " +
+        original.lineas.confianza.toFixed(1) + "%\n\n";
+
+    if (original.lineas.alternativa) {
+        salida += "(No se pudieron extraer lineas independientes. ";
+        salida += "Se muestra la lectura de bloques.)\n\n";
     }
 
-    return valor.toFixed(1) + "%";
+    salida += original.lineas.texto;
+
+    salida += "\n\n========================================\n\n";
+
+    // MODIFICADA - PSM 6.
+    salida += "LECTURA 3: IMAGEN MODIFICADA - BLOQUES PSM 6\n";
+    salida += "Confianza: " +
+        modificada.bloques.confianza.toFixed(1) + "%\n\n";
+
+    salida += modificada.bloques.texto;
+
+    salida += "\n\n========================================\n\n";
+
+    // MODIFICADA - PSM 7.
+    salida += "LECTURA 4: IMAGEN MODIFICADA - LINEAS PSM 7\n";
+    salida += "Confianza: " +
+        modificada.lineas.confianza.toFixed(1) + "%\n\n";
+
+    if (modificada.lineas.alternativa) {
+        salida += "(No se pudieron extraer lineas independientes. ";
+        salida += "Se muestra la lectura de bloques.)\n\n";
+    }
+
+    salida += modificada.lineas.texto;
+
+    salida += "\n\n========================================\n";
+    salida += "COMPARACION DE RESULTADOS\n";
+    salida += "========================================\n\n";
+
+    const coincidenciaBloques = calcularCoincidencia(
+        original.bloques.texto,
+        modificada.bloques.texto
+    );
+
+    const coincidenciaLineas = calcularCoincidencia(
+        original.lineas.texto,
+        modificada.lineas.texto
+    );
+
+    salida += "Coincidencia PSM 6 original/modificada: ";
+    salida += coincidenciaBloques.toFixed(1) + "%\n";
+
+    salida += "Coincidencia PSM 7 original/modificada: ";
+    salida += coincidenciaLineas.toFixed(1) + "%\n";
+
+    return {
+        texto: salida,
+        coincidenciaBloques: coincidenciaBloques,
+        coincidenciaLineas: coincidenciaLineas
+    };
 }
 
 
-// ==================================================
-// 12. ANALIZAR DOCUMENTO
-// ==================================================
+// ------------------------------------------------------------
+// 16. ACTUALIZAR ESTADISTICAS
+// ------------------------------------------------------------
 
-btnAnalizar.addEventListener(
-    "click",
-    analizarDocumento
-);
+function actualizarEstadisticas(original, modificada) {
+
+    const texto = original.bloques.texto;
+
+    const bloques = contarBloques(original.datos);
+
+    const lineas = original.estructura.length;
+
+    actualizarEstadistica(totalBloques, bloques);
+    actualizarEstadistica(totalLineas, lineas);
+    actualizarEstadistica(totalPalabras, contarPalabras(texto));
+    actualizarEstadistica(totalCaracteres, contarCaracteres(texto));
+
+    const promedioConfianza = (
+        original.bloques.confianza +
+        original.lineas.confianza +
+        modificada.bloques.confianza +
+        modificada.lineas.confianza
+    ) / 4;
+
+    actualizarEstadistica(
+        confianza,
+        promedioConfianza.toFixed(1) + "%"
+    );
+
+    const comparacionBloques = calcularCoincidencia(
+        original.bloques.texto,
+        modificada.bloques.texto
+    );
+
+    actualizarEstadistica(
+        coincidencia,
+        comparacionBloques.toFixed(1) + "%"
+    );
+
+    actualizarResumen(
+        "Se completaron las cuatro lecturas. " +
+        "Dos sobre la imagen original y dos sobre la imagen modificada."
+    );
+}
 
 
-async function analizarDocumento() {
+// ------------------------------------------------------------
+// 17. BOTON ANALIZAR
+// ------------------------------------------------------------
 
-    if (!imagenCargada || trabajando) return;
+btnAnalizar.addEventListener("click", async function () {
 
-    if (!window.Tesseract) {
+    if (procesando) return;
 
-        alert(
-            "No se pudo cargar Tesseract. Comprueba tu conexión."
-        );
-
+    if (!imagenCargada) {
+        mostrarEstado("Primero selecciona una imagen.");
         return;
     }
 
-    trabajando = true;
+    procesando = true;
 
     btnAnalizar.disabled = true;
-    entradaImagen.disabled = true;
-    btnCopiar.disabled = true;
 
-    resultado.value = "";
+    if (resultado) {
+        resultado.value = "";
+    }
 
-    progresoContenedor.hidden = false;
-    resumen.hidden = true;
+    if (progresoContenedor) {
+        progresoContenedor.hidden = false;
+    }
 
-    estadoResultado.textContent = "Analizando documento";
-
-    actualizarProgreso(
-        2,
-        "Preparando imagen..."
-    );
-
-    let worker = null;
+    actualizarProgreso(0);
 
     try {
 
-        // ------------------------------------------
-        // A. PREPARAR IMAGEN
-        // ------------------------------------------
+        mostrarEstado("Preparando imagen original...");
 
-        const canvas = crearImagenTrabajo(imagenCargada);
-
-        // ------------------------------------------
-        // B. DETECTAR BLOQUES
-        // ------------------------------------------
-
-        actualizarProgreso(
-            5,
-            "Localizando bloques de texto..."
+        canvasOriginal = prepararImagenOriginal(
+            imagenCargada
         );
 
-        const bloques = detectarBloques(canvas);
+        mostrarEstado("Preparando imagen modificada...");
 
-        if (bloques.length === 0) {
+        const canvasModificado = modificarImagen(
+            canvasOriginal
+        );
 
-            throw new Error(
-                "No se detectaron bloques de texto."
-            );
+        const motor = await obtenerWorker();
+
+        // ----------------------------------------
+        // IMAGEN ORIGINAL
+        // ----------------------------------------
+
+        mostrarEstado("Primera fase: imagen original.");
+
+        const original = await analizarVariante(
+            canvasOriginal,
+            "imagen original",
+            motor
+        );
+
+        actualizarProgreso(45);
+
+        // ----------------------------------------
+        // IMAGEN MODIFICADA
+        // ----------------------------------------
+
+        mostrarEstado("Segunda fase: imagen modificada.");
+
+        const modificada = await analizarVariante(
+            canvasModificado,
+            "imagen modificada",
+            motor
+        );
+
+        actualizarProgreso(90);
+
+        // ----------------------------------------
+        // RESULTADOS
+        // ----------------------------------------
+
+        const comparacion = construirResultado(
+            original,
+            modificada
+        );
+
+        if (resultado) {
+            resultado.value = comparacion.texto;
         }
 
-        totalBloques.textContent =
-            bloques.length +
-            (bloques.length === 1 ? " bloque" : " bloques");
-
-        // ------------------------------------------
-        // C. CONFIGURAR TESSERACT
-        // ------------------------------------------
-
-        actualizarProgreso(
-            8,
-            "Iniciando motor OCR..."
+        actualizarEstadisticas(
+            original,
+            modificada
         );
 
-        worker = await Tesseract.createWorker(
-            "spa+eng",
-            1
-        );
+        actualizarProgreso(100);
 
-        // ------------------------------------------
-        // D. PREPARAR RESULTADOS
-        // ------------------------------------------
+        mostrarEstado("Analisis completado.");
 
-        const resultadosInternos = [];
-
-        const confianzasBloques = [];
-        const confianzasLineas = [];
-        const confianzasPalabras = [];
-        const confianzasCaracteres = [];
-
-        const coincidencias = [];
-
-        let lineasTotales = 0;
-        let palabrasTotales = 0;
-        let caracteresTotales = 0;
-
-        let caracteresOmitidos = 0;
-
-        const LIMITE_CARACTERES = 300;
-
-        // ------------------------------------------
-        // E. RECORRER BLOQUES
-        // ------------------------------------------
-
-        for (
-            let i = 0;
-            i < bloques.length;
-            i++
-        ) {
-
-            const avanceBloque =
-                i / bloques.length;
-
-            actualizarProgreso(
-                10 + avanceBloque * 75,
-                "Analizando bloque " +
-                (i + 1) +
-                " de " +
-                bloques.length
-            );
-
-            const recorteBloque = crearRecorte(
-                canvas,
-                bloques[i],
-                5
-            );
-
-            // ======================================
-            // PASADA 1: BLOQUE COMPLETO — PSM 6
-            // ======================================
-
-            await worker.setParameters({
-                tessedit_pageseg_mode: "6"
-            });
-
-            const lecturaBloque =
-                await worker.recognize(recorteBloque);
-
-            const textoBloque =
-                (lecturaBloque.data.text || "").trim();
-
-            const confianzaBloque =
-                Number(lecturaBloque.data.confidence) || 0;
-
-            confianzasBloques.push(confianzaBloque);
-
-            // --------------------------------------
-            // EXTRAER ESTRUCTURA DE TESSERACT
-            // --------------------------------------
-
-            const estructura = extraerEstructura(
-                lecturaBloque.data
-            );
-
-            const lineasTexto = [];
-            const palabrasTexto = [];
-            const caracteresTexto = [];
-
-            const confianzasLineaBloque = [];
-            const confianzasPalabraBloque = [];
-            const confianzasCaracterBloque = [];
-
-            // ======================================
-            // PASADA 2: LÍNEAS — PSM 7
-            // ======================================
-
-            for (
-                let j = 0;
-                j < estructura.length;
-                j++
-            ) {
-
-                const linea = estructura[j];
-
-                lineasTotales++;
-
-                actualizarProgreso(
-                    15 + (
-                        (j + 1) /
-                        Math.max(1, estructura.length)
-                    ) * 15,
-                    "Reconociendo línea " +
-                    (j + 1) +
-                    " del bloque " +
-                    (i + 1)
-                );
-
-                const recorteLinea = crearRecorte(
-                    recorteBloque,
-                    linea.region,
-                    5
-                );
-
-                await worker.setParameters({
-                    tessedit_pageseg_mode: "7"
-                });
-
-                const lecturaLinea =
-                    await worker.recognize(recorteLinea);
-
-                const textoLinea =
-                    (lecturaLinea.data.text || "").trim();
-
-                const confianzaLinea =
-                    Number(lecturaLinea.data.confidence) || 0;
-
-                lineasTexto.push(textoLinea);
-
-                confianzasLineaBloque.push(
-                    confianzaLinea
-                );
-
-                confianzasLineas.push(
-                    confianzaLinea
-                );
-
-                // ==================================
-                // PASADA 3: PALABRAS — PSM 8
-                // ==================================
-
-                const palabrasDeLinea = [];
-
-                for (
-                    let k = 0;
-                    k < linea.palabras.length;
-                    k++
-                ) {
-
-                    const palabra = linea.palabras[k];
-
-                    palabrasTotales++;
-
-                    actualizarProgreso(
-                        30 + (
-                            palabrasTotales /
-                            Math.max(
-                                1,
-                                estructura.reduce(
-                                    (suma, l) =>
-                                        suma + l.palabras.length,
-                                    0
-                                )
-                            )
-                        ) * 20,
-                        "Reconociendo palabra " +
-                        palabrasTotales
-                    );
-
-                    const recortePalabra = crearRecorte(
-                        recorteBloque,
-                        palabra.region,
-                        4
-                    );
-
-                    await worker.setParameters({
-                        tessedit_pageseg_mode: "8"
-                    });
-
-                    const lecturaPalabra =
-                        await worker.recognize(recortePalabra);
-
-                    const textoPalabra =
-                        (lecturaPalabra.data.text || "")
-                            .replace(/\s+/g, " ")
-                            .trim();
-
-                    const confianzaPalabra =
-                        Number(lecturaPalabra.data.confidence) || 0;
-
-                    palabrasDeLinea.push(textoPalabra);
-
-                    confianzasPalabraBloque.push(
-                        confianzaPalabra
-                    );
-
-                    confianzasPalabras.push(
-                        confianzaPalabra
-                    );
-                }
-
-                palabrasTexto.push(
-                    palabrasDeLinea.join(" ")
-                );
-
-                // ==================================
-                // PASADA 4: CARACTERES — PSM 10
-                // ==================================
-
-                const caracteresDeLinea = [];
-
-                for (
-                    let k = 0;
-                    k < linea.palabras.length;
-                    k++
-                ) {
-
-                    const palabra = linea.palabras[k];
-
-                    const caracteresDePalabra = [];
-
-                    for (
-                        let m = 0;
-                        m < palabra.simbolos.length;
-                        m++
-                    ) {
-
-                        if (
-                            caracteresTotales >=
-                            LIMITE_CARACTERES
-                        ) {
-
-                            caracteresOmitidos++;
-                            continue;
-                        }
-
-                        const simbolo = palabra.simbolos[m];
-
-                        actualizarProgreso(
-                            55 + (
-                                caracteresTotales /
-                                LIMITE_CARACTERES
-                            ) * 35,
-                            "Reconociendo carácter " +
-                            (caracteresTotales + 1)
-                        );
-
-                        const recorteCaracter = crearRecorte(
-                            recorteBloque,
-                            simbolo.region,
-                            3
-                        );
-
-                        await worker.setParameters({
-                            tessedit_pageseg_mode: "10"
-                        });
-
-                        const lecturaCaracter =
-                            await worker.recognize(recorteCaracter);
-
-                        const textoCaracter =
-                            (lecturaCaracter.data.text || "")
-                                .replace(/\s+/g, "")
-                                .trim();
-
-                        const confianzaCaracter =
-                            Number(lecturaCaracter.data.confidence) || 0;
-
-                        caracteresDePalabra.push(
-                            textoCaracter
-                        );
-
-                        confianzasCaracterBloque.push(
-                            confianzaCaracter
-                        );
-
-                        confianzasCaracteres.push(
-                            confianzaCaracter
-                        );
-
-                        caracteresTotales++;
-                    }
-
-                    caracteresDeLinea.push(
-                        caracteresDePalabra.join("")
-                    );
-                }
-
-                caracteresTexto.push(
-                    caracteresDeLinea.join(" ")
-                );
-            }
-
-            // ======================================
-            // CONSTRUIR TEXTOS DEL BLOQUE
-            // ======================================
-
-            const textoLineas = lineasTexto
-                .filter(t => t.length > 0)
-                .join("\n");
-
-            const textoPalabras = palabrasTexto
-                .filter(t => t.length > 0)
-                .join("\n");
-
-            const textoCaracteres = caracteresTexto
-                .filter(t => t.length > 0)
-                .join("\n");
-
-            // ======================================
-            // CONFIANZAS MEDIAS
-            // ======================================
-
-            const confianzaMediaLineas =
-                obtenerPromedio(confianzasLineaBloque);
-
-            const confianzaMediaPalabras =
-                obtenerPromedio(confianzasPalabraBloque);
-
-            const confianzaMediaCaracteres =
-                obtenerPromedio(confianzasCaracterBloque);
-
-            // ======================================
-            // COMPARACIONES
-            // ======================================
-
-            const comparaciones = [
-
-                calcularCoincidencia(
-                    textoBloque,
-                    textoLineas
-                ),
-
-                calcularCoincidencia(
-                    textoLineas,
-                    textoPalabras
-                ),
-
-                calcularCoincidencia(
-                    textoBloque,
-                    textoPalabras
-                ),
-
-                calcularCoincidencia(
-                    textoLineas,
-                    textoCaracteres
-                )
-            ];
-
-            coincidencias.push(
-                ...comparaciones.filter(
-                    valor => valor !== null
-                )
-            );
-
-            // ======================================
-            // GUARDAR RESULTADOS
-            // ======================================
-
-            resultadosInternos.push({
-
-                bloque: i + 1,
-
-                textoBloque,
-                textoLineas,
-                textoPalabras,
-                textoCaracteres,
-
-                confianzaBloque,
-                confianzaLineas: confianzaMediaLineas,
-                confianzaPalabras: confianzaMediaPalabras,
-                confianzaCaracteres: confianzaMediaCaracteres,
-
-                coincidencias: comparaciones,
-
-                lineas: estructura.length,
-
-                palabras: estructura.reduce(
-                    (suma, linea) =>
-                        suma + linea.palabras.length,
-                    0
-                ),
-
-                caracteres: confianzasCaracterBloque.length
-
-            });
-        }
-
-        // ------------------------------------------
-        // F. FORMATEAR LAS CUATRO PASADAS
-        // ------------------------------------------
-
-        function formatearPasada(
-            titulo,
-            propiedadTexto,
-            propiedadConfianza
-        ) {
-
-            let salida = "";
-
-            salida +=
-                "========== " +
-                titulo +
-                " ==========\n\n";
-
-            for (const bloque of resultadosInternos) {
-
-                salida +=
-                    "----- BLOQUE " +
-                    bloque.bloque +
-                    " -----\n";
-
-                salida +=
-                    "Confianza: " +
-                    formatearConfianza(
-                        bloque[propiedadConfianza]
-                    ) +
-                    "\n\n";
-
-                salida +=
-                    bloque[propiedadTexto] ||
-                    "(Sin texto reconocido)";
-
-                salida += "\n\n";
-            }
-
-            return salida;
-        }
-
-        const resultadoBloques = formatearPasada(
-            "RESULTADO 1: BLOQUES — PSM 6",
-            "textoBloque",
-            "confianzaBloque"
-        );
-
-        const resultadoLineas = formatearPasada(
-            "RESULTADO 2: LÍNEAS — PSM 7",
-            "textoLineas",
-            "confianzaLineas"
-        );
-
-        const resultadoPalabras = formatearPasada(
-            "RESULTADO 3: PALABRAS — PSM 8",
-            "textoPalabras",
-            "confianzaPalabras"
-        );
-
-        const resultadoCaracteres = formatearPasada(
-            "RESULTADO 4: CARACTERES — PSM 10",
-            "textoCaracteres",
-            "confianzaCaracteres"
-        );
-
-        // ------------------------------------------
-        // G. MOSTRAR RESULTADOS
-        // ------------------------------------------
-
-        resultado.value =
-
-            resultadoBloques +
-
-            "\n\n========================================\n\n" +
-
-            resultadoLineas +
-
-            "\n\n========================================\n\n" +
-
-            resultadoPalabras +
-
-            "\n\n========================================\n\n" +
-
-            resultadoCaracteres;
-
-        // ------------------------------------------
-        // H. ESTADÍSTICAS
-        // ------------------------------------------
-
-        const promediosPasadas = [
-
-            obtenerPromedio(confianzasBloques),
-
-            obtenerPromedio(confianzasLineas),
-
-            obtenerPromedio(confianzasPalabras),
-
-            obtenerPromedio(confianzasCaracteres)
-
-        ].filter(valor => valor !== null);
-
-        const confianzaGeneral =
-            obtenerPromedio(promediosPasadas);
-
-        const coincidenciaMedia =
-            obtenerPromedio(coincidencias);
-
-        totalLineas.textContent =
-            lineasTotales +
-            (lineasTotales === 1 ? " línea" : " líneas");
-
-        totalPalabras.textContent =
-            palabrasTotales +
-            (palabrasTotales === 1 ? " palabra" : " palabras");
-
-        totalCaracteres.textContent =
-            caracteresTotales +
-            (caracteresTotales === 1
-                ? " segmento"
-                : " segmentos");
-
-        confianza.textContent =
-            "Confianza media: " +
-            formatearConfianza(confianzaGeneral);
-
-        coincidencia.textContent =
-            "Coincidencia media: " +
-            formatearConfianza(coincidenciaMedia);
-
-        resumen.hidden = false;
-
-        btnCopiar.disabled =
-            resultado.value.length === 0;
-
-        // ------------------------------------------
-        // I. FINALIZAR
-        // ------------------------------------------
-
-        actualizarProgreso(
-            100,
-            "Todas las pasadas han terminado."
-        );
-
-        estadoResultado.textContent =
-            "Comparación de pasadas completada";
-
-        // ------------------------------------------
-        // J. DIAGNÓSTICO
-        // ------------------------------------------
-
-        console.log(
-            "RESULTADOS COMPLETOS DEL OCR"
-        );
-
-        console.table(resultadosInternos);
-
-        console.log(
-            "Estructura detectada:",
-            estructuraResumen(resultadosInternos)
-        );
-
-        console.log(
-            "Líneas:",
-            lineasTotales
-        );
-
-        console.log(
-            "Palabras:",
-            palabrasTotales
-        );
-
-        console.log(
-            "Caracteres reconocidos:",
-            caracteresTotales
-        );
-
-        console.log(
-            "Caracteres omitidos por límite:",
-            caracteresOmitidos
-        );
-
-        if (caracteresOmitidos > 0) {
-
+        if (estadoResultado) {
             estadoResultado.textContent =
-                "Análisis terminado. Se alcanzó el límite de caracteres.";
+                "Cuatro lecturas completadas correctamente.";
         }
 
     } catch (error) {
 
         console.error("Error OCR:", error);
 
-        estadoResultado.textContent =
-            "Error en el análisis";
-
-        estado.textContent =
-            error.message || "Ocurrió un error.";
-
-        alert(
-            error.message ||
-            "No se pudo completar el reconocimiento."
+        mostrarEstado(
+            "Ocurrio un error durante el reconocimiento."
         );
+
+        if (resultado) {
+            resultado.value +=
+                "\n\nERROR:\n" + error.message;
+        }
 
     } finally {
 
-        if (worker) {
+        procesando = false;
 
-            try {
-                await worker.terminate();
-            } catch (error) {
-                console.error(
-                    "Error al cerrar el motor OCR:",
-                    error
-                );
-            }
-        }
-
-        trabajando = false;
-
-        btnAnalizar.disabled = !imagenCargada;
-        entradaImagen.disabled = false;
+        btnAnalizar.disabled = false;
     }
-}
+});
 
 
-// ==================================================
-// 13. RESUMEN PARA CONSOLA
-// ==================================================
+// ------------------------------------------------------------
+// 18. BOTON COPIAR
+// ------------------------------------------------------------
 
-function estructuraResumen(resultados) {
+btnCopiar.addEventListener("click", async function () {
 
-    return resultados.map(bloque => ({
-
-        bloque: bloque.bloque,
-
-        lineas: bloque.lineas,
-
-        palabras: bloque.palabras,
-
-        caracteres: bloque.caracteres,
-
-        confianzaBloque: bloque.confianzaBloque,
-
-        confianzaLineas: bloque.confianzaLineas,
-
-        confianzaPalabras: bloque.confianzaPalabras,
-
-        confianzaCaracteres: bloque.confianzaCaracteres
-
-    }));
-}
-
-
-// ==================================================
-// 14. COPIAR TEXTO
-// ==================================================
-
-btnCopiar.addEventListener("click", async () => {
-
-    if (!resultado.value) return;
+    if (!resultado || !resultado.value.trim()) {
+        mostrarEstado("No hay resultados para copiar.");
+        return;
+    }
 
     try {
 
@@ -1489,8 +914,7 @@ btnCopiar.addEventListener("click", async () => {
             resultado.value
         );
 
-        estadoResultado.textContent =
-            "Texto copiado";
+        mostrarEstado("Resultados copiados.");
 
     } catch (error) {
 
@@ -1498,44 +922,68 @@ btnCopiar.addEventListener("click", async () => {
 
         document.execCommand("copy");
 
-        estadoResultado.textContent =
-            "Texto copiado";
+        mostrarEstado("Resultados copiados.");
     }
 });
 
 
-// ==================================================
-// 15. LIMPIAR
-// ==================================================
+// ------------------------------------------------------------
+// 19. BOTON LIMPIAR
+// ------------------------------------------------------------
 
-btnLimpiar.addEventListener("click", () => {
+btnLimpiar.addEventListener("click", function () {
 
-    if (trabajando) return;
+    if (procesando) return;
 
-    entradaImagen.value = "";
-
+    archivoSeleccionado = null;
     imagenCargada = null;
+    canvasOriginal = null;
 
-    vistaPrevia.removeAttribute("src");
+    if (imagenInput) {
+        imagenInput.value = "";
+    }
 
-    contenedorVista.hidden = true;
+    if (vistaPrevia) {
+        vistaPrevia.src = "";
+    }
 
-    nombreArchivo.textContent =
-        "Ningún documento seleccionado";
+    if (contenedorVista) {
+        contenedorVista.hidden = true;
+    }
 
-    resultado.value = "";
+    if (nombreArchivo) {
+        nombreArchivo.textContent = "";
+    }
 
-    btnAnalizar.disabled = true;
-    btnCopiar.disabled = true;
+    if (resultado) {
+        resultado.value = "";
+    }
 
-    progresoContenedor.hidden = true;
-    resumen.hidden = true;
+    actualizarProgreso(0);
 
-    barraProgreso.style.width = "0%";
+    actualizarResumen("Esperando una imagen.");
 
-    estadoResultado.textContent =
-        "Esperando análisis";
+    mostrarEstado("Laboratorio limpio.");
 
-    estado.textContent =
-        "Preparando análisis...";
+    if (estadoResultado) {
+        estadoResultado.textContent = "";
+    }
+
+    actualizarEstadistica(totalBloques, "0");
+    actualizarEstadistica(totalLineas, "0");
+    actualizarEstadistica(totalPalabras, "0");
+    actualizarEstadistica(totalCaracteres, "0");
+    actualizarEstadistica(confianza, "0%");
+    actualizarEstadistica(coincidencia, "0%");
 });
+
+
+// ------------------------------------------------------------
+// 20. ESTADO INICIAL
+// ------------------------------------------------------------
+
+mostrarEstado("Laboratorio listo.");
+
+actualizarResumen("Selecciona una imagen para comenzar.");
+
+actualizarProgreso(0);
