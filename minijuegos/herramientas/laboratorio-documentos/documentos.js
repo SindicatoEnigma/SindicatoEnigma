@@ -296,11 +296,26 @@ function proyectarFilas(mascara, ancho, alto) {
     return proyeccion;
 }
 
+
 function agruparFilas(proyeccion, ancho, alto) {
+
+    const maximo = Math.max(...proyeccion);
+
+    if (maximo <= 0) return [];
+
+    // Umbral dinámico para separar líneas
+    // del ruido de fondo.
     const minimoPixeles = Math.max(
-        2,
-        Math.floor(ancho * 0.00015)
+        6,
+        Math.floor(maximo * 0.06)
     );
+
+    const filasActivas = new Array(alto).fill(false);
+
+    for (let y = 0; y < alto; y++) {
+        filasActivas[y] =
+            proyeccion[y] >= minimoPixeles;
+    }
 
     const grupos = [];
 
@@ -313,15 +328,20 @@ function agruparFilas(proyeccion, ancho, alto) {
     );
 
     for (let y = 0; y < alto; y++) {
-        const activa = proyeccion[y] >= minimoPixeles;
 
-        if (activa) {
-            if (inicio === null) inicio = y;
+        if (filasActivas[y]) {
+
+            if (inicio === null) {
+                inicio = y;
+            }
+
             ultimaActiva = y;
+
         } else if (
             inicio !== null &&
             y - ultimaActiva > toleranciaHueco
         ) {
+
             grupos.push({
                 y0: inicio,
                 y1: ultimaActiva + 1
@@ -341,6 +361,7 @@ function agruparFilas(proyeccion, ancho, alto) {
 
     return grupos;
 }
+
 
 
 /* =========================================================
