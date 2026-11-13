@@ -924,11 +924,11 @@ async function reconocerBloques(
 
 /* =========================================================
    16. PASADA 2: LÍNEAS CON PSM 7
-   ========================================================= */
 
 
+   
 /* =========================================================
-   16. PASADA 2: LÍNEAS CON PSM 7 Y PSM 13
+   16. PASADA 2: LÍNEAS - PSM 7, 13 Y 6
    ========================================================= */
 
 async function reconocerLineas(
@@ -944,50 +944,100 @@ async function reconocerLineas(
 
     for (let i = 0; i < lineas.length; i++) {
 
-        // Recorte ligeramente ampliado para conservar
-        // mejor los bordes superiores e inferiores.
-        const recorte = crearRecorte(
+        const linea = lineas[i];
+
+        // ---------------------------------------------
+        // A. PREPARAR UN RECORTE CON MARGEN ADAPTATIVO
+        // ---------------------------------------------
+
+        const altoLinea = linea.y1 - linea.y0;
+
+        const margenY = Math.max(
+            12,
+            Math.round(altoLinea * 0.45)
+        );
+
+        const margenX = Math.max(
+            12,
+            Math.round(altoLinea * 0.5)
+        );
+
+        const x0 = Math.max(0, linea.x0 - margenX);
+        const x1 = Math.min(
+            canvas.width,
+            linea.x1 + margenX
+        );
+
+        const y0 = Math.max(0, linea.y0 - margenY);
+        const y1 = Math.min(
+            canvas.height,
+            linea.y1 + margenY
+        );
+
+        const ancho = x1 - x0;
+        const alto = y1 - y0;
+
+        const escala = 3.5;
+
+        const recorte = document.createElement("canvas");
+
+        recorte.width = Math.max(
+            1,
+            Math.round(ancho * escala)
+        );
+
+        recorte.height = Math.max(
+            120,
+            Math.round(alto * escala)
+        );
+
+        const ctx = recorte.getContext("2d");
+
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, recorte.width, recorte.height);
+
+        const altoEscalado = Math.round(alto * escala);
+
+        const desplazamientoY = Math.floor(
+            (recorte.height - altoEscalado) / 2
+        );
+
+        ctx.drawImage(
             canvas,
-            lineas[i],
-            3
+            x0, y0, ancho, alto,
+            0, desplazamientoY,
+            recorte.width, altoEscalado
         );
 
-        // Primer intento: PSM 7.
-        const lectura7 = await reconocerRegion(
-            worker,
-            recorte,
-            7
-        );
+        // ---------------------------------------------
+        // B. TRES INTENTOS DE RECONOCIMIENTO
+        // ---------------------------------------------
 
-        // Segundo intento: PSM 13.
-        const lectura13 = await reconocerRegion(
-            worker,
-            recorte,
-            13
-        );
+        const modos = [7, 13, 6];
 
-        let mejorLectura;
+        let mejorLectura = {
+            texto: "",
+            confianza: 0
+        };
 
-        // Si una lectura está vacía, elegir la otra.
-        if (!lectura7.texto && lectura13.texto) {
-            mejorLectura = lectura13;
+        for (const psm of modos) {
 
-        } else if (!lectura13.texto && lectura7.texto) {
-            mejorLectura = lectura7;
+            const lectura = await reconocerRegion(
+                worker,
+                recorte,
+                psm
+            );
 
-        } else if (!lectura7.texto && !lectura13.texto) {
-            mejorLectura = {
-                texto: "",
-                confianza: 0
-            };
+            // No permitir que una lectura vacía
+            // sustituya a otra que sí contiene texto.
+            if (!lectura.texto) continue;
 
-        } else {
-            // Si ambas contienen texto, elegir la de
-            // mayor confianza. En empate, conservar PSM 7.
-            mejorLectura =
-                lectura13.confianza > lectura7.confianza
-                    ? lectura13
-                    : lectura7;
+            if (
+                !mejorLectura.texto ||
+                lectura.confianza > mejorLectura.confianza
+            ) {
+                mejorLectura = lectura;
+            }
         }
 
         lecturas.push(mejorLectura.texto);
@@ -1008,7 +1058,7 @@ async function reconocerLineas(
         confianza: reconocidos
             ? sumaConfianza / reconocidos
             : 0,
-        intentos: lineas.length * 2,
+        intentos: lineas.length * 3,
         reconocidos,
         lineasProcesadas: lineas.length
     };
