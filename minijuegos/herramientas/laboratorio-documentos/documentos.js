@@ -1100,65 +1100,90 @@ async function analizarDocumento() {
    26. CARGAR IMAGEN
    ========================================================= */
 
+ 
+/* =========================================================
+   26. CARGAR IMAGEN
+   ========================================================= */
+
 function cargarImagen(archivo) {
     if (!archivo) return;
 
+    actualizarEstado("Leyendo imagen...");
+    
+    if (btnAnalizar) btnAnalizar.disabled = true;
+
     if (!archivo.type.startsWith("image/")) {
-        actualizarEstado("Selecciona un archivo de imagen.");
+        actualizarEstado("El archivo seleccionado no es una imagen compatible.");
         return;
     }
 
-    const url = URL.createObjectURL(archivo);
-    const imagen = new Image();
+    const lector = new FileReader();
 
-    imagen.onload = () => {
-        imagenCargada = imagen;
-        canvasOriginal = prepararImagen(imagen);
+    lector.onload = () => {
+        const imagen = new Image();
 
-        if (vistaPrevia) {
-            vistaPrevia.src = url;
-        }
+        imagen.onload = () => {
+            try {
+                const nuevoCanvas = prepararImagen(imagen);
 
-        if (contenedorVista) {
-            contenedorVista.style.display = "block";
-        }
+                imagenCargada = imagen;
+                canvasOriginal = nuevoCanvas;
 
-        if (nombreArchivo) {
-            nombreArchivo.textContent = archivo.name;
-        }
+                if (vistaPrevia) {
+                    vistaPrevia.src = lector.result;
+                    vistaPrevia.style.display = "block";
+                }
 
-        if (btnAnalizar) {
-            btnAnalizar.disabled = false;
-        }
+                if (contenedorVista) {
+                    contenedorVista.style.display = "block";
+                }
 
-        actualizarEstado("Imagen preparada.");
+                if (nombreArchivo) {
+                    nombreArchivo.textContent = archivo.name;
+                }
 
-        actualizarProgreso(0);
+                if (btnAnalizar) {
+                    btnAnalizar.disabled = false;
+                }
 
-        if (resultado) {
-            resultado.value = "";
-        }
+                actualizarEstado(
+                    "Imagen cargada correctamente. Ya puedes analizarla."
+                );
 
-        if (btnCopiar) {
-            btnCopiar.disabled = true;
-        }
+                actualizarProgreso(0);
 
-        const panel = document.getElementById(
-            "comparacionOCR"
-        );
+                if (resultado) resultado.value = "";
 
-        if (panel) panel.remove();
+                if (btnCopiar) btnCopiar.disabled = true;
 
-        URL.revokeObjectURL(url);
+                const panel = document.getElementById("comparacionOCR");
+                if (panel) panel.remove();
+
+            } catch (error) {
+                console.error("Error al preparar imagen:", error);
+                actualizarEstado("Error al preparar la imagen: " + error.message);
+            }
+        };
+
+        imagen.onerror = () => {
+            actualizarEstado("El navegador no pudo interpretar esta imagen.");
+        };
+
+        imagen.src = lector.result;
     };
 
-    imagen.onerror = () => {
-        URL.revokeObjectURL(url);
-        actualizarEstado("No se pudo abrir la imagen.");
+    lector.onerror = () => {
+        actualizarEstado("No se pudo leer el archivo seleccionado.");
     };
 
-    imagen.src = url;
+    lector.readAsDataURL(archivo);
 }
+
+
+/* =========================================================
+   27. COPIAR RESULTADO
+   ========================================================= */
+
 
 
 /* =========================================================
@@ -1245,33 +1270,49 @@ function limpiarLaboratorio() {
    29. CONECTAR BOTONES
    ========================================================= */
 
+
+/* =========================================================
+   29. CONECTAR BOTONES
+   ========================================================= */
+
 if (inputImagen) {
     inputImagen.addEventListener("change", evento => {
         const archivo = evento.target.files[0];
-        cargarImagen(archivo);
+
+        if (archivo) {
+            cargarImagen(archivo);
+        }
     });
+} else {
+    console.error("No se encontró el elemento inputImagen.");
 }
 
 if (btnAnalizar) {
-    btnAnalizar.addEventListener(
-        "click",
-        analizarDocumento
-    );
+    btnAnalizar.addEventListener("click", analizarDocumento);
+} else {
+    console.error("No se encontró el botón btnAnalizar.");
 }
 
 if (btnCopiar) {
-    btnCopiar.addEventListener(
-        "click",
-        copiarResultado
-    );
+    btnCopiar.addEventListener("click", copiarResultado);
 }
 
 if (btnLimpiar) {
-    btnLimpiar.addEventListener(
-        "click",
-        limpiarLaboratorio
-    );
+    btnLimpiar.addEventListener("click", limpiarLaboratorio);
 }
+
+
+/* =========================================================
+   30. ESTADO INICIAL
+   ========================================================= */
+
+if (btnAnalizar) btnAnalizar.disabled = true;
+
+if (btnCopiar) btnCopiar.disabled = true;
+
+actualizarEstado("Esperando imagen...");
+actualizarProgreso(0);
+
 
 
 /* =========================================================
