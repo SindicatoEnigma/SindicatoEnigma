@@ -1,154 +1,101 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#171717">
-  <title>Laboratorio de Documentos | Sindicato Enigma</title>
-  <link rel="stylesheet" href="documentos.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio de Documentos | Sindicato Enigma</title>
+    <link rel="stylesheet" href="documentos.css">
 </head>
 <body>
 
-  <main class="laboratorio">
-    <header class="encabezado">
-      <div class="marca">SINDICATO ENIGMA</div>
-      <h1>Laboratorio de Documentos</h1>
-      <p>Reconocimiento y extracción de texto desde imágenes</p>
-    </header>
+    <main class="contenedor">
 
-    <section class="panel">
-      <h2>1. Imagen de origen</h2>
+        <header class="encabezado">
+            <div class="sello">SE</div>
+            <div>
+                <h1>Laboratorio de Documentos</h1>
+                <p>Reconocimiento automático de texto</p>
+            </div>
+        </header>
 
-      <label class="boton-archivo" for="archivoImagen">
-        Seleccionar imagen
-      </label>
-      <input
-        type="file"
-        id="archivoImagen"
-        accept="image/*"
-      >
+        <section class="panel">
 
-      <div id="contenedorVista" class="contenedor-vista oculto">
-        <img id="vistaPrevia" alt="Imagen seleccionada">
-        <p id="nombreArchivo" class="texto-secundario"></p>
-      </div>
-    </section>
+            <h2>Documento de entrada</h2>
 
-    <section class="panel">
-      <h2>2. Configuración del reconocimiento</h2>
+            <label for="imagen" class="selector-imagen">
+                <span class="icono">＋</span>
+                <span>Seleccionar imagen</span>
+                <small>JPG, PNG o WEBP</small>
+            </label>
 
-      <div class="campo">
-        <label for="modoReconocimiento">Método de reconocimiento</label>
-        <select id="modoReconocimiento">
-          <option value="normal">OCR convencional (líneas y bloques)</option>
-          <option value="caracteres">Reconocimiento por caracteres</option>
-        </select>
-        <small>
-          El modo por caracteres separa automáticamente la imagen
-          en pequeños recortes para reconocerlos individualmente.
-        </small>
-      </div>
+            <input
+                type="file"
+                id="imagen"
+                accept="image/png,image/jpeg,image/webp"
+                hidden
+            >
 
-      <div class="campo">
-        <label for="tipoTexto">Tipo de contenido</label>
-        <select id="tipoTexto">
-          <option value="normal">Texto normal</option>
-          <option value="codigo">Mensajes cifrados y códigos</option>
-        </select>
-      </div>
+            <div id="nombreArchivo" class="nombre-archivo">
+                Ningún documento seleccionado
+            </div>
 
-      <div class="campo">
-        <label for="idiomaOCR">Idioma del reconocimiento</label>
-        <select id="idiomaOCR">
-          <option value="eng">Inglés</option>
-          <option value="spa">Español</option>
-          <option value="spa+eng">Español e inglés</option>
-        </select>
-      </div>
+            <div class="vista-previa" id="contenedorVista" hidden>
+                <img id="vistaPrevia" alt="Vista previa del documento">
+            </div>
 
-      <div class="campo">
-        <label for="preprocesamiento">Procesamiento de imagen</label>
-        <select id="preprocesamiento">
-          <option value="original">Imagen original</option>
-          <option value="contraste">Escala de grises y contraste</option>
-          <option value="otsu">Blanco y negro (binarización Otsu)</option>
-        </select>
-      </div>
+            <button id="btnAnalizar" disabled>
+                Analizar documento
+            </button>
 
-      <div class="campo" id="campoSegmentacion">
-        <label for="segmentacion">Segmentación convencional</label>
-        <select id="segmentacion">
-          <option value="6">Bloque de texto</option>
-          <option value="11">Texto disperso</option>
-          <option value="7">Una sola línea</option>
-        </select>
-      </div>
+            <div id="progresoContenedor" class="progreso-contenedor" hidden>
+                <div class="progreso-fondo">
+                    <div id="barraProgreso" class="progreso-barra"></div>
+                </div>
+                <p id="estado" aria-live="polite">Preparando análisis...</p>
+            </div>
 
-      <div class="nota">
-        <strong>Nota:</strong> el reconocimiento por caracteres es
-        experimental. La separación automática puede confundir letras
-        que estén unidas o demasiado próximas.
-      </div>
+        </section>
 
-      <button id="btnReconocer" class="boton-principal" disabled>
-        Reconocer texto
-      </button>
+        <section class="panel resultado-panel">
 
-      <div id="zonaProgreso" class="zona-progreso oculto">
-        <p id="estadoOCR">Preparando reconocimiento...</p>
-        <div class="barra-fondo">
-          <div id="barraProgreso" class="barra-progreso"></div>
-        </div>
-      </div>
-    </section>
+            <div class="titulo-resultado">
+                <h2>Texto reconocido</h2>
+                <span id="estadoResultado" class="estado-resultado">
+                    Esperando análisis
+                </span>
+            </div>
 
-    <section class="panel">
-      <h2>3. Resultado</h2>
+            <div id="resumen" class="resumen" hidden>
+                <span id="totalBloques">0 bloques</span>
+                <span id="confianza">Confianza: --</span>
+            </div>
 
-      <div class="estadisticas">
-        <div class="dato">
-          <span class="dato-titulo">Confianza estimada</span>
-          <strong id="confianza">—</strong>
-        </div>
-        <div class="dato">
-          <span class="dato-titulo">Caracteres obtenidos</span>
-          <strong id="cantidadCaracteres">0</strong>
-        </div>
-        <div class="dato">
-          <span class="dato-titulo">Método utilizado</span>
-          <strong id="metodoUsado">—</strong>
-        </div>
-      </div>
+            <textarea
+                id="resultado"
+                placeholder="El texto reconocido aparecerá aquí..."
+                spellcheck="false"
+            ></textarea>
 
-      <label for="resultadoTexto">Texto reconocido (puedes editarlo)</label>
-      <textarea
-        id="resultadoTexto"
-        rows="12"
-        placeholder="El texto reconocido aparecerá aquí..."
-        spellcheck="false"
-        autocapitalize="off"
-      ></textarea>
+            <div class="acciones">
+                <button id="btnCopiar" class="secundario" disabled>
+                    Copiar texto
+                </button>
 
-      <div class="acciones">
-        <button id="btnCopiar" class="boton-secundario">
-          Copiar texto
-        </button>
-        <button id="btnLimpiar" class="boton-secundario">
-          Limpiar
-        </button>
-      </div>
+                <button id="btnLimpiar" class="secundario">
+                    Limpiar
+                </button>
+            </div>
 
-      <p id="mensaje" class="mensaje" aria-live="polite"></p>
-    </section>
+        </section>
 
-    <footer>
-      <p>Sindicato Enigma · Laboratorio experimental de OCR</p>
-      <p>El reconocimiento se procesa en tu navegador y requiere conexión a internet para cargar el motor y sus modelos.</p>
-    </footer>
-  </main>
+        <footer>
+            <p>Sindicato Enigma · Laboratorio de investigación</p>
+        </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script src="documentos.js"></script>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="documentos.js"></script>
+
 </body>
 </html>
