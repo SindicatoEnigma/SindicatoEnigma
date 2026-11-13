@@ -1,3 +1,13 @@
+// ==================================================
+// SINDICATO ENIGMA
+// LABORATORIO DE DOCUMENTOS OCR
+// Tesseract.js v5
+// ==================================================
+
+
+// ==================================================
+// 1. ELEMENTOS HTML
+// ==================================================
 
 const entradaImagen = document.getElementById("imagen");
 const nombreArchivo = document.getElementById("nombreArchivo");
@@ -15,20 +25,21 @@ const progresoContenedor = document.getElementById("progresoContenedor");
 
 const estadoResultado = document.getElementById("estadoResultado");
 const resumen = document.getElementById("resumen");
+
 const totalBloques = document.getElementById("totalBloques");
 const totalLineas = document.getElementById("totalLineas");
-const confianza = document.getElementById("confianza");
-const coincidencia = document.getElementById("coincidencia");
-
 const totalPalabras = document.getElementById("totalPalabras");
 const totalCaracteres = document.getElementById("totalCaracteres");
+
+const confianza = document.getElementById("confianza");
+const coincidencia = document.getElementById("coincidencia");
 
 let imagenCargada = null;
 let trabajando = false;
 
 
 // ==================================================
-// 1. SELECCIÓN DE IMAGEN
+// 2. SELECCIÓN DE IMAGEN
 // ==================================================
 
 entradaImagen.addEventListener("change", () => {
@@ -38,6 +49,7 @@ entradaImagen.addEventListener("change", () => {
     if (!archivo) return;
 
     if (!archivo.type.startsWith("image/")) {
+
         alert("Selecciona una imagen válida.");
         entradaImagen.value = "";
         return;
@@ -59,10 +71,11 @@ entradaImagen.addEventListener("change", () => {
             nombreArchivo.textContent = archivo.name;
 
             btnAnalizar.disabled = false;
-            resultado.value = "";
             btnCopiar.disabled = true;
 
+            resultado.value = "";
             resumen.hidden = true;
+
             estadoResultado.textContent = "Imagen preparada";
         };
 
@@ -78,7 +91,7 @@ entradaImagen.addEventListener("change", () => {
 
 
 // ==================================================
-// 2. PREPARAR IMAGEN
+// 3. PREPARAR IMAGEN
 // ==================================================
 
 function crearImagenTrabajo(imagen) {
@@ -105,14 +118,20 @@ function crearImagenTrabajo(imagen) {
         willReadFrequently: true
     });
 
-    contexto.drawImage(imagen, 0, 0, ancho, alto);
+    contexto.drawImage(
+        imagen,
+        0,
+        0,
+        ancho,
+        alto
+    );
 
     return canvas;
 }
 
 
 // ==================================================
-// 3. UMBRAL AUTOMÁTICO
+// 4. UMBRAL AUTOMÁTICO
 // ==================================================
 
 function calcularUmbral(datos) {
@@ -155,6 +174,7 @@ function calcularUmbral(datos) {
         sumaFondo += i * histograma[i];
 
         const mediaFondo = sumaFondo / pesoFondo;
+
         const mediaTexto =
             (sumaTotal - sumaFondo) / pesoTexto;
 
@@ -167,6 +187,7 @@ function calcularUmbral(datos) {
             diferencia;
 
         if (varianza > mejorVarianza) {
+
             mejorVarianza = varianza;
             umbral = i;
         }
@@ -177,7 +198,7 @@ function calcularUmbral(datos) {
 
 
 // ==================================================
-// 4. OBTENER INFORMACIÓN BINARIA DE LA IMAGEN
+// 5. OBTENER MÁSCARA DE TEXTO
 // ==================================================
 
 function obtenerMascara(canvas) {
@@ -190,7 +211,10 @@ function obtenerMascara(canvas) {
     const alto = canvas.height;
 
     const imagen = contexto.getImageData(
-        0, 0, ancho, alto
+        0,
+        0,
+        ancho,
+        alto
     );
 
     const datos = imagen.data;
@@ -229,7 +253,8 @@ function obtenerMascara(canvas) {
                 ? gris > umbral
                 : gris < umbral;
 
-            mascara[y * ancho + x] = esTexto ? 1 : 0;
+            mascara[y * ancho + x] =
+                esTexto ? 1 : 0;
         }
     }
 
@@ -242,7 +267,7 @@ function obtenerMascara(canvas) {
 
 
 // ==================================================
-// 5. DETECTAR BLOQUES
+// 6. DETECTAR BLOQUES
 // ==================================================
 
 function detectarBloques(canvas) {
@@ -255,7 +280,9 @@ function detectarBloques(canvas) {
     for (let y = 0; y < alto; y++) {
 
         for (let x = 0; x < ancho; x++) {
-            ocupacionFilas[y] += mascara[y * ancho + x];
+
+            ocupacionFilas[y] +=
+                mascara[y * ancho + x];
         }
     }
 
@@ -354,7 +381,11 @@ function detectarBloques(canvas) {
         let izquierda = ancho;
         let derecha = -1;
 
-        for (let y = grupo.inicio; y <= grupo.fin; y++) {
+        for (
+            let y = grupo.inicio;
+            y <= grupo.fin;
+            y++
+        ) {
 
             for (let x = 0; x < ancho; x++) {
 
@@ -368,8 +399,15 @@ function detectarBloques(canvas) {
 
         if (derecha < izquierda) continue;
 
-        const x = Math.max(0, izquierda - margenX);
-        const y = Math.max(0, grupo.inicio - margenY);
+        const x = Math.max(
+            0,
+            izquierda - margenX
+        );
+
+        const y = Math.max(
+            0,
+            grupo.inicio - margenY
+        );
 
         const xFinal = Math.min(
             ancho,
@@ -398,436 +436,77 @@ function detectarBloques(canvas) {
 
 
 // ==================================================
-// 6. DETECTAR LÍNEAS DENTRO DE UN BLOQUE
+// 7. CREAR RECORTES CON COORDENADAS
 // ==================================================
 
-function detectarLineas(canvas) {
+function crearRecorte(
+    canvasOriginal,
+    region,
+    margen = 3
+) {
 
-    const { ancho, alto, mascara } =
-        obtenerMascara(canvas);
-
-    const ocupacion = new Array(alto).fill(0);
-
-    for (let y = 0; y < alto; y++) {
-
-        for (let x = 0; x < ancho; x++) {
-            ocupacion[y] += mascara[y * ancho + x];
-        }
-    }
-
-    const minimoPixeles = Math.max(
-        1,
-        Math.floor(ancho * 0.0004)
+    const x = Math.max(
+        0,
+        Math.floor(region.x - margen)
     );
 
-    const franjas = [];
-
-    let inicio = -1;
-    let fin = -1;
-
-    for (let y = 0; y < alto; y++) {
-
-        if (ocupacion[y] >= minimoPixeles) {
-
-            if (inicio === -1) inicio = y;
-
-            fin = y;
-
-        } else if (inicio !== -1) {
-
-            franjas.push({ inicio, fin });
-
-            inicio = -1;
-            fin = -1;
-        }
-    }
-
-    if (inicio !== -1) {
-        franjas.push({ inicio, fin });
-    }
-
-    if (franjas.length === 0) return [];
-
-    const alturas = franjas.map(
-        f => f.fin - f.inicio + 1
+    const y = Math.max(
+        0,
+        Math.floor(region.y - margen)
     );
 
-    const orden = [...alturas].sort((a, b) => a - b);
-
-    const alturaMediana =
-        orden[Math.floor(orden.length / 2)];
-
-    const separacionMaxima = Math.max(
-        2,
-        Math.round(alturaMediana * 0.65)
+    const xFinal = Math.min(
+        canvasOriginal.width,
+        Math.ceil(region.x + region.ancho + margen)
     );
 
-    const lineas = [];
-
-    let linea = {
-        inicio: franjas[0].inicio,
-        fin: franjas[0].fin
-    };
-
-    for (let i = 1; i < franjas.length; i++) {
-
-        const franja = franjas[i];
-
-        const separacion =
-            franja.inicio - linea.fin - 1;
-
-        if (separacion <= separacionMaxima) {
-
-            linea.fin = franja.fin;
-
-        } else {
-
-            lineas.push(linea);
-
-            linea = {
-                inicio: franja.inicio,
-                fin: franja.fin
-            };
-        }
-    }
-
-    lineas.push(linea);
-
-    const margen = Math.max(
-        2,
-        Math.round(alturaMediana * 0.35)
+    const yFinal = Math.min(
+        canvasOriginal.height,
+        Math.ceil(region.y + region.alto + margen)
     );
 
-    return lineas.map(linea => {
-
-        const y = Math.max(0, linea.inicio - margen);
-
-        const yFinal = Math.min(
-            alto,
-            linea.fin + margen + 1
-        );
-
-        return {
-            x: 0,
-            y,
-            ancho,
-            alto: yFinal - y
-        };
-    });
-}
-
-
-// ==================================================
-// 7. DETECTAR PALABRAS DENTRO DE UNA LÍNEA
-// ==================================================
-
-function detectarPalabras(canvas) {
-
-    const { ancho, alto, mascara } =
-        obtenerMascara(canvas);
-
-    const ocupacionColumnas = new Array(ancho).fill(0);
-
-    for (let x = 0; x < ancho; x++) {
-
-        for (let y = 0; y < alto; y++) {
-            ocupacionColumnas[x] += mascara[y * ancho + x];
-        }
-    }
-
-    const columnasActivas = [];
-
-    for (let x = 0; x < ancho; x++) {
-
-        if (ocupacionColumnas[x] > 0) {
-            columnasActivas.push(x);
-        }
-    }
-
-    if (columnasActivas.length === 0) return [];
-
-    const grupos = [];
-
-    let inicio = columnasActivas[0];
-    let fin = columnasActivas[0];
-
-    const unirHueco = Math.max(
-        1,
-        Math.round(alto * 0.07)
-    );
-
-    for (let i = 1; i < columnasActivas.length; i++) {
-
-        const x = columnasActivas[i];
-        const hueco = x - fin - 1;
-
-        if (hueco <= unirHueco) {
-
-            fin = x;
-
-        } else {
-
-            grupos.push({ inicio, fin });
-
-            inicio = x;
-            fin = x;
-        }
-    }
-
-    grupos.push({ inicio, fin });
-
-    if (grupos.length === 0) return [];
-
-    const anchuras = grupos.map(
-        g => g.fin - g.inicio + 1
-    );
-
-    const orden = [...anchuras].sort((a, b) => a - b);
-
-    const anchuraMediana =
-        orden[Math.floor(orden.length / 2)];
-
-    const separacionPalabras = Math.max(
-        3,
-        Math.round(
-            Math.max(anchuraMediana * 0.75, alto * 0.22)
-        )
-    );
-
-    const palabras = [];
-
-    let palabra = {
-        inicio: grupos[0].inicio,
-        fin: grupos[0].fin
-    };
-
-    for (let i = 1; i < grupos.length; i++) {
-
-        const grupo = grupos[i];
-
-        const hueco =
-            grupo.inicio - palabra.fin - 1;
-
-        if (hueco <= separacionPalabras) {
-
-            palabra.fin = grupo.fin;
-
-        } else {
-
-            palabras.push(palabra);
-
-            palabra = {
-                inicio: grupo.inicio,
-                fin: grupo.fin
-            };
-        }
-    }
-
-    palabras.push(palabra);
-
-    const margenX = Math.max(
-        2,
-        Math.round(alto * 0.08)
-    );
-
-    return palabras.map(p => {
-
-        const x = Math.max(0, p.inicio - margenX);
-
-        const xFinal = Math.min(
-            ancho,
-            p.fin + margenX + 1
-        );
-
-        return {
-            x,
-            y: 0,
-            ancho: xFinal - x,
-            alto
-        };
-    });
-}
-
-
-// ==================================================
-// 8. DETECTAR SEGMENTOS DE CARACTERES
-// ==================================================
-
-function detectarCaracteres(canvas) {
-
-    const { ancho, alto, mascara } =
-        obtenerMascara(canvas);
-
-    const ocupacionColumnas = new Array(ancho).fill(0);
-
-    for (let x = 0; x < ancho; x++) {
-
-        for (let y = 0; y < alto; y++) {
-            ocupacionColumnas[x] += mascara[y * ancho + x];
-        }
-    }
-
-    const columnas = [];
-
-    for (let x = 0; x < ancho; x++) {
-
-        if (ocupacionColumnas[x] > 0) {
-            columnas.push(x);
-        }
-    }
-
-    if (columnas.length === 0) return [];
-
-    const huecoUnir = Math.max(
-        1,
-        Math.round(alto * 0.035)
-    );
-
-    const grupos = [];
-
-    let inicio = columnas[0];
-    let fin = columnas[0];
-
-    for (let i = 1; i < columnas.length; i++) {
-
-        const x = columnas[i];
-
-        if (x - fin - 1 <= huecoUnir) {
-
-            fin = x;
-
-        } else {
-
-            grupos.push({ inicio, fin });
-
-            inicio = x;
-            fin = x;
-        }
-    }
-
-    grupos.push({ inicio, fin });
-
-    const segmentos = [];
-
-    for (const grupo of grupos) {
-
-        const anchura = grupo.fin - grupo.inicio + 1;
-
-        if (anchura > alto * 0.95) {
-
-            let valleX = -1;
-            let menorOcupacion = Infinity;
-
-            for (
-                let x = grupo.inicio + 1;
-                x < grupo.fin;
-                x++
-            ) {
-
-                const ocupacion = ocupacionColumnas[x];
-
-                if (ocupacion < menorOcupacion) {
-                    menorOcupacion = ocupacion;
-                    valleX = x;
-                }
-            }
-
-            const umbralValle = Math.max(
-                1,
-                Math.floor(alto * 0.025)
-            );
-
-            if (
-                valleX > grupo.inicio &&
-                valleX < grupo.fin &&
-                menorOcupacion <= umbralValle
-            ) {
-
-                segmentos.push({
-                    inicio: grupo.inicio,
-                    fin: valleX - 1
-                });
-
-                segmentos.push({
-                    inicio: valleX + 1,
-                    fin: grupo.fin
-                });
-
-                continue;
-            }
-        }
-
-        segmentos.push(grupo);
-    }
-
-    const margen = Math.max(
-        2,
-        Math.round(alto * 0.08)
-    );
-
-    return segmentos.map(s => {
-
-        const x = Math.max(0, s.inicio - margen);
-
-        const xFinal = Math.min(
-            ancho,
-            s.fin + margen + 1
-        );
-
-        return {
-            x,
-            y: 0,
-            ancho: xFinal - x,
-            alto
-        };
-    });
-}
-
-
-// ==================================================
-// 9. CREAR RECORTES
-// ==================================================
-
-function crearRecorte(canvasOriginal, region) {
+    const ancho = Math.max(1, xFinal - x);
+    const alto = Math.max(1, yFinal - y);
 
     const recorte = document.createElement("canvas");
 
-    recorte.width = Math.max(1, region.ancho);
-    recorte.height = Math.max(1, region.alto);
+    recorte.width = ancho;
+    recorte.height = alto;
 
     const contexto = recorte.getContext("2d");
 
     contexto.drawImage(
         canvasOriginal,
-
-        region.x,
-        region.y,
-        region.ancho,
-        region.alto,
-
+        x,
+        y,
+        ancho,
+        alto,
         0,
         0,
-        region.ancho,
-        region.alto
+        ancho,
+        alto
     );
 
-    if (recorte.height < 100) {
+    // Ampliar regiones pequeñas para facilitar
+    // el reconocimiento de Tesseract.
+
+    if (alto < 100) {
 
         const escala = Math.min(
             3,
-            100 / recorte.height
+            100 / alto
         );
 
         const ampliado = document.createElement("canvas");
 
         ampliado.width = Math.max(
             1,
-            Math.round(recorte.width * escala)
+            Math.round(ancho * escala)
         );
 
         ampliado.height = Math.max(
             1,
-            Math.round(recorte.height * escala)
+            Math.round(alto * escala)
         );
 
         const ctx = ampliado.getContext("2d");
@@ -851,12 +530,135 @@ function crearRecorte(canvasOriginal, region) {
 
 
 // ==================================================
+// 8. VALIDAR COORDENADAS DE TESSERACT
+// ==================================================
+
+function obtenerRegion(bbox) {
+
+    if (!bbox) return null;
+
+    const x0 = Number(bbox.x0);
+    const y0 = Number(bbox.y0);
+    const x1 = Number(bbox.x1);
+    const y1 = Number(bbox.y1);
+
+    if (
+        !Number.isFinite(x0) ||
+        !Number.isFinite(y0) ||
+        !Number.isFinite(x1) ||
+        !Number.isFinite(y1)
+    ) {
+        return null;
+    }
+
+    const ancho = x1 - x0;
+    const alto = y1 - y0;
+
+    if (ancho < 1 || alto < 1) {
+        return null;
+    }
+
+    return {
+        x: x0,
+        y: y0,
+        ancho,
+        alto
+    };
+}
+
+
+// ==================================================
+// 9. EXTRAER LÍNEAS, PALABRAS Y SÍMBOLOS
+// ==================================================
+
+function extraerEstructura(datos) {
+
+    const lineasResultado = [];
+
+    const bloques = Array.isArray(datos.blocks)
+        ? datos.blocks
+        : [];
+
+    for (const bloque of bloques) {
+
+        const parrafos = Array.isArray(bloque.paragraphs)
+            ? bloque.paragraphs
+            : [];
+
+        for (const parrafo of parrafos) {
+
+            const lineas = Array.isArray(parrafo.lines)
+                ? parrafo.lines
+                : [];
+
+            for (const linea of lineas) {
+
+                const regionLinea =
+                    obtenerRegion(linea.bbox);
+
+                if (!regionLinea) continue;
+
+                const palabrasResultado = [];
+
+                const palabras = Array.isArray(linea.words)
+                    ? linea.words
+                    : [];
+
+                for (const palabra of palabras) {
+
+                    const regionPalabra =
+                        obtenerRegion(palabra.bbox);
+
+                    if (!regionPalabra) continue;
+
+                    const simbolosResultado = [];
+
+                    const simbolos = Array.isArray(palabra.symbols)
+                        ? palabra.symbols
+                        : [];
+
+                    for (const simbolo of simbolos) {
+
+                        const regionSimbolo =
+                            obtenerRegion(simbolo.bbox);
+
+                        if (!regionSimbolo) continue;
+
+                        simbolosResultado.push({
+                            texto: simbolo.text || "",
+                            region: regionSimbolo,
+                            confianza: Number(simbolo.confidence) || 0
+                        });
+                    }
+
+                    palabrasResultado.push({
+                        texto: palabra.text || "",
+                        region: regionPalabra,
+                        confianza: Number(palabra.confidence) || 0,
+                        simbolos: simbolosResultado
+                    });
+                }
+
+                lineasResultado.push({
+                    texto: linea.text || "",
+                    region: regionLinea,
+                    palabras: palabrasResultado
+                });
+            }
+        }
+    }
+
+    return lineasResultado;
+}
+
+
+// ==================================================
 // 10. COMPARAR DOS LECTURAS
 // ==================================================
 
 function normalizarTexto(texto) {
 
-    return texto
+    return (texto || "")
         .replace(/\s+/g, " ")
         .trim();
 }
@@ -866,8 +668,9 @@ function calcularCoincidencia(textoA, textoB) {
     const a = normalizarTexto(textoA);
     const b = normalizarTexto(textoB);
 
-    if (!a.length && !b.length) return 100;
-    if (!a.length || !b.length) return 0;
+    // Dos lecturas vacías no cuentan como coincidencia.
+
+    if (!a.length || !b.length) return null;
 
     const filaAnterior = new Array(b.length + 1);
     const filaActual = new Array(b.length + 1);
@@ -882,7 +685,8 @@ function calcularCoincidencia(textoA, textoB) {
 
         for (let j = 1; j <= b.length; j++) {
 
-            const costo = a[i - 1] === b[j - 1] ? 0 : 1;
+            const costo =
+                a[i - 1] === b[j - 1] ? 0 : 1;
 
             filaActual[j] = Math.min(
                 filaAnterior[j] + 1,
@@ -897,7 +701,11 @@ function calcularCoincidencia(textoA, textoB) {
     }
 
     const distancia = filaAnterior[b.length];
-    const longitud = Math.max(a.length, b.length);
+
+    const longitud = Math.max(
+        a.length,
+        b.length
+    );
 
     return Math.max(
         0,
@@ -907,7 +715,7 @@ function calcularCoincidencia(textoA, textoB) {
 
 
 // ==================================================
-// 11. PROGRESO
+// 11. FUNCIONES AUXILIARES
 // ==================================================
 
 function actualizarProgreso(porcentaje, mensaje) {
@@ -919,16 +727,36 @@ function actualizarProgreso(porcentaje, mensaje) {
 }
 
 
+function obtenerPromedio(valores) {
+
+    if (!valores.length) return null;
+
+    return valores.reduce(
+        (a, b) => a + b,
+        0
+    ) / valores.length;
+}
+
+
+function formatearConfianza(valor) {
+
+    if (valor === null || !Number.isFinite(valor)) {
+        return "--";
+    }
+
+    return valor.toFixed(1) + "%";
+}
+
+
 // ==================================================
 // 12. ANALIZAR DOCUMENTO
 // ==================================================
 
+btnAnalizar.addEventListener(
+    "click",
+    analizarDocumento
+);
 
-// ==================================================
-// 12. ANALIZAR DOCUMENTO — COMPARAR TODAS LAS PASADAS
-// ==================================================
-
-btnAnalizar.addEventListener("click", analizarDocumento);
 
 async function analizarDocumento() {
 
@@ -937,7 +765,7 @@ async function analizarDocumento() {
     if (!window.Tesseract) {
 
         alert(
-            "No se pudo cargar el motor OCR. Comprueba tu conexión."
+            "No se pudo cargar Tesseract. Comprueba tu conexión."
         );
 
         return;
@@ -947,38 +775,43 @@ async function analizarDocumento() {
 
     btnAnalizar.disabled = true;
     entradaImagen.disabled = true;
+    btnCopiar.disabled = true;
 
     resultado.value = "";
 
     progresoContenedor.hidden = false;
     resumen.hidden = true;
 
-    estadoResultado.textContent = "Analizando...";
+    estadoResultado.textContent = "Analizando documento";
 
-    actualizarProgreso(2, "Preparando imagen...");
+    actualizarProgreso(
+        2,
+        "Preparando imagen..."
+    );
 
     let worker = null;
 
     try {
 
         // ------------------------------------------
-        // PASO A: PREPARAR IMAGEN
+        // A. PREPARAR IMAGEN
         // ------------------------------------------
 
         const canvas = crearImagenTrabajo(imagenCargada);
 
-        actualizarProgreso(
-            8,
-            "Localizando regiones de información..."
-        );
+        // ------------------------------------------
+        // B. DETECTAR BLOQUES
+        // ------------------------------------------
 
-        // ------------------------------------------
-        // PASO B: DETECTAR BLOQUES
-        // ------------------------------------------
+        actualizarProgreso(
+            5,
+            "Localizando bloques de texto..."
+        );
 
         const bloques = detectarBloques(canvas);
 
         if (bloques.length === 0) {
+
             throw new Error(
                 "No se detectaron bloques de texto."
             );
@@ -989,21 +822,24 @@ async function analizarDocumento() {
             (bloques.length === 1 ? " bloque" : " bloques");
 
         // ------------------------------------------
-        // PASO C: PREPARAR MOTOR OCR
+        // C. CONFIGURAR TESSERACT
         // ------------------------------------------
+
+        actualizarProgreso(
+            8,
+            "Iniciando motor OCR..."
+        );
 
         worker = await Tesseract.createWorker(
             "spa+eng",
             1
         );
 
-        // Guardaremos cada lectura por separado.
-        const resultadosInternos = [];
+        // ------------------------------------------
+        // D. PREPARAR RESULTADOS
+        // ------------------------------------------
 
-        let lineasTotales = 0;
-        let palabrasTotales = 0;
-        let caracteresTotales = 0;
-        let caracteresOmitidosTotales = 0;
+        const resultadosInternos = [];
 
         const confianzasBloques = [];
         const confianzasLineas = [];
@@ -1012,16 +848,29 @@ async function analizarDocumento() {
 
         const coincidencias = [];
 
+        let lineasTotales = 0;
+        let palabrasTotales = 0;
+        let caracteresTotales = 0;
+
+        let caracteresOmitidos = 0;
+
         const LIMITE_CARACTERES = 300;
 
         // ------------------------------------------
-        // PASO D: ANALIZAR CADA BLOQUE
+        // E. RECORRER BLOQUES
         // ------------------------------------------
 
-        for (let i = 0; i < bloques.length; i++) {
+        for (
+            let i = 0;
+            i < bloques.length;
+            i++
+        ) {
+
+            const avanceBloque =
+                i / bloques.length;
 
             actualizarProgreso(
-                12 + (i / bloques.length) * 75,
+                10 + avanceBloque * 75,
                 "Analizando bloque " +
                 (i + 1) +
                 " de " +
@@ -1030,11 +879,12 @@ async function analizarDocumento() {
 
             const recorteBloque = crearRecorte(
                 canvas,
-                bloques[i]
+                bloques[i],
+                5
             );
 
             // ======================================
-            // LECTURA 1: BLOQUE COMPLETO — PSM 6
+            // PASADA 1: BLOQUE COMPLETO — PSM 6
             // ======================================
 
             await worker.setParameters({
@@ -1048,38 +898,55 @@ async function analizarDocumento() {
                 (lecturaBloque.data.text || "").trim();
 
             const confianzaBloque =
-                lecturaBloque.data.confidence || 0;
+                Number(lecturaBloque.data.confidence) || 0;
 
             confianzasBloques.push(confianzaBloque);
 
+            // --------------------------------------
+            // EXTRAER ESTRUCTURA DE TESSERACT
+            // --------------------------------------
+
+            const estructura = extraerEstructura(
+                lecturaBloque.data
+            );
+
+            const lineasTexto = [];
+            const palabrasTexto = [];
+            const caracteresTexto = [];
+
+            const confianzasLineaBloque = [];
+            const confianzasPalabraBloque = [];
+            const confianzasCaracterBloque = [];
+
             // ======================================
-            // LECTURA 2: LÍNEAS — PSM 7
+            // PASADA 2: LÍNEAS — PSM 7
             // ======================================
 
-            const lineas = detectarLineas(recorteBloque);
+            for (
+                let j = 0;
+                j < estructura.length;
+                j++
+            ) {
 
-            lineasTotales += lineas.length;
+                const linea = estructura[j];
 
-            const textosLinea = [];
-            const confianzasLinea = [];
-            const datosLineas = [];
-
-            for (let j = 0; j < lineas.length; j++) {
+                lineasTotales++;
 
                 actualizarProgreso(
                     15 + (
-                        (j + 1) / Math.max(1, lineas.length)
-                    ) * 10,
-                    "Bloque " + (i + 1) +
-                    ": reconociendo línea " +
+                        (j + 1) /
+                        Math.max(1, estructura.length)
+                    ) * 15,
+                    "Reconociendo línea " +
                     (j + 1) +
-                    " de " +
-                    lineas.length
+                    " del bloque " +
+                    (i + 1)
                 );
 
                 const recorteLinea = crearRecorte(
                     recorteBloque,
-                    lineas[j]
+                    linea.region,
+                    5
                 );
 
                 await worker.setParameters({
@@ -1093,66 +960,54 @@ async function analizarDocumento() {
                     (lecturaLinea.data.text || "").trim();
 
                 const confianzaLinea =
-                    lecturaLinea.data.confidence || 0;
+                    Number(lecturaLinea.data.confidence) || 0;
 
-                textosLinea.push(textoLinea);
-                confianzasLinea.push(confianzaLinea);
+                lineasTexto.push(textoLinea);
 
-                datosLineas.push({
-                    canvas: recorteLinea,
-                    texto: textoLinea,
-                    confianza: confianzaLinea
-                });
-            }
-
-            const textoLineas = textosLinea
-                .filter(t => t.length > 0)
-                .join("\n");
-
-            const confianzaMediaLineas =
-                confianzasLinea.length > 0
-                    ? confianzasLinea.reduce((a, b) => a + b, 0) /
-                      confianzasLinea.length
-                    : 0;
-
-            confianzasLineas.push(...confianzasLinea);
-
-            // ======================================
-            // LECTURA 3: PALABRAS — PSM 8
-            // ======================================
-
-            const textosPalabraPorLinea = [];
-            const confianzasPalabra = [];
-
-            let palabrasDelBloque = 0;
-
-            for (let j = 0; j < datosLineas.length; j++) {
-
-                const datosLinea = datosLineas[j];
-
-                const palabras = detectarPalabras(
-                    datosLinea.canvas
+                confianzasLineaBloque.push(
+                    confianzaLinea
                 );
 
-                const palabrasDeEstaLinea = [];
+                confianzasLineas.push(
+                    confianzaLinea
+                );
 
-                palabrasDelBloque += palabras.length;
-                palabrasTotales += palabras.length;
+                // ==================================
+                // PASADA 3: PALABRAS — PSM 8
+                // ==================================
 
-                for (let k = 0; k < palabras.length; k++) {
+                const palabrasDeLinea = [];
+
+                for (
+                    let k = 0;
+                    k < linea.palabras.length;
+                    k++
+                ) {
+
+                    const palabra = linea.palabras[k];
+
+                    palabrasTotales++;
 
                     actualizarProgreso(
                         30 + (
                             palabrasTotales /
-                            Math.max(1, lineasTotales * 8)
+                            Math.max(
+                                1,
+                                estructura.reduce(
+                                    (suma, l) =>
+                                        suma + l.palabras.length,
+                                    0
+                                )
+                            )
                         ) * 20,
-                        "Reconociendo palabras del bloque " +
-                        (i + 1)
+                        "Reconociendo palabra " +
+                        palabrasTotales
                     );
 
                     const recortePalabra = crearRecorte(
-                        datosLinea.canvas,
-                        palabras[k]
+                        recorteBloque,
+                        palabra.region,
+                        4
                     );
 
                     await worker.setParameters({
@@ -1168,90 +1023,69 @@ async function analizarDocumento() {
                             .trim();
 
                     const confianzaPalabra =
-                        lecturaPalabra.data.confidence || 0;
+                        Number(lecturaPalabra.data.confidence) || 0;
 
-                    palabrasDeEstaLinea.push(textoPalabra);
+                    palabrasDeLinea.push(textoPalabra);
 
-                    confianzasPalabra.push(confianzaPalabra);
+                    confianzasPalabraBloque.push(
+                        confianzaPalabra
+                    );
+
+                    confianzasPalabras.push(
+                        confianzaPalabra
+                    );
                 }
 
-                textosPalabraPorLinea.push(
-                    palabrasDeEstaLinea
-                        .filter(t => t.length > 0)
-                        .join(" ")
-                );
-            }
-
-            const textoPalabras = textosPalabraPorLinea
-                .filter(t => t.length > 0)
-                .join("\n");
-
-            const confianzaMediaPalabras =
-                confianzasPalabra.length > 0
-                    ? confianzasPalabra.reduce((a, b) => a + b, 0) /
-                      confianzasPalabra.length
-                    : 0;
-
-            confianzasPalabras.push(...confianzasPalabra);
-
-            // ======================================
-            // LECTURA 4: CARACTERES — PSM 10
-            // ======================================
-
-            const caracteresPorLinea = [];
-
-            let caracteresDelBloque = 0;
-            let caracteresOmitidos = 0;
-
-            const confianzasCaracteresBloque = [];
-
-            for (let j = 0; j < datosLineas.length; j++) {
-
-                const palabras = detectarPalabras(
-                    datosLineas[j].canvas
+                palabrasTexto.push(
+                    palabrasDeLinea.join(" ")
                 );
 
-                const palabrasCaracteres = [];
+                // ==================================
+                // PASADA 4: CARACTERES — PSM 10
+                // ==================================
 
-                for (let k = 0; k < palabras.length; k++) {
+                const caracteresDeLinea = [];
 
-                    const recortePalabra = crearRecorte(
-                        datosLineas[j].canvas,
-                        palabras[k]
-                    );
+                for (
+                    let k = 0;
+                    k < linea.palabras.length;
+                    k++
+                ) {
 
-                    const segmentos = detectarCaracteres(
-                        recortePalabra
-                    );
+                    const palabra = linea.palabras[k];
 
-                    const caracteresDeEstaPalabra = [];
+                    const caracteresDePalabra = [];
 
-                    for (let m = 0; m < segmentos.length; m++) {
+                    for (
+                        let m = 0;
+                        m < palabra.simbolos.length;
+                        m++
+                    ) {
 
                         if (
-                            caracteresTotales >= LIMITE_CARACTERES
+                            caracteresTotales >=
+                            LIMITE_CARACTERES
                         ) {
 
                             caracteresOmitidos++;
-                            caracteresOmitidosTotales++;
-
                             continue;
                         }
+
+                        const simbolo = palabra.simbolos[m];
 
                         actualizarProgreso(
                             55 + (
                                 caracteresTotales /
                                 LIMITE_CARACTERES
                             ) * 35,
-                            "Reconociendo segmento " +
-                            (caracteresTotales + 1) +
-                            " de " +
-                            LIMITE_CARACTERES
+                            "Reconociendo carácter " +
+                            (caracteresTotales + 1)
                         );
 
                         const recorteCaracter = crearRecorte(
-                            recortePalabra,
-                            segmentos[m]
+                            recorteBloque,
+                            simbolo.region,
+                            3
                         );
 
                         await worker.setParameters({
@@ -1267,13 +1101,13 @@ async function analizarDocumento() {
                                 .trim();
 
                         const confianzaCaracter =
-                            lecturaCaracter.data.confidence || 0;
+                            Number(lecturaCaracter.data.confidence) || 0;
 
-                        caracteresDeEstaPalabra.push(
+                        caracteresDePalabra.push(
                             textoCaracter
                         );
 
-                        confianzasCaracteresBloque.push(
+                        confianzasCaracterBloque.push(
                             confianzaCaracter
                         );
 
@@ -1282,69 +1116,82 @@ async function analizarDocumento() {
                         );
 
                         caracteresTotales++;
-                        caracteresDelBloque++;
                     }
 
-                    palabrasCaracteres.push(
-                        caracteresDeEstaPalabra.length > 0
-                            ? caracteresDeEstaPalabra.join("")
-                            : "(sin segmentos)"
+                    caracteresDeLinea.push(
+                        caracteresDePalabra.join("")
                     );
                 }
 
-                caracteresPorLinea.push(
-                    palabrasCaracteres.join(" ")
+                caracteresTexto.push(
+                    caracteresDeLinea.join(" ")
                 );
             }
 
-            const textoCaracteres = caracteresPorLinea
+            // ======================================
+            // CONSTRUIR TEXTOS DEL BLOQUE
+            // ======================================
+
+            const textoLineas = lineasTexto
                 .filter(t => t.length > 0)
                 .join("\n");
 
+            const textoPalabras = palabrasTexto
+                .filter(t => t.length > 0)
+                .join("\n");
+
+            const textoCaracteres = caracteresTexto
+                .filter(t => t.length > 0)
+                .join("\n");
+
+            // ======================================
+            // CONFIANZAS MEDIAS
+            // ======================================
+
+            const confianzaMediaLineas =
+                obtenerPromedio(confianzasLineaBloque);
+
+            const confianzaMediaPalabras =
+                obtenerPromedio(confianzasPalabraBloque);
+
             const confianzaMediaCaracteres =
-                confianzasCaracteresBloque.length > 0
-                    ? confianzasCaracteresBloque.reduce(
-                        (a, b) => a + b, 0
-                    ) / confianzasCaracteresBloque.length
-                    : 0;
+                obtenerPromedio(confianzasCaracterBloque);
 
             // ======================================
-            // COMPARAR TODAS LAS LECTURAS
+            // COMPARACIONES
             // ======================================
 
-            const coincidenciaBloqueLineas =
+            const comparaciones = [
+
                 calcularCoincidencia(
                     textoBloque,
                     textoLineas
-                );
+                ),
 
-            const coincidenciaLineasPalabras =
                 calcularCoincidencia(
                     textoLineas,
                     textoPalabras
-                );
+                ),
 
-            const coincidenciaBloquePalabras =
                 calcularCoincidencia(
                     textoBloque,
                     textoPalabras
-                );
+                ),
 
-            const coincidenciaLineasCaracteres =
                 calcularCoincidencia(
                     textoLineas,
                     textoCaracteres
-                );
+                )
+            ];
 
             coincidencias.push(
-                coincidenciaBloqueLineas,
-                coincidenciaLineasPalabras,
-                coincidenciaBloquePalabras,
-                coincidenciaLineasCaracteres
+                ...comparaciones.filter(
+                    valor => valor !== null
+                )
             );
 
             // ======================================
-            // GUARDAR RESULTADOS SIN DESCARTAR NINGUNO
+            // GUARDAR RESULTADOS
             // ======================================
 
             resultadosInternos.push({
@@ -1361,21 +1208,23 @@ async function analizarDocumento() {
                 confianzaPalabras: confianzaMediaPalabras,
                 confianzaCaracteres: confianzaMediaCaracteres,
 
-                coincidenciaBloqueLineas,
-                coincidenciaLineasPalabras,
-                coincidenciaBloquePalabras,
-                coincidenciaLineasCaracteres,
+                coincidencias: comparaciones,
 
-                lineas: lineas.length,
-                palabras: palabrasDelBloque,
-                caracteres: caracteresDelBloque,
-                caracteresOmitidos
+                lineas: estructura.length,
+
+                palabras: estructura.reduce(
+                    (suma, linea) =>
+                        suma + linea.palabras.length,
+                    0
+                ),
+
+                caracteres: confianzasCaracterBloque.length
 
             });
         }
 
         // ------------------------------------------
-        // PASO E: CONSTRUIR LOS CUATRO RESULTADOS
+        // F. FORMATEAR LAS CUATRO PASADAS
         // ------------------------------------------
 
         function formatearPasada(
@@ -1386,21 +1235,28 @@ async function analizarDocumento() {
 
             let salida = "";
 
-            salida += "========== " + titulo + " ==========\n\n";
+            salida +=
+                "========== " +
+                titulo +
+                " ==========\n\n";
 
             for (const bloque of resultadosInternos) {
 
-                salida += "----- BLOQUE " +
+                salida +=
+                    "----- BLOQUE " +
                     bloque.bloque +
                     " -----\n";
 
                 salida +=
                     "Confianza: " +
-                    bloque[propiedadConfianza].toFixed(1) +
-                    "%\n\n";
+                    formatearConfianza(
+                        bloque[propiedadConfianza]
+                    ) +
+                    "\n\n";
 
                 salida +=
-                    bloque[propiedadTexto] || "(Sin texto reconocido)";
+                    bloque[propiedadTexto] ||
+                    "(Sin texto reconocido)";
 
                 salida += "\n\n";
             }
@@ -1433,92 +1289,77 @@ async function analizarDocumento() {
         );
 
         // ------------------------------------------
-        // PASO F: MOSTRAR TODO EN LA CAJA DE TEXTO
+        // G. MOSTRAR RESULTADOS
         // ------------------------------------------
 
-        let textoCompleto = "";
+        resultado.value =
 
-        textoCompleto += resultadoBloques;
+            resultadoBloques +
 
-        textoCompleto +=
-            "\n\n========================================\n\n";
+            "\n\n========================================\n\n" +
 
-        textoCompleto += resultadoLineas;
+            resultadoLineas +
 
-        textoCompleto +=
-            "\n\n========================================\n\n";
+            "\n\n========================================\n\n" +
 
-        textoCompleto += resultadoPalabras;
+            resultadoPalabras +
 
-        textoCompleto +=
-            "\n\n========================================\n\n";
+            "\n\n========================================\n\n" +
 
-        textoCompleto += resultadoCaracteres;
-
-        resultado.value = textoCompleto;
+            resultadoCaracteres;
 
         // ------------------------------------------
-        // PASO G: ESTADÍSTICAS GENERALES
+        // H. ESTADÍSTICAS
         // ------------------------------------------
 
-        function promedio(valores) {
+        const promediosPasadas = [
 
-            if (!valores.length) return 0;
+            obtenerPromedio(confianzasBloques),
 
-            return valores.reduce((a, b) => a + b, 0) /
-                valores.length;
-        }
+            obtenerPromedio(confianzasLineas),
 
-        const confianzaGeneral = promedio([
-            promedio(confianzasBloques),
-            promedio(confianzasLineas),
-            promedio(confianzasPalabras),
-            promedio(confianzasCaracteres)
-        ].filter((valor, indice) => {
+            obtenerPromedio(confianzasPalabras),
 
-            return [
-                confianzasBloques,
-                confianzasLineas,
-                confianzasPalabras,
-                confianzasCaracteres
-            ][indice].length > 0;
-        }));
+            obtenerPromedio(confianzasCaracteres)
 
-        const coincidenciaMedia = promedio(coincidencias);
+        ].filter(valor => valor !== null);
+
+        const confianzaGeneral =
+            obtenerPromedio(promediosPasadas);
+
+        const coincidenciaMedia =
+            obtenerPromedio(coincidencias);
 
         totalLineas.textContent =
             lineasTotales +
             (lineasTotales === 1 ? " línea" : " líneas");
 
+        totalPalabras.textContent =
+            palabrasTotales +
+            (palabrasTotales === 1 ? " palabra" : " palabras");
+
+        totalCaracteres.textContent =
+            caracteresTotales +
+            (caracteresTotales === 1
+                ? " segmento"
+                : " segmentos");
+
         confianza.textContent =
             "Confianza media: " +
-            confianzaGeneral.toFixed(1) +
-            "%";
+            formatearConfianza(confianzaGeneral);
 
         coincidencia.textContent =
             "Coincidencia media: " +
-            coincidenciaMedia.toFixed(1) +
-            "%";
-
-        if (totalPalabras) {
-
-            totalPalabras.textContent =
-                palabrasTotales +
-                (palabrasTotales === 1 ? " palabra" : " palabras");
-        }
-
-        if (totalCaracteres) {
-
-            totalCaracteres.textContent =
-                caracteresTotales +
-                (caracteresTotales === 1
-                    ? " segmento"
-                    : " segmentos");
-        }
+            formatearConfianza(coincidenciaMedia);
 
         resumen.hidden = false;
 
-        btnCopiar.disabled = textoCompleto.length === 0;
+        btnCopiar.disabled =
+            resultado.value.length === 0;
+
+        // ------------------------------------------
+        // I. FINALIZAR
+        // ------------------------------------------
 
         actualizarProgreso(
             100,
@@ -1529,37 +1370,49 @@ async function analizarDocumento() {
             "Comparación de pasadas completada";
 
         // ------------------------------------------
-        // PASO H: INFORMACIÓN PARA DIAGNÓSTICO
+        // J. DIAGNÓSTICO
         // ------------------------------------------
 
-        console.log("RESULTADOS COMPLETOS DEL OCR");
+        console.log(
+            "RESULTADOS COMPLETOS DEL OCR"
+        );
 
         console.table(resultadosInternos);
 
         console.log(
-            "Palabras detectadas:",
+            "Estructura detectada:",
+            estructuraResumen(resultadosInternos)
+        );
+
+        console.log(
+            "Líneas:",
+            lineasTotales
+        );
+
+        console.log(
+            "Palabras:",
             palabrasTotales
         );
 
         console.log(
-            "Segmentos reconocidos:",
+            "Caracteres reconocidos:",
             caracteresTotales
         );
 
         console.log(
-            "Segmentos omitidos por límite:",
-            caracteresOmitidosTotales
+            "Caracteres omitidos por límite:",
+            caracteresOmitidos
         );
 
-        if (caracteresOmitidosTotales > 0) {
+        if (caracteresOmitidos > 0) {
 
             estadoResultado.textContent =
-                "Análisis terminado. Algunos segmentos fueron omitidos por el límite de seguridad.";
+                "Análisis terminado. Se alcanzó el límite de caracteres.";
         }
 
     } catch (error) {
 
-        console.error(error);
+        console.error("Error OCR:", error);
 
         estadoResultado.textContent =
             "Error en el análisis";
@@ -1575,7 +1428,15 @@ async function analizarDocumento() {
     } finally {
 
         if (worker) {
-            await worker.terminate();
+
+            try {
+                await worker.terminate();
+            } catch (error) {
+                console.error(
+                    "Error al cerrar el motor OCR:",
+                    error
+                );
+            }
         }
 
         trabajando = false;
@@ -1585,12 +1446,37 @@ async function analizarDocumento() {
     }
 }
 
-                
 
+// ==================================================
+// 13. RESUMEN PARA CONSOLA
+// ==================================================
+
+function estructuraResumen(resultados) {
+
+    return resultados.map(bloque => ({
+
+        bloque: bloque.bloque,
+
+        lineas: bloque.lineas,
+
+        palabras: bloque.palabras,
+
+        caracteres: bloque.caracteres,
+
+        confianzaBloque: bloque.confianzaBloque,
+
+        confianzaLineas: bloque.confianzaLineas,
+
+        confianzaPalabras: bloque.confianzaPalabras,
+
+        confianzaCaracteres: bloque.confianzaCaracteres
+
+    }));
+}
 
 
 // ==================================================
-// 13. COPIAR TEXTO
+// 14. COPIAR TEXTO
 // ==================================================
 
 btnCopiar.addEventListener("click", async () => {
@@ -1603,20 +1489,23 @@ btnCopiar.addEventListener("click", async () => {
             resultado.value
         );
 
-        estadoResultado.textContent = "Texto copiado";
+        estadoResultado.textContent =
+            "Texto copiado";
 
     } catch (error) {
 
         resultado.select();
+
         document.execCommand("copy");
 
-        estadoResultado.textContent = "Texto copiado";
+        estadoResultado.textContent =
+            "Texto copiado";
     }
 });
 
 
 // ==================================================
-// 14. LIMPIAR
+// 15. LIMPIAR
 // ==================================================
 
 btnLimpiar.addEventListener("click", () => {
@@ -1624,9 +1513,11 @@ btnLimpiar.addEventListener("click", () => {
     if (trabajando) return;
 
     entradaImagen.value = "";
+
     imagenCargada = null;
 
     vistaPrevia.removeAttribute("src");
+
     contenedorVista.hidden = true;
 
     nombreArchivo.textContent =
@@ -1642,6 +1533,9 @@ btnLimpiar.addEventListener("click", () => {
 
     barraProgreso.style.width = "0%";
 
-    estadoResultado.textContent = "Esperando análisis";
-    estado.textContent = "Preparando análisis...";
+    estadoResultado.textContent =
+        "Esperando análisis";
+
+    estado.textContent =
+        "Preparando análisis...";
 });
