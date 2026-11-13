@@ -923,6 +923,11 @@ function actualizarProgreso(porcentaje, mensaje) {
 // 12. ANALIZAR DOCUMENTO
 // ==================================================
 
+
+// ==================================================
+// 12. ANALIZAR DOCUMENTO — COMPARAR TODAS LAS PASADAS
+// ==================================================
+
 btnAnalizar.addEventListener("click", analizarDocumento);
 
 async function analizarDocumento() {
@@ -992,18 +997,20 @@ async function analizarDocumento() {
             1
         );
 
-        const lecturasFinales = [];
+        // Guardaremos cada lectura por separado.
         const resultadosInternos = [];
 
         let lineasTotales = 0;
         let palabrasTotales = 0;
         let caracteresTotales = 0;
+        let caracteresOmitidosTotales = 0;
 
-        let confianzaTotal = 0;
-        let cantidadConfianzas = 0;
+        const confianzasBloques = [];
+        const confianzasLineas = [];
+        const confianzasPalabras = [];
+        const confianzasCaracteres = [];
 
-        let coincidenciaTotal = 0;
-        let bloquesComparados = 0;
+        const coincidencias = [];
 
         const LIMITE_CARACTERES = 300;
 
@@ -1013,11 +1020,8 @@ async function analizarDocumento() {
 
         for (let i = 0; i < bloques.length; i++) {
 
-            const porcentajeBase =
-                12 + (i / bloques.length) * 80;
-
             actualizarProgreso(
-                porcentajeBase,
+                12 + (i / bloques.length) * 75,
                 "Analizando bloque " +
                 (i + 1) +
                 " de " +
@@ -1046,6 +1050,8 @@ async function analizarDocumento() {
             const confianzaBloque =
                 lecturaBloque.data.confidence || 0;
 
+            confianzasBloques.push(confianzaBloque);
+
             // ======================================
             // LECTURA 2: LÍNEAS — PSM 7
             // ======================================
@@ -1061,9 +1067,9 @@ async function analizarDocumento() {
             for (let j = 0; j < lineas.length; j++) {
 
                 actualizarProgreso(
-                    porcentajeBase +
-                    ((j + 1) / Math.max(1, lineas.length)) *
-                    (20 / bloques.length),
+                    15 + (
+                        (j + 1) / Math.max(1, lineas.length)
+                    ) * 10,
                     "Bloque " + (i + 1) +
                     ": reconociendo línea " +
                     (j + 1) +
@@ -1103,52 +1109,18 @@ async function analizarDocumento() {
                 .filter(t => t.length > 0)
                 .join("\n");
 
-            const confianzaLineas =
+            const confianzaMediaLineas =
                 confianzasLinea.length > 0
                     ? confianzasLinea.reduce((a, b) => a + b, 0) /
                       confianzasLinea.length
                     : 0;
 
-            // ======================================
-            // COMPARAR BLOQUE Y LÍNEAS
-            // ======================================
-
-            const coincidenciaBloqueLineas =
-                calcularCoincidencia(
-                    textoBloque,
-                    textoLineas
-                );
-
-            if (textoBloque && textoLineas) {
-
-                coincidenciaTotal += coincidenciaBloqueLineas;
-                bloquesComparados++;
-            }
-
-            // ======================================
-            // SELECCIÓN PROVISIONAL ORIGINAL
-            // ======================================
-
-            let textoElegido = textoLineas || textoBloque;
-
-            let confianzaElegida =
-                textoLineas ? confianzaLineas : confianzaBloque;
-
-            if (
-                textoBloque &&
-                textoLineas &&
-                confianzaBloque >= confianzaLineas + 8
-            ) {
-
-                textoElegido = textoBloque;
-                confianzaElegida = confianzaBloque;
-            }
+            confianzasLineas.push(...confianzasLinea);
 
             // ======================================
             // LECTURA 3: PALABRAS — PSM 8
             // ======================================
 
-            const textosPalabra = [];
             const textosPalabraPorLinea = [];
             const confianzasPalabra = [];
 
@@ -1170,10 +1142,10 @@ async function analizarDocumento() {
                 for (let k = 0; k < palabras.length; k++) {
 
                     actualizarProgreso(
-                        35 + (
-                            (palabrasTotales /
-                            Math.max(1, lineasTotales * 8)) * 20
-                        ),
+                        30 + (
+                            palabrasTotales /
+                            Math.max(1, lineasTotales * 8)
+                        ) * 20,
                         "Reconociendo palabras del bloque " +
                         (i + 1)
                     );
@@ -1198,12 +1170,11 @@ async function analizarDocumento() {
                     const confianzaPalabra =
                         lecturaPalabra.data.confidence || 0;
 
-                    textosPalabra.push(textoPalabra);
                     palabrasDeEstaLinea.push(textoPalabra);
+
                     confianzasPalabra.push(confianzaPalabra);
                 }
 
-                // Mantener los saltos de línea.
                 textosPalabraPorLinea.push(
                     palabrasDeEstaLinea
                         .filter(t => t.length > 0)
@@ -1215,51 +1186,32 @@ async function analizarDocumento() {
                 .filter(t => t.length > 0)
                 .join("\n");
 
-            const confianzaPalabras =
+            const confianzaMediaPalabras =
                 confianzasPalabra.length > 0
                     ? confianzasPalabra.reduce((a, b) => a + b, 0) /
                       confianzasPalabra.length
                     : 0;
 
-            // ======================================
-            // COMPARAR LÍNEAS Y PALABRAS
-            // ======================================
-
-            const coincidenciaLineasPalabras =
-                calcularCoincidencia(
-                    textoLineas,
-                    textoPalabras
-                );
-
-            // ======================================
-            // REFINAMIENTO PRUDENTE
-            // ======================================
-
-            if (
-                textoPalabras &&
-                textoLineas &&
-                confianzaPalabras >= confianzaElegida + 8 &&
-                coincidenciaLineasPalabras >= 65
-            ) {
-
-                textoElegido = textoPalabras;
-                confianzaElegida = confianzaPalabras;
-            }
+            confianzasPalabras.push(...confianzasPalabra);
 
             // ======================================
             // LECTURA 4: CARACTERES — PSM 10
             // ======================================
 
-            const lecturasCaracteres = [];
+            const caracteresPorLinea = [];
 
             let caracteresDelBloque = 0;
             let caracteresOmitidos = 0;
+
+            const confianzasCaracteresBloque = [];
 
             for (let j = 0; j < datosLineas.length; j++) {
 
                 const palabras = detectarPalabras(
                     datosLineas[j].canvas
                 );
+
+                const palabrasCaracteres = [];
 
                 for (let k = 0; k < palabras.length; k++) {
 
@@ -1272,22 +1224,29 @@ async function analizarDocumento() {
                         recortePalabra
                     );
 
+                    const caracteresDeEstaPalabra = [];
+
                     for (let m = 0; m < segmentos.length; m++) {
 
                         if (
                             caracteresTotales >= LIMITE_CARACTERES
                         ) {
+
                             caracteresOmitidos++;
+                            caracteresOmitidosTotales++;
+
                             continue;
                         }
 
                         actualizarProgreso(
-                            60 + (
+                            55 + (
                                 caracteresTotales /
                                 LIMITE_CARACTERES
-                            ) * 30,
-                            "Examinando caracteres: " +
-                            (caracteresTotales + 1)
+                            ) * 35,
+                            "Reconociendo segmento " +
+                            (caracteresTotales + 1) +
+                            " de " +
+                            LIMITE_CARACTERES
                         );
 
                         const recorteCaracter = crearRecorte(
@@ -1310,22 +1269,60 @@ async function analizarDocumento() {
                         const confianzaCaracter =
                             lecturaCaracter.data.confidence || 0;
 
-                        lecturasCaracteres.push({
-                            palabra: k + 1,
-                            segmento: m + 1,
-                            texto: textoCaracter,
-                            confianza: confianzaCaracter
-                        });
+                        caracteresDeEstaPalabra.push(
+                            textoCaracter
+                        );
+
+                        confianzasCaracteresBloque.push(
+                            confianzaCaracter
+                        );
+
+                        confianzasCaracteres.push(
+                            confianzaCaracter
+                        );
 
                         caracteresTotales++;
                         caracteresDelBloque++;
                     }
+
+                    palabrasCaracteres.push(
+                        caracteresDeEstaPalabra.length > 0
+                            ? caracteresDeEstaPalabra.join("")
+                            : "(sin segmentos)"
+                    );
                 }
+
+                caracteresPorLinea.push(
+                    palabrasCaracteres.join(" ")
+                );
             }
 
+            const textoCaracteres = caracteresPorLinea
+                .filter(t => t.length > 0)
+                .join("\n");
+
+            const confianzaMediaCaracteres =
+                confianzasCaracteresBloque.length > 0
+                    ? confianzasCaracteresBloque.reduce(
+                        (a, b) => a + b, 0
+                    ) / confianzasCaracteresBloque.length
+                    : 0;
+
             // ======================================
-            // COMPARACIONES ADICIONALES
+            // COMPARAR TODAS LAS LECTURAS
             // ======================================
+
+            const coincidenciaBloqueLineas =
+                calcularCoincidencia(
+                    textoBloque,
+                    textoLineas
+                );
+
+            const coincidenciaLineasPalabras =
+                calcularCoincidencia(
+                    textoLineas,
+                    textoPalabras
+                );
 
             const coincidenciaBloquePalabras =
                 calcularCoincidencia(
@@ -1333,14 +1330,22 @@ async function analizarDocumento() {
                     textoPalabras
                 );
 
-            // ======================================
-            // CONSERVAR RESULTADOS
-            // ======================================
+            const coincidenciaLineasCaracteres =
+                calcularCoincidencia(
+                    textoLineas,
+                    textoCaracteres
+                );
 
-            lecturasFinales.push(textoElegido);
+            coincidencias.push(
+                coincidenciaBloqueLineas,
+                coincidenciaLineasPalabras,
+                coincidenciaBloquePalabras,
+                coincidenciaLineasCaracteres
+            );
 
-            confianzaTotal += confianzaElegida;
-            cantidadConfianzas++;
+            // ======================================
+            // GUARDAR RESULTADOS SIN DESCARTAR NINGUNO
+            // ======================================
 
             resultadosInternos.push({
 
@@ -1349,53 +1354,137 @@ async function analizarDocumento() {
                 textoBloque,
                 textoLineas,
                 textoPalabras,
+                textoCaracteres,
 
                 confianzaBloque,
-                confianzaLineas,
-                confianzaPalabras,
+                confianzaLineas: confianzaMediaLineas,
+                confianzaPalabras: confianzaMediaPalabras,
+                confianzaCaracteres: confianzaMediaCaracteres,
 
-                coincidenciaBloqueLineas:
-                    coincidenciaBloqueLineas.toFixed(1) + "%",
+                coincidenciaBloqueLineas,
+                coincidenciaLineasPalabras,
+                coincidenciaBloquePalabras,
+                coincidenciaLineasCaracteres,
 
-                coincidenciaLineasPalabras:
-                    coincidenciaLineasPalabras.toFixed(1) + "%",
-
-                coincidenciaBloquePalabras:
-                    coincidenciaBloquePalabras.toFixed(1) + "%",
-
+                lineas: lineas.length,
                 palabras: palabrasDelBloque,
                 caracteres: caracteresDelBloque,
-                caracteresOmitidos,
+                caracteresOmitidos
 
-                lecturasCaracteres,
-
-                textoElegido
             });
         }
 
         // ------------------------------------------
-        // PASO E: RECONSTRUIR DOCUMENTO
+        // PASO E: CONSTRUIR LOS CUATRO RESULTADOS
         // ------------------------------------------
 
-        const textoFinal = lecturasFinales
-            .filter(t => t.length > 0)
-            .join("\n\n");
+        function formatearPasada(
+            titulo,
+            propiedadTexto,
+            propiedadConfianza
+        ) {
 
-        resultado.value = textoFinal;
+            let salida = "";
+
+            salida += "========== " + titulo + " ==========\n\n";
+
+            for (const bloque of resultadosInternos) {
+
+                salida += "----- BLOQUE " +
+                    bloque.bloque +
+                    " -----\n";
+
+                salida +=
+                    "Confianza: " +
+                    bloque[propiedadConfianza].toFixed(1) +
+                    "%\n\n";
+
+                salida +=
+                    bloque[propiedadTexto] || "(Sin texto reconocido)";
+
+                salida += "\n\n";
+            }
+
+            return salida;
+        }
+
+        const resultadoBloques = formatearPasada(
+            "RESULTADO 1: BLOQUES — PSM 6",
+            "textoBloque",
+            "confianzaBloque"
+        );
+
+        const resultadoLineas = formatearPasada(
+            "RESULTADO 2: LÍNEAS — PSM 7",
+            "textoLineas",
+            "confianzaLineas"
+        );
+
+        const resultadoPalabras = formatearPasada(
+            "RESULTADO 3: PALABRAS — PSM 8",
+            "textoPalabras",
+            "confianzaPalabras"
+        );
+
+        const resultadoCaracteres = formatearPasada(
+            "RESULTADO 4: CARACTERES — PSM 10",
+            "textoCaracteres",
+            "confianzaCaracteres"
+        );
 
         // ------------------------------------------
-        // PASO F: ESTADÍSTICAS
+        // PASO F: MOSTRAR TODO EN LA CAJA DE TEXTO
         // ------------------------------------------
 
-        const confianzaMedia =
-            cantidadConfianzas > 0
-                ? confianzaTotal / cantidadConfianzas
-                : 0;
+        let textoCompleto = "";
 
-        const coincidenciaMedia =
-            bloquesComparados > 0
-                ? coincidenciaTotal / bloquesComparados
-                : 0;
+        textoCompleto += resultadoBloques;
+
+        textoCompleto +=
+            "\n\n========================================\n\n";
+
+        textoCompleto += resultadoLineas;
+
+        textoCompleto +=
+            "\n\n========================================\n\n";
+
+        textoCompleto += resultadoPalabras;
+
+        textoCompleto +=
+            "\n\n========================================\n\n";
+
+        textoCompleto += resultadoCaracteres;
+
+        resultado.value = textoCompleto;
+
+        // ------------------------------------------
+        // PASO G: ESTADÍSTICAS GENERALES
+        // ------------------------------------------
+
+        function promedio(valores) {
+
+            if (!valores.length) return 0;
+
+            return valores.reduce((a, b) => a + b, 0) /
+                valores.length;
+        }
+
+        const confianzaGeneral = promedio([
+            promedio(confianzasBloques),
+            promedio(confianzasLineas),
+            promedio(confianzasPalabras),
+            promedio(confianzasCaracteres)
+        ].filter((valor, indice) => {
+
+            return [
+                confianzasBloques,
+                confianzasLineas,
+                confianzasPalabras,
+                confianzasCaracteres
+            ][indice].length > 0;
+        }));
+
+        const coincidenciaMedia = promedio(coincidencias);
 
         totalLineas.textContent =
             lineasTotales +
@@ -1403,14 +1492,13 @@ async function analizarDocumento() {
 
         confianza.textContent =
             "Confianza media: " +
-            confianzaMedia.toFixed(1) +
+            confianzaGeneral.toFixed(1) +
             "%";
 
         coincidencia.textContent =
-            "Coincidencia: " +
-            (bloquesComparados > 0
-                ? coincidenciaMedia.toFixed(1) + "%"
-                : "No disponible");
+            "Coincidencia media: " +
+            coincidenciaMedia.toFixed(1) +
+            "%";
 
         if (totalPalabras) {
 
@@ -1430,18 +1518,22 @@ async function analizarDocumento() {
 
         resumen.hidden = false;
 
-        btnCopiar.disabled = textoFinal.length === 0;
+        btnCopiar.disabled = textoCompleto.length === 0;
 
         actualizarProgreso(
             100,
-            "Análisis completado."
+            "Todas las pasadas han terminado."
         );
 
         estadoResultado.textContent =
-            "Análisis completado";
+            "Comparación de pasadas completada";
 
-        // Datos detallados para diagnóstico.
+        // ------------------------------------------
+        // PASO H: INFORMACIÓN PARA DIAGNÓSTICO
+        // ------------------------------------------
+
         console.log("RESULTADOS COMPLETOS DEL OCR");
+
         console.table(resultadosInternos);
 
         console.log(
@@ -1450,9 +1542,20 @@ async function analizarDocumento() {
         );
 
         console.log(
-            "Segmentos de caracteres reconocidos:",
+            "Segmentos reconocidos:",
             caracteresTotales
         );
+
+        console.log(
+            "Segmentos omitidos por límite:",
+            caracteresOmitidosTotales
+        );
+
+        if (caracteresOmitidosTotales > 0) {
+
+            estadoResultado.textContent =
+                "Análisis terminado. Algunos segmentos fueron omitidos por el límite de seguridad.";
+        }
 
     } catch (error) {
 
@@ -1481,6 +1584,9 @@ async function analizarDocumento() {
         entradaImagen.disabled = false;
     }
 }
+
+                
+
 
 
 // ==================================================
