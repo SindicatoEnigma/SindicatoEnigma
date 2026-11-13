@@ -1,8 +1,8 @@
-
 // ============================================================
 // SINDICATO ENIGMA
 // LABORATORIO DE DOCUMENTOS OCR
-// Version: 3.0 - Comparacion de imagen original y modificada
+// Version: 3.1 - Comparacion original/modificada
+// Correccion: activacion automatica de botones
 //
 // Lecturas:
 // PSM 6: Bloques
@@ -97,11 +97,15 @@ imagenInput.addEventListener("change", function (evento) {
     if (!archivo) return;
 
     if (!archivo.type.startsWith("image/")) {
-        mostrarEstado("Selecciona un archivo de imagen válido.");
+        mostrarEstado("Selecciona un archivo de imagen valido.");
         return;
     }
 
     archivoSeleccionado = archivo;
+
+    // Deshabilitar botones mientras se carga la imagen.
+    btnAnalizar.disabled = true;
+    btnCopiar.disabled = true;
 
     if (nombreArchivo) {
         nombreArchivo.textContent = archivo.name;
@@ -116,7 +120,12 @@ imagenInput.addEventListener("change", function (evento) {
         img.onload = function () {
 
             imagenCargada = img;
+
+            // Habilitar analisis cuando la imagen este lista.
             btnAnalizar.disabled = false;
+
+            // No hay resultados nuevos para copiar.
+            btnCopiar.disabled = true;
 
             if (vistaPrevia) {
                 vistaPrevia.src = e.target.result;
@@ -136,9 +145,15 @@ imagenInput.addEventListener("change", function (evento) {
 
         img.onerror = function () {
             mostrarEstado("No se pudo cargar la imagen.");
+            btnAnalizar.disabled = true;
         };
 
         img.src = e.target.result;
+    };
+
+    lector.onerror = function () {
+        mostrarEstado("No se pudo leer el archivo.");
+        btnAnalizar.disabled = true;
     };
 
     lector.readAsDataURL(archivo);
@@ -179,15 +194,6 @@ function prepararImagenOriginal(img) {
 
 // ------------------------------------------------------------
 // 6. MODIFICAR IMAGEN
-//
-// Tratamiento:
-// - Escala de grises
-// - Contraste moderado
-// - Ampliacion al 150%
-//
-// No se utiliza binarizacion Otsu.
-// Esto permite conservar detalles pequeños como acentos
-// y los puntos de la dieresis.
 // ------------------------------------------------------------
 
 function modificarImagen(canvasBase) {
@@ -235,13 +241,11 @@ function modificarImagen(canvasBase) {
         const verde = pixeles[i + 1];
         const azul = pixeles[i + 2];
 
-        // Conversion a escala de grises.
         let gris =
             0.299 * rojo +
             0.587 * verde +
             0.114 * azul;
 
-        // Contraste moderado.
         gris = (gris - 128) * factorContraste + 128;
 
         gris = Math.max(0, Math.min(255, gris));
@@ -354,7 +358,6 @@ function extraerLineas(datos) {
         }
     }
 
-    // Compatibilidad con resultados que incluyan data.lines.
     if (lineas.length === 0 && datos.lines) {
 
         for (const linea of datos.lines) {
@@ -431,7 +434,6 @@ function crearRecorteLinea(canvas, bbox) {
         alto
     );
 
-    // Ampliar lineas demasiado pequeñas.
     if (alto < 100) {
 
         const factor = Math.min(2.5, 100 / alto);
@@ -584,7 +586,6 @@ async function analizarVariante(canvas, nombre, motor) {
 
     mostrarEstado("Analizando " + nombre + "...");
 
-    // Primera lectura: PSM 6.
     const datosBloques = await reconocerBloques(
         canvas,
         motor
@@ -594,7 +595,6 @@ async function analizarVariante(canvas, nombre, motor) {
 
     const confianzaBloques = datosBloques.confidence || 0;
 
-    // Segunda lectura: PSM 7.
     mostrarEstado("Reconociendo lineas de " + nombre + "...");
 
     const lecturaLineas = await reconocerLineas(
@@ -660,7 +660,6 @@ function construirResultado(original, modificada) {
     salida += "COMPARACION DE IMAGENES\n";
     salida += "========================================\n\n";
 
-    // ORIGINAL - PSM 6.
     salida += "LECTURA 1: IMAGEN ORIGINAL - BLOQUES PSM 6\n";
     salida += "Confianza: " +
         original.bloques.confianza.toFixed(1) + "%\n\n";
@@ -669,7 +668,6 @@ function construirResultado(original, modificada) {
 
     salida += "\n\n========================================\n\n";
 
-    // ORIGINAL - PSM 7.
     salida += "LECTURA 2: IMAGEN ORIGINAL - LINEAS PSM 7\n";
     salida += "Confianza: " +
         original.lineas.confianza.toFixed(1) + "%\n\n";
@@ -683,7 +681,6 @@ function construirResultado(original, modificada) {
 
     salida += "\n\n========================================\n\n";
 
-    // MODIFICADA - PSM 6.
     salida += "LECTURA 3: IMAGEN MODIFICADA - BLOQUES PSM 6\n";
     salida += "Confianza: " +
         modificada.bloques.confianza.toFixed(1) + "%\n\n";
@@ -692,7 +689,6 @@ function construirResultado(original, modificada) {
 
     salida += "\n\n========================================\n\n";
 
-    // MODIFICADA - PSM 7.
     salida += "LECTURA 4: IMAGEN MODIFICADA - LINEAS PSM 7\n";
     salida += "Confianza: " +
         modificada.lineas.confianza.toFixed(1) + "%\n\n";
@@ -794,6 +790,7 @@ btnAnalizar.addEventListener("click", async function () {
     procesando = true;
 
     btnAnalizar.disabled = true;
+    btnCopiar.disabled = true;
 
     if (resultado) {
         resultado.value = "";
@@ -821,10 +818,6 @@ btnAnalizar.addEventListener("click", async function () {
 
         const motor = await obtenerWorker();
 
-        // ----------------------------------------
-        // IMAGEN ORIGINAL
-        // ----------------------------------------
-
         mostrarEstado("Primera fase: imagen original.");
 
         const original = await analizarVariante(
@@ -834,10 +827,6 @@ btnAnalizar.addEventListener("click", async function () {
         );
 
         actualizarProgreso(45);
-
-        // ----------------------------------------
-        // IMAGEN MODIFICADA
-        // ----------------------------------------
 
         mostrarEstado("Segunda fase: imagen modificada.");
 
@@ -849,10 +838,6 @@ btnAnalizar.addEventListener("click", async function () {
 
         actualizarProgreso(90);
 
-        // ----------------------------------------
-        // RESULTADOS
-        // ----------------------------------------
-
         const comparacion = construirResultado(
             original,
             modificada
@@ -861,6 +846,11 @@ btnAnalizar.addEventListener("click", async function () {
         if (resultado) {
             resultado.value = comparacion.texto;
         }
+
+        // HABILITAR COPIAR SI HAY TEXTO.
+        btnCopiar.disabled = !(
+            resultado && resultado.value.trim().length > 0
+        );
 
         actualizarEstadisticas(
             original,
@@ -889,11 +879,16 @@ btnAnalizar.addEventListener("click", async function () {
                 "\n\nERROR:\n" + error.message;
         }
 
+        // No habilitar copiar si no hay resultados utiles.
+        btnCopiar.disabled = !(
+            resultado && resultado.value.trim().length > 0
+        );
+
     } finally {
 
         procesando = false;
 
-        btnAnalizar.disabled = false;
+        btnAnalizar.disabled = !imagenCargada;
     }
 });
 
@@ -906,6 +901,7 @@ btnCopiar.addEventListener("click", async function () {
 
     if (!resultado || !resultado.value.trim()) {
         mostrarEstado("No hay resultados para copiar.");
+        btnCopiar.disabled = true;
         return;
     }
 
@@ -919,11 +915,23 @@ btnCopiar.addEventListener("click", async function () {
 
     } catch (error) {
 
-        resultado.select();
+        try {
 
-        document.execCommand("copy");
+            resultado.focus();
+            resultado.select();
 
-        mostrarEstado("Resultados copiados.");
+            const copiaCorrecta = document.execCommand("copy");
+
+            if (copiaCorrecta) {
+                mostrarEstado("Resultados copiados.");
+            } else {
+                mostrarEstado("No se pudo copiar automaticamente.");
+            }
+
+        } catch (errorCopia) {
+
+            mostrarEstado("No se pudo copiar el texto.");
+        }
     }
 });
 
@@ -960,6 +968,10 @@ btnLimpiar.addEventListener("click", function () {
         resultado.value = "";
     }
 
+    // Deshabilitar ambos botones al limpiar.
+    btnAnalizar.disabled = true;
+    btnCopiar.disabled = true;
+
     actualizarProgreso(0);
 
     actualizarResumen("Esperando una imagen.");
@@ -982,6 +994,9 @@ btnLimpiar.addEventListener("click", function () {
 // ------------------------------------------------------------
 // 20. ESTADO INICIAL
 // ------------------------------------------------------------
+
+btnAnalizar.disabled = true;
+btnCopiar.disabled = true;
 
 mostrarEstado("Laboratorio listo.");
 
