@@ -472,10 +472,22 @@ function obtenerMascaraFlexible(canvas, ajuste = 0) {
    7. AGRUPAR FILAS ACTIVAS
    ========================================================= */
 
+
+   
 function agruparFilas(proyeccion, ancho, alto) {
+
+    // Encontrar la mayor cantidad de píxeles
+    // detectados en una sola fila.
+    const maximo = Math.max(...proyeccion);
+
+    if (maximo <= 0) return [];
+
+    // Umbral dinámico:
+    // una fila necesita suficiente contenido
+    // para considerarse parte de una línea.
     const minimoPixeles = Math.max(
-        2,
-        Math.floor(ancho * 0.00015)
+        6,
+        Math.floor(maximo * 0.06)
     );
 
     const filasActivas = new Array(alto).fill(false);
@@ -496,14 +508,20 @@ function agruparFilas(proyeccion, ancho, alto) {
     );
 
     for (let y = 0; y < alto; y++) {
+
         if (filasActivas[y]) {
-            if (inicio === null) inicio = y;
+
+            if (inicio === null) {
+                inicio = y;
+            }
 
             ultimaActiva = y;
+
         } else if (
             inicio !== null &&
             y - ultimaActiva > huecoMaximo
         ) {
+
             grupos.push({
                 y0: inicio,
                 y1: ultimaActiva + 1
@@ -523,6 +541,7 @@ function agruparFilas(proyeccion, ancho, alto) {
 
     return grupos;
 }
+
 
 
 /* =========================================================
