@@ -1,3 +1,10 @@
+
+"use strict";
+
+// ==================================================
+// 1. ELEMENTOS HTML
+// ==================================================
+
 const entradaImagen = document.getElementById("entradaImagen");
 const zonaCarga = document.getElementById("zonaCarga");
 
@@ -8,7 +15,13 @@ const nombreImagen = document.getElementById("nombreImagen");
 const btnQuitarImagen = document.getElementById("btnQuitarImagen");
 const btnReconocer = document.getElementById("btnReconocer");
 const btnCopiar = document.getElementById("btnCopiar");
-const btnLimpiar = document.getElementById("btnLimpiar");
+const btnLimpiarTexto = document.getElementById("btnLimpiarTexto");
+const btnLimpiarTodo = document.getElementById("btnLimpiarTodo");
+
+const modoReconocimiento = document.getElementById("modoReconocimiento");
+const idiomaOCR = document.getElementById("idiomaOCR");
+const preprocesamiento = document.getElementById("preprocesamiento");
+const segmentacion = document.getElementById("segmentacion");
 
 const textoResultado = document.getElementById("textoResultado");
 
@@ -20,341 +33,914 @@ const barraProgreso = document.getElementById("barraProgreso");
 const mensajeEstado = document.getElementById("mensajeEstado");
 const mensajeCopia = document.getElementById("mensajeCopia");
 
-const rangoUmbral = document.getElementById("rangoUmbral");
-const valorUmbral = document.getElementById("valorUmbral");
-const selectPSM = document.getElementById("selectPSM");
-const vistaProcesada = document.getElementById("vistaProcesada");
-const imagenProcesada = document.getElementById("imagenProcesada");
+const contenedorConfianza = document.getElementById("contenedorConfianza");
+const valorConfianza = document.getElementById("valorConfianza");
+
+const totalCaracteres = document.getElementById("totalCaracteres");
+const totalPalabras = document.getElementById("totalPalabras");
+
+
+// ==================================================
+// 2. VARIABLES
+// ==================================================
 
 let archivoSeleccionado = null;
 let direccionImagen = null;
+
 let trabajadorOCR = null;
+let idiomaTrabajador = null;
+
 let procesando = false;
 
 const TAMANO_MAXIMO = 20 * 1024 * 1024;
 
-// Actualizar valor del umbral
-rangoUmbral.addEventListener("input", () => {
-    valorUmbral.textContent = rangoUmbral.value;
-});
 
-
-// --------------------------------------------------
-// 1. CARGAR IMAGEN
-// --------------------------------------------------
+// ==================================================
+// 3. CARGAR IMAGEN
+// ==================================================
 
 entradaImagen.addEventListener("change", function () {
+
     const archivo = this.files[0];
-    if (archivo) cargarImagen(archivo);
+
+    if (archivo) {
+        cargarImagen(archivo);
+    }
+
 });
 
 
 function cargarImagen(archivo) {
+
     if (procesando) return;
 
     if (!archivo.type.startsWith("image/")) {
-        mensajeEstado.textContent = "El archivo seleccionado no parece ser una imagen.";
+
+        mensajeEstado.textContent =
+            "El archivo seleccionado no es una imagen válida.";
+
         return;
     }
 
     if (archivo.size > TAMANO_MAXIMO) {
-        mensajeEstado.textContent = "La imagen supera el límite de 20 MB.";
+
+        mensajeEstado.textContent =
+            "La imagen supera el límite de 20 MB.";
+
         entradaImagen.value = "";
+
         return;
     }
 
-    if (direccionImagen) URL.revokeObjectURL(direccionImagen);
+    if (direccionImagen) {
+        URL.revokeObjectURL(direccionImagen);
+    }
 
     archivoSeleccionado = archivo;
+
     direccionImagen = URL.createObjectURL(archivo);
 
     imagenVista.src = direccionImagen;
+
     nombreImagen.textContent = archivo.name;
 
     contenedorVista.hidden = false;
-    btnReconocer.disabled = false;
-    btnCopiar.disabled = !textoResultado.value.trim();
-    vistaProcesada.hidden = true;
 
-    mensajeEstado.textContent = "Imagen cargada. Lista para el reconocimiento.";
+    btnReconocer.disabled = false;
+
+    mensajeEstado.textContent =
+        "Imagen cargada. Configura el reconocimiento.";
+
     mensajeCopia.textContent = "";
+
     contenedorProgreso.hidden = true;
+
+    contenedorConfianza.hidden = true;
+
 }
 
 
-// --------------------------------------------------
-// 2. ARRASTRAR Y SOLTAR
-// --------------------------------------------------
+// ==================================================
+// 4. ARRASTRAR Y SOLTAR
+// ==================================================
 
-zonaCarga.addEventListener("dragover", e => {
-    e.preventDefault();
+zonaCarga.addEventListener("dragover", function (evento) {
+
+    evento.preventDefault();
+
     zonaCarga.classList.add("arrastrando");
+
 });
 
-zonaCarga.addEventListener("dragleave", () => {
+
+zonaCarga.addEventListener("dragleave", function () {
+
     zonaCarga.classList.remove("arrastrando");
+
 });
 
-zonaCarga.addEventListener("drop", e => {
-    e.preventDefault();
+
+zonaCarga.addEventListener("drop", function (evento) {
+
+    evento.preventDefault();
+
     zonaCarga.classList.remove("arrastrando");
-    const archivo = e.dataTransfer.files[0];
+
+    const archivo = evento.dataTransfer.files[0];
+
     if (archivo) {
         cargarImagen(archivo);
         entradaImagen.value = "";
     }
+
 });
 
 
-// --------------------------------------------------
-// 3. PREPROCESAMIENTO MEJORADO (engrosa letras)
-// --------------------------------------------------
+// ==================================================
+// 5. PREPARAR IMAGEN PARA OCR
+// ==================================================
 
-async function preprocesarImagen(archivo, umbral = 149) {
-    return new Promise((resolve) => {
-        const img = new Image();
-        const url = URL.createObjectURL(archivo);
+async function prepararImagen(archivo, tipo) {
 
-        img.onload = () => {
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
+    const imagen = new Image();
 
-            // Escala alta
-            const escala = 2.5;
-            canvas.width = Math.round(img.width * escala);
-            canvas.height = Math.round(img.height * escala);
+    const urlTemporal = URL.createObjectURL(archivo);
 
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = "high";
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    try {
 
-            let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            let data = imageData.data;
+        imagen.src = urlTemporal;
 
-            // 1. Escala de grises + contraste fuerte + binarización
-            for (let i = 0; i < data.length; i += 4) {
-                let gris = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+        await new Promise((resolve, reject) => {
 
-                // Contraste más agresivo
-                gris = (gris - 128) * 2.1 + 128;
-                gris = Math.max(0, Math.min(255, gris));
+            imagen.onload = resolve;
 
-                const binario = gris > umbral ? 255 : 0;
-                data[i] = data[i + 1] = data[i + 2] = binario;
+            imagen.onerror = reject;
+
+        });
+
+        const anchoOriginal = imagen.naturalWidth;
+        const altoOriginal = imagen.naturalHeight;
+
+        // Evitar imágenes demasiado pequeñas y limitar
+        // el tamaño máximo para controlar el consumo de memoria.
+
+        const dimensionMayor = Math.max(
+            anchoOriginal,
+            altoOriginal
+        );
+
+        const escala = Math.min(
+            2.5,
+            2600 / dimensionMayor
+        );
+
+        const ancho = Math.max(
+            1,
+            Math.round(anchoOriginal * escala)
+        );
+
+        const alto = Math.max(
+            1,
+            Math.round(altoOriginal * escala)
+        );
+
+        const canvas = document.createElement("canvas");
+
+        canvas.width = ancho;
+        canvas.height = alto;
+
+        const contexto = canvas.getContext("2d", {
+            willReadFrequently: true
+        });
+
+        contexto.drawImage(imagen, 0, 0, ancho, alto);
+
+        if (tipo === "original") {
+            return canvas;
+        }
+
+        const imagenDatos = contexto.getImageData(
+            0,
+            0,
+            ancho,
+            alto
+        );
+
+        const pixeles = imagenDatos.data;
+
+        const histograma = new Array(256).fill(0);
+
+        // Convertir los colores a niveles de gris.
+
+        for (let i = 0; i < pixeles.length; i += 4) {
+
+            const gris = Math.round(
+                0.299 * pixeles[i] +
+                0.587 * pixeles[i + 1] +
+                0.114 * pixeles[i + 2]
+            );
+
+            pixeles[i] = gris;
+            pixeles[i + 1] = gris;
+            pixeles[i + 2] = gris;
+
+            histograma[gris]++;
+
+        }
+
+        // Mejorar contraste.
+
+        if (tipo === "contraste") {
+
+            const factor = 1.6;
+
+            for (let i = 0; i < pixeles.length; i += 4) {
+
+                let gris = pixeles[i];
+
+                gris = (gris - 128) * factor + 128;
+
+                gris = Math.max(
+                    0,
+                    Math.min(255, gris)
+                );
+
+                pixeles[i] = gris;
+                pixeles[i + 1] = gris;
+                pixeles[i + 2] = gris;
+
             }
 
-            ctx.putImageData(imageData, 0, 0);
+        }
 
-            // 2. Dilatación simple (engrosa las letras y une trazos rotos)
-            imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            data = imageData.data;
-            const copia = new Uint8ClampedArray(data);
+        // Binarización mediante el método de Otsu.
 
-            const ancho = canvas.width;
-            const alto = canvas.height;
+        if (tipo === "binario") {
 
-            for (let y = 1; y < alto - 1; y++) {
-                for (let x = 1; x < ancho - 1; x++) {
-                    const idx = (y * ancho + x) * 4;
+            const umbral = calcularUmbralOtsu(
+                histograma,
+                ancho * alto
+            );
 
-                    // Si el píxel es negro, miramos los vecinos
-                    if (copia[idx] === 0) {
-                        // Mantener negro
-                        continue;
-                    }
+            for (let i = 0; i < pixeles.length; i += 4) {
 
-                    // Si algún vecino es negro, este píxel también se vuelve negro (dilatación)
-                    let hayNegro = false;
-                    for (let dy = -1; dy <= 1; dy++) {
-                        for (let dx = -1; dx <= 1; dx++) {
-                            const nIdx = ((y + dy) * ancho + (x + dx)) * 4;
-                            if (copia[nIdx] === 0) {
-                                hayNegro = true;
-                                break;
-                            }
-                        }
-                        if (hayNegro) break;
-                    }
+                const color = pixeles[i] > umbral ? 255 : 0;
 
-                    if (hayNegro) {
-                        data[idx] = data[idx + 1] = data[idx + 2] = 0;
-                    }
-                }
+                pixeles[i] = color;
+                pixeles[i + 1] = color;
+                pixeles[i + 2] = color;
+
             }
 
-            ctx.putImageData(imageData, 0, 0);
-            URL.revokeObjectURL(url);
+        }
 
-            // Mostrar imagen procesada
-            imagenProcesada.src = canvas.toDataURL("image/png");
-            vistaProcesada.hidden = false;
+        contexto.putImageData(imagenDatos, 0, 0);
 
-            canvas.toBlob(blob => resolve(blob), "image/png");
-        };
+        return canvas;
 
-        img.src = url;
-    });
+    } finally {
+
+        URL.revokeObjectURL(urlTemporal);
+
+    }
+
 }
 
 
-// --------------------------------------------------
-// 4. RECONOCIMIENTO
-// --------------------------------------------------
+// ==================================================
+// 6. CALCULAR UMBRAL DE OT SU
+// ==================================================
 
-btnReconocer.addEventListener("click", iniciarReconocimiento);
+function calcularUmbralOtsu(histograma, totalPixeles) {
 
-async function iniciarReconocimiento() {
-    if (!archivoSeleccionado || procesando) return;
+    let sumaTotal = 0;
+
+    for (let i = 0; i < 256; i++) {
+        sumaTotal += i * histograma[i];
+    }
+
+    let sumaFondo = 0;
+    let pesoFondo = 0;
+
+    let varianzaMaxima = 0;
+    let umbral = 127;
+
+    for (let i = 0; i < 256; i++) {
+
+        pesoFondo += histograma[i];
+
+        if (pesoFondo === 0) continue;
+
+        const pesoObjeto = totalPixeles - pesoFondo;
+
+        if (pesoObjeto === 0) break;
+
+        sumaFondo += i * histograma[i];
+
+        const mediaFondo = sumaFondo / pesoFondo;
+
+        const mediaObjeto =
+            (sumaTotal - sumaFondo) / pesoObjeto;
+
+        const diferencia = mediaFondo - mediaObjeto;
+
+        const varianza =
+            pesoFondo *
+            pesoObjeto *
+            diferencia *
+            diferencia;
+
+        if (varianza > varianzaMaxima) {
+
+            varianzaMaxima = varianza;
+
+            umbral = i;
+
+        }
+
+    }
+
+    return umbral;
+
+}
+
+
+// ==================================================
+// 7. CONFIGURAR MODO DE RECONOCIMIENTO
+// ==================================================
+
+modoReconocimiento.addEventListener("change", function () {
+
+    if (this.value === "codigo") {
+
+        idiomaOCR.value = "eng";
+
+        preprocesamiento.value = "contraste";
+
+        segmentacion.value = "bloque";
+
+    } else {
+
+        idiomaOCR.value = "spa";
+
+        preprocesamiento.value = "contraste";
+
+        segmentacion.value = "bloque";
+
+    }
+
+});
+
+
+// ==================================================
+// 8. CONFIGURAR SEGMENTACIÓN
+// ==================================================
+
+function obtenerModoSegmentacion() {
+
+    const modos = {
+
+        bloque: "6",
+
+        disperso: "11",
+
+        linea: "7"
+
+    };
+
+    return modos[segmentacion.value] || "6";
+
+}
+
+
+// ==================================================
+// 9. CREAR O REUTILIZAR MOTOR OCR
+// ==================================================
+
+async function obtenerTrabajador(idioma) {
 
     if (typeof Tesseract === "undefined") {
-        mensajeEstado.textContent = "No se pudo cargar el motor OCR.";
+
+        throw new Error(
+            "No se pudo cargar Tesseract.js."
+        );
+
+    }
+
+    // Si cambiamos de idioma, hay que crear
+    // un trabajador nuevo.
+
+    if (
+        trabajadorOCR &&
+        idiomaTrabajador !== idioma
+    ) {
+
+        await trabajadorOCR.terminate();
+
+        trabajadorOCR = null;
+
+        idiomaTrabajador = null;
+
+    }
+
+    if (!trabajadorOCR) {
+
+        trabajadorOCR = await Tesseract.createWorker(
+            idioma,
+            1,
+            {
+
+                workerPath:
+                    "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js",
+
+                corePath:
+                    "https://cdn.jsdelivr.net/npm/tesseract.js-core@5",
+
+                langPath:
+                    "https://tessdata.projectnaptha.com/4.0.0",
+
+                logger: function (informacion) {
+
+                    if (informacion.status) {
+
+                        const estados = {
+
+                            "loading tesseract core":
+                                "Cargando motor OCR...",
+
+                            "initializing tesseract":
+                                "Inicializando motor...",
+
+                            "loading language traineddata":
+                                "Descargando idioma...",
+
+                            "initializing api":
+                                "Preparando reconocimiento...",
+
+                            "recognizing text":
+                                "Reconociendo caracteres..."
+
+                        };
+
+                        const descripcion =
+                            estados[informacion.status] ||
+                            "Procesando...";
+
+                        const avance = informacion.progress
+                            ? Math.round(informacion.progress * 100)
+                            : 0;
+
+                        actualizarProgreso(
+                            avance,
+                            descripcion
+                        );
+
+                    }
+
+                }
+
+            }
+
+        );
+
+        idiomaTrabajador = idioma;
+
+    }
+
+    return trabajadorOCR;
+
+}
+
+
+// ==================================================
+// 10. INICIAR RECONOCIMIENTO
+// ==================================================
+
+btnReconocer.addEventListener(
+    "click",
+    iniciarReconocimiento
+);
+
+
+async function iniciarReconocimiento() {
+
+    if (!archivoSeleccionado || procesando) {
         return;
     }
 
     procesando = true;
+
     cambiarEstadoBotones(true);
+
     contenedorProgreso.hidden = false;
-    actualizarProgreso(0, "Preparando...");
-    mensajeEstado.textContent = "Preprocesando imagen y reconociendo texto...";
+
+    contenedorConfianza.hidden = true;
+
+    actualizarProgreso(
+        0,
+        "Preparando imagen..."
+    );
+
+    mensajeEstado.textContent =
+        "Preparando la imagen para el reconocimiento.";
 
     try {
-        if (!trabajadorOCR) {
-            trabajadorOCR = await Tesseract.createWorker("eng", 1, {
-                workerPath: "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js",
-                corePath: "https://cdn.jsdelivr.net/npm/tesseract.js-core@v5",
-                langPath: "https://tessdata.projectnaptha.com/4.0.0",
-                logger: info => {
-                    if (info.status) {
-                        const estados = {
-                            "loading tesseract core": "Cargando motor OCR...",
-                            "initializing tesseract": "Inicializando...",
-                            "loading language traineddata": "Descargando idioma...",
-                            "initializing api": "Preparando...",
-                            "recognizing text": "Reconociendo caracteres..."
-                        };
-                        const desc = estados[info.status] || "Procesando...";
-                        const avance = info.progress ? Math.round(info.progress * 100) : 0;
-                        actualizarProgreso(avance, desc);
-                    }
-                }
-            });
-        }
 
-        // Forzamos PSM 6 (el que mejor te funcionó)
-        await trabajadorOCR.setParameters({
-            tessedit_pageseg_mode: "6",
+        const idioma = idiomaOCR.value;
+
+        const tipoImagen = preprocesamiento.value;
+
+        const modoPagina = obtenerModoSegmentacion();
+
+        // Preparar imagen.
+
+        const imagenPreparada = await prepararImagen(
+            archivoSeleccionado,
+            tipoImagen
+        );
+
+        actualizarProgreso(
+            5,
+            "Preparando motor OCR..."
+        );
+
+        // Crear motor.
+
+        const trabajador = await obtenerTrabajador(idioma);
+
+        // Configurar el motor para la distribución
+        // de texto seleccionada.
+
+        await trabajador.setParameters({
+
+            tessedit_pageseg_mode: modoPagina,
+
             preserve_interword_spaces: "1",
-            tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,«»()!?:;\"'- ",
+
+            user_defined_dpi: "300"
+
         });
 
-        const umbralActual = parseInt(rangoUmbral.value);
-        const imagenLimpia = await preprocesarImagen(archivoSeleccionado, umbralActual);
+        actualizarProgreso(
+            10,
+            "Iniciando reconocimiento..."
+        );
 
-        const resultado = await trabajadorOCR.recognize(imagenLimpia);
-        const textoReconocido = resultado.data.text || "";
+        mensajeEstado.textContent =
+            "Reconociendo caracteres. Espera a que termine.";
 
-        textoResultado.value = textoReconocido;
-        actualizarProgreso(100, "Reconocimiento terminado.");
+        // Reconocimiento sin listas blancas ni
+        // correcciones automáticas del contenido.
 
-        mensajeEstado.textContent = textoReconocido.trim()
-            ? "Reconocimiento completado. Puedes ajustar el umbral si es necesario."
-            : "No se encontró texto reconocible.";
+        const resultado = await trabajador.recognize(
+            imagenPreparada
+        );
+
+        const texto = resultado.data.text || "";
+
+        textoResultado.value = texto;
+
+        // Mostrar confianza estimada.
+
+        const confianza = resultado.data.confidence;
+
+        if (typeof confianza === "number") {
+
+            valorConfianza.textContent =
+                Math.round(confianza) + "%";
+
+            contenedorConfianza.hidden = false;
+
+        }
+
+        actualizarEstadisticas();
+
+        if (texto.trim()) {
+
+            mensajeEstado.textContent =
+                "Reconocimiento terminado. Puedes revisar el resultado o cambiar la configuración y repetir.";
+
+        } else {
+
+            mensajeEstado.textContent =
+                "No se encontraron caracteres reconocibles.";
+
+        }
+
+        actualizarProgreso(
+            100,
+            "Reconocimiento terminado."
+        );
 
         actualizarBotonCopiar();
 
     } catch (error) {
-        console.error(error);
-        mensajeEstado.textContent = "Error al procesar la imagen.";
-        actualizarProgreso(0, "Error");
+
+        console.error("Error durante OCR:", error);
+
+        mensajeEstado.textContent =
+            "Ocurrió un error. Comprueba tu conexión a internet y vuelve a intentarlo.";
+
+        actualizarProgreso(
+            0,
+            "Error de reconocimiento."
+        );
+
     } finally {
+
         procesando = false;
+
         cambiarEstadoBotones(false);
+
         actualizarBotonCopiar();
+
     }
+
 }
 
 
-// --------------------------------------------------
-// 5. UTILIDADES
-// --------------------------------------------------
+// ==================================================
+// 11. PROGRESO
+// ==================================================
 
 function actualizarProgreso(valor, descripcion) {
-    const v = Math.max(0, Math.min(100, valor));
-    barraProgreso.value = v;
-    porcentaje.textContent = v + "%";
+
+    const seguro = Math.max(
+        0,
+        Math.min(100, valor)
+    );
+
+    barraProgreso.value = seguro;
+
+    porcentaje.textContent = seguro + "%";
+
     estadoProceso.textContent = descripcion;
+
 }
+
+
+// ==================================================
+// 12. BLOQUEAR BOTONES DURANTE PROCESAMIENTO
+// ==================================================
 
 function cambiarEstadoBotones(bloqueado) {
-    btnReconocer.disabled = bloqueado || !archivoSeleccionado;
+
+    btnReconocer.disabled =
+        bloqueado || !archivoSeleccionado;
+
     btnQuitarImagen.disabled = bloqueado;
-    btnLimpiar.disabled = bloqueado;
+
+    btnLimpiarTexto.disabled = bloqueado;
+
+    btnLimpiarTodo.disabled = bloqueado;
+
     entradaImagen.disabled = bloqueado;
-    rangoUmbral.disabled = bloqueado;
-    selectPSM.disabled = bloqueado;
+
+    modoReconocimiento.disabled = bloqueado;
+
+    idiomaOCR.disabled = bloqueado;
+
+    preprocesamiento.disabled = bloqueado;
+
+    segmentacion.disabled = bloqueado;
+
 }
 
-btnCopiar.addEventListener("click", async () => {
-    const texto = textoResultado.value;
-    if (!texto.trim()) {
-        mensajeCopia.textContent = "No hay texto para copiar.";
-        return;
-    }
-    try {
-        await navigator.clipboard.writeText(texto);
-        mensajeCopia.textContent = "Texto copiado correctamente.";
-    } catch {
-        textoResultado.select();
-        document.execCommand("copy");
-        mensajeCopia.textContent = "Texto copiado.";
-    }
-});
 
-textoResultado.addEventListener("input", () => {
-    btnCopiar.disabled = !textoResultado.value.trim() || procesando;
-});
+// ==================================================
+// 13. ESTADÍSTICAS DEL TEXTO
+// ==================================================
+
+textoResultado.addEventListener(
+    "input",
+    function () {
+
+        actualizarEstadisticas();
+
+        actualizarBotonCopiar();
+
+    }
+);
+
+
+function actualizarEstadisticas() {
+
+    const texto = textoResultado.value;
+
+    totalCaracteres.textContent = texto.length;
+
+    const palabras = texto.trim()
+        ? texto.trim().split(/\s+/u).length
+        : 0;
+
+    totalPalabras.textContent = palabras;
+
+}
+
+
+// ==================================================
+// 14. COPIAR TEXTO
+// ==================================================
+
+btnCopiar.addEventListener("click", copiarTexto);
+
+
+async function copiarTexto() {
+
+    const texto = textoResultado.value;
+
+    if (!texto.trim()) {
+
+        mensajeCopia.textContent =
+            "No hay texto para copiar.";
+
+        return;
+
+    }
+
+    try {
+
+        await navigator.clipboard.writeText(texto);
+
+        mensajeCopia.textContent =
+            "Texto copiado correctamente.";
+
+    } catch (error) {
+
+        textoResultado.focus();
+
+        textoResultado.select();
+
+        const copiado = document.execCommand("copy");
+
+        mensajeCopia.textContent = copiado
+            ? "Texto copiado correctamente."
+            : "No se pudo copiar. Selecciona el texto manualmente.";
+
+    }
+
+}
+
+
+// ==================================================
+// 15. ACTUALIZAR BOTÓN COPIAR
+// ==================================================
 
 function actualizarBotonCopiar() {
-    btnCopiar.disabled = !textoResultado.value.trim() || procesando;
+
+    btnCopiar.disabled =
+        !textoResultado.value.trim() || procesando;
+
 }
 
-btnQuitarImagen.addEventListener("click", quitarImagen);
+
+// ==================================================
+// 16. QUITAR IMAGEN
+// ==================================================
+
+btnQuitarImagen.addEventListener(
+    "click",
+    quitarImagen
+);
+
 
 function quitarImagen() {
+
     if (procesando) return;
+
     archivoSeleccionado = null;
+
     entradaImagen.value = "";
+
     imagenVista.removeAttribute("src");
+
     nombreImagen.textContent = "";
+
     contenedorVista.hidden = true;
-    vistaProcesada.hidden = true;
+
     if (direccionImagen) {
+
         URL.revokeObjectURL(direccionImagen);
+
         direccionImagen = null;
+
     }
+
     btnReconocer.disabled = true;
-    mensajeEstado.textContent = "Imagen retirada.";
-    mensajeCopia.textContent = "";
+
+    mensajeEstado.textContent =
+        "Imagen retirada. Puedes cargar otra.";
+
 }
 
-btnLimpiar.addEventListener("click", async () => {
-    if (procesando) return;
-    quitarImagen();
-    textoResultado.value = "";
-    actualizarBotonCopiar();
-    contenedorProgreso.hidden = true;
-    barraProgreso.value = 0;
-    porcentaje.textContent = "0%";
-    estadoProceso.textContent = "Preparando...";
-    mensajeEstado.textContent = "Esperando una imagen.";
-    mensajeCopia.textContent = "";
-    if (trabajadorOCR) {
-        try { await trabajadorOCR.terminate(); } catch {}
-        trabajadorOCR = null;
-    }
-});
 
-window.addEventListener("beforeunload", () => {
-    if (direccionImagen) URL.revokeObjectURL(direccionImagen);
-    if (trabajadorOCR) trabajadorOCR.terminate();
-});
+// ==================================================
+// 17. LIMPIAR SOLAMENTE EL TEXTO
+// ==================================================
+
+btnLimpiarTexto.addEventListener(
+    "click",
+    function () {
+
+        if (procesando) return;
+
+        textoResultado.value = "";
+
+        actualizarEstadisticas();
+
+        actualizarBotonCopiar();
+
+        contenedorConfianza.hidden = true;
+
+        mensajeCopia.textContent = "";
+
+        mensajeEstado.textContent =
+            "Texto eliminado. La imagen permanece cargada.";
+
+    }
+);
+
+
+// ==================================================
+// 18. REINICIAR TODO
+// ==================================================
+
+btnLimpiarTodo.addEventListener(
+    "click",
+    limpiarTodo
+);
+
+
+async function limpiarTodo() {
+
+    if (procesando) return;
+
+    quitarImagen();
+
+    textoResultado.value = "";
+
+    actualizarEstadisticas();
+
+    actualizarBotonCopiar();
+
+    contenedorProgreso.hidden = true;
+
+    contenedorConfianza.hidden = true;
+
+    barraProgreso.value = 0;
+
+    porcentaje.textContent = "0%";
+
+    estadoProceso.textContent = "Preparando...";
+
+    mensajeEstado.textContent =
+        "Esperando una imagen.";
+
+    mensajeCopia.textContent = "";
+
+    if (trabajadorOCR) {
+
+        try {
+
+            await trabajadorOCR.terminate();
+
+        } catch (error) {
+
+            console.error(
+                "Error al cerrar OCR:",
+                error
+            );
+
+        }
+
+        trabajadorOCR = null;
+
+        idiomaTrabajador = null;
+
+    }
+
+}
+
+
+// ==================================================
+// 19. CERRAR MOTOR AL SALIR
+// ==================================================
+
+window.addEventListener(
+    "beforeunload",
+    function () {
+
+        if (direccionImagen) {
+
+            URL.revokeObjectURL(direccionImagen);
+
+        }
+
+        if (trabajadorOCR) {
+
+            trabajadorOCR.terminate();
+
+        }
+
+    }
+);
