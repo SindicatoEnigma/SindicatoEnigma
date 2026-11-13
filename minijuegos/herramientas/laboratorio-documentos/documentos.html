@@ -2,267 +2,153 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Laboratorio de Documentos | Sindicato Enigma</title>
-
-    <link rel="stylesheet" href="documentos.css">
-
-    <!-- Motor OCR -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
-    <script src="documentos.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#171717">
+  <title>Laboratorio de Documentos | Sindicato Enigma</title>
+  <link rel="stylesheet" href="documentos.css">
 </head>
-
 <body>
 
-<main class="contenedor">
-
+  <main class="laboratorio">
     <header class="encabezado">
-        <div class="sello">SE</div>
-        <p class="subtitulo">SINDICATO ENIGMA</p>
-        <h1>Laboratorio de Documentos</h1>
-        <p class="descripcion">
-            Reconocimiento y análisis de caracteres en imágenes.
-        </p>
+      <div class="marca">SINDICATO ENIGMA</div>
+      <h1>Laboratorio de Documentos</h1>
+      <p>Reconocimiento y extracción de texto desde imágenes</p>
     </header>
 
-    <!-- IMAGEN -->
-
     <section class="panel">
+      <h2>1. Imagen de origen</h2>
 
-        <div class="numero-seccion">01 — DOCUMENTO</div>
+      <label class="boton-archivo" for="archivoImagen">
+        Seleccionar imagen
+      </label>
+      <input
+        type="file"
+        id="archivoImagen"
+        accept="image/*"
+      >
 
-        <h2>Seleccionar imagen</h2>
-
-        <p class="instruccion">
-            Carga una fotografía o captura que contenga texto impreso.
-        </p>
-
-        <label for="entradaImagen" class="zona-carga" id="zonaCarga">
-            <span class="icono-carga">＋</span>
-            <strong>Seleccionar imagen</strong>
-            <span>También puedes arrastrarla aquí</span>
-            <small>Máximo 20 MB</small>
-        </label>
-
-        <input
-            type="file"
-            id="entradaImagen"
-            accept="image/*"
-            hidden
-        >
-
-        <div class="vista-previa" id="contenedorVista" hidden>
-
-            <p class="etiqueta">DOCUMENTO CARGADO</p>
-
-            <img id="imagenVista" alt="Vista previa">
-
-            <p id="nombreImagen" class="nombre-imagen"></p>
-
-            <button
-                type="button"
-                id="btnQuitarImagen"
-                class="boton boton-secundario"
-            >
-                Quitar imagen
-            </button>
-
-        </div>
-
+      <div id="contenedorVista" class="contenedor-vista oculto">
+        <img id="vistaPrevia" alt="Imagen seleccionada">
+        <p id="nombreArchivo" class="texto-secundario"></p>
+      </div>
     </section>
 
-
-    <!-- CONFIGURACIÓN -->
-
     <section class="panel">
+      <h2>2. Configuración del reconocimiento</h2>
 
-        <div class="numero-seccion">02 — CONFIGURACIÓN</div>
+      <div class="campo">
+        <label for="modoReconocimiento">Método de reconocimiento</label>
+        <select id="modoReconocimiento">
+          <option value="normal">OCR convencional (líneas y bloques)</option>
+          <option value="caracteres">Reconocimiento por caracteres</option>
+        </select>
+        <small>
+          El modo por caracteres separa automáticamente la imagen
+          en pequeños recortes para reconocerlos individualmente.
+        </small>
+      </div>
 
-        <h2>Preparar reconocimiento</h2>
+      <div class="campo">
+        <label for="tipoTexto">Tipo de contenido</label>
+        <select id="tipoTexto">
+          <option value="normal">Texto normal</option>
+          <option value="codigo">Mensajes cifrados y códigos</option>
+        </select>
+      </div>
 
-        <div class="campo">
+      <div class="campo">
+        <label for="idiomaOCR">Idioma del reconocimiento</label>
+        <select id="idiomaOCR">
+          <option value="eng">Inglés</option>
+          <option value="spa">Español</option>
+          <option value="spa+eng">Español e inglés</option>
+        </select>
+      </div>
 
-            <label for="modoReconocimiento">Tipo de reconocimiento</label>
+      <div class="campo">
+        <label for="preprocesamiento">Procesamiento de imagen</label>
+        <select id="preprocesamiento">
+          <option value="original">Imagen original</option>
+          <option value="contraste">Escala de grises y contraste</option>
+          <option value="otsu">Blanco y negro (binarización Otsu)</option>
+        </select>
+      </div>
 
-            <select id="modoReconocimiento">
-                <option value="normal">Texto normal</option>
-                <option value="codigo" selected>Mensajes cifrados y códigos</option>
-            </select>
+      <div class="campo" id="campoSegmentacion">
+        <label for="segmentacion">Segmentación convencional</label>
+        <select id="segmentacion">
+          <option value="6">Bloque de texto</option>
+          <option value="11">Texto disperso</option>
+          <option value="7">Una sola línea</option>
+        </select>
+      </div>
 
-            <p class="ayuda">
-                El modo códigos evita filtros de caracteres y prioriza
-                conservar el contenido original.
-            </p>
+      <div class="nota">
+        <strong>Nota:</strong> el reconocimiento por caracteres es
+        experimental. La separación automática puede confundir letras
+        que estén unidas o demasiado próximas.
+      </div>
 
+      <button id="btnReconocer" class="boton-principal" disabled>
+        Reconocer texto
+      </button>
+
+      <div id="zonaProgreso" class="zona-progreso oculto">
+        <p id="estadoOCR">Preparando reconocimiento...</p>
+        <div class="barra-fondo">
+          <div id="barraProgreso" class="barra-progreso"></div>
         </div>
-
-        <div class="campo">
-
-            <label for="idiomaOCR">Idioma del reconocimiento</label>
-
-            <select id="idiomaOCR">
-                <option value="eng" selected>Inglés</option>
-                <option value="spa">Español</option>
-                <option value="spa+eng">Español + Inglés</option>
-            </select>
-
-            <p class="ayuda">
-                Para mensajes cifrados con alfabeto latino,
-                prueba primero inglés.
-            </p>
-
-        </div>
-
-        <div class="campo">
-
-            <label for="preprocesamiento">Tratamiento de imagen</label>
-
-            <select id="preprocesamiento">
-                <option value="original">Imagen original</option>
-                <option value="contraste" selected>Mejorar contraste y escala de grises</option>
-                <option value="binario">Blanco y negro (binarización)</option>
-            </select>
-
-            <p class="ayuda">
-                La imagen se prepara antes de enviarla al motor OCR.
-            </p>
-
-        </div>
-
-        <div class="campo">
-
-            <label for="segmentacion">Distribución del texto</label>
-
-            <select id="segmentacion">
-                <option value="bloque" selected>Un bloque de texto</option>
-                <option value="disperso">Texto disperso</option>
-                <option value="linea">Una sola línea</option>
-            </select>
-
-            <p class="ayuda">
-                Para un párrafo utiliza bloque. Para letras aisladas
-                o distribuidas irregularmente, prueba texto disperso.
-            </p>
-
-        </div>
-
+      </div>
     </section>
 
-
-    <!-- RECONOCIMIENTO -->
-
     <section class="panel">
+      <h2>3. Resultado</h2>
 
-        <div class="numero-seccion">03 — PROCESAMIENTO</div>
+      <div class="estadisticas">
+        <div class="dato">
+          <span class="dato-titulo">Confianza estimada</span>
+          <strong id="confianza">—</strong>
+        </div>
+        <div class="dato">
+          <span class="dato-titulo">Caracteres obtenidos</span>
+          <strong id="cantidadCaracteres">0</strong>
+        </div>
+        <div class="dato">
+          <span class="dato-titulo">Método utilizado</span>
+          <strong id="metodoUsado">—</strong>
+        </div>
+      </div>
 
-        <h2>Reconocer caracteres</h2>
+      <label for="resultadoTexto">Texto reconocido (puedes editarlo)</label>
+      <textarea
+        id="resultadoTexto"
+        rows="12"
+        placeholder="El texto reconocido aparecerá aquí..."
+        spellcheck="false"
+        autocapitalize="off"
+      ></textarea>
 
-        <p class="instruccion">
-            Puedes ejecutar el reconocimiento varias veces,
-            cambiando la configuración para comparar resultados.
-        </p>
-
-        <button
-            type="button"
-            id="btnReconocer"
-            class="boton boton-principal"
-            disabled
-        >
-            Iniciar reconocimiento
+      <div class="acciones">
+        <button id="btnCopiar" class="boton-secundario">
+          Copiar texto
         </button>
-
-        <div class="progreso-contenedor" id="contenedorProgreso" hidden>
-
-            <div class="progreso-textos">
-                <span id="estadoProceso">Preparando...</span>
-                <span id="porcentaje">0%</span>
-            </div>
-
-            <progress id="barraProgreso" value="0" max="100"></progress>
-
-        </div>
-
-        <p id="mensajeEstado" class="mensaje-estado" role="status" aria-live="polite">
-            Esperando una imagen.
-        </p>
-
-        <div class="confianza" id="contenedorConfianza" hidden>
-            Confianza estimada del OCR:
-            <strong id="valorConfianza">--</strong>
-        </div>
-
-    </section>
-
-
-    <!-- RESULTADO -->
-
-    <section class="panel">
-
-        <div class="numero-seccion">04 — RESULTADO</div>
-
-        <h2>Texto reconocido</h2>
-
-        <p class="instruccion">
-            El resultado es editable. Puedes corregir caracteres
-            antes de copiarlo.
-        </p>
-
-        <textarea
-            id="textoResultado"
-            placeholder="El texto reconocido aparecerá aquí..."
-            spellcheck="false"
-            autocapitalize="off"
-            autocomplete="off"
-        ></textarea>
-
-        <div class="estadisticas">
-            <span>Caracteres: <strong id="totalCaracteres">0</strong></span>
-            <span>Palabras: <strong id="totalPalabras">0</strong></span>
-        </div>
-
-        <div class="acciones">
-
-            <button
-                type="button"
-                id="btnCopiar"
-                class="boton boton-principal"
-                disabled
-            >
-                Copiar texto
-            </button>
-
-            <button
-                type="button"
-                id="btnLimpiarTexto"
-                class="boton boton-secundario"
-            >
-                Limpiar texto
-            </button>
-
-        </div>
-
-        <button
-            type="button"
-            id="btnLimpiarTodo"
-            class="boton boton-peligro"
-        >
-            Reiniciar laboratorio
+        <button id="btnLimpiar" class="boton-secundario">
+          Limpiar
         </button>
+      </div>
 
-        <p id="mensajeCopia" class="mensaje-copia" aria-live="polite"></p>
-
+      <p id="mensaje" class="mensaje" aria-live="polite"></p>
     </section>
 
-
-    <footer class="pie">
-        <p>SINDICATO ENIGMA</p>
-        <span>LABORATORIO DE INVESTIGACIÓN DIGITAL</span>
+    <footer>
+      <p>Sindicato Enigma · Laboratorio experimental de OCR</p>
+      <p>El reconocimiento se procesa en tu navegador y requiere conexión a internet para cargar el motor y sus modelos.</p>
     </footer>
+  </main>
 
-</main>
-
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="documentos.js"></script>
 </body>
 </html>
