@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,7 +9,7 @@
 
     <link rel="stylesheet" href="documentos.css">
 
-    <!-- Motor de reconocimiento OCR -->
+    <!-- Motor OCR -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
     <script src="documentos.js" defer></script>
@@ -16,169 +17,252 @@
 
 <body>
 
-    <main class="contenedor">
+<main class="contenedor">
 
-        <header class="encabezado">
-            <div class="sello">SE</div>
+    <header class="encabezado">
+        <div class="sello">SE</div>
+        <p class="subtitulo">SINDICATO ENIGMA</p>
+        <h1>Laboratorio de Documentos</h1>
+        <p class="descripcion">
+            Reconocimiento y análisis de caracteres en imágenes.
+        </p>
+    </header>
 
-            <p class="subtitulo">SINDICATO ENIGMA</p>
-            <h1>Laboratorio de Documentos</h1>
+    <!-- IMAGEN -->
 
-            <p class="descripcion">
-                Sistema de reconocimiento y extracción de texto de imágenes.
-            </p>
-        </header>
+    <section class="panel">
 
-        <section class="panel">
+        <div class="numero-seccion">01 — DOCUMENTO</div>
 
-            <div class="numero-seccion">01 — DOCUMENTO</div>
+        <h2>Seleccionar imagen</h2>
 
-            <h2>Seleccionar imagen</h2>
+        <p class="instruccion">
+            Carga una fotografía o captura que contenga texto impreso.
+        </p>
 
-            <p class="instruccion">
-                Carga una imagen que contenga texto. Funciona mejor con texto impreso,
-                aunque también intenta reconocer letra manuscrita.
-            </p>
+        <label for="entradaImagen" class="zona-carga" id="zonaCarga">
+            <span class="icono-carga">＋</span>
+            <strong>Seleccionar imagen</strong>
+            <span>También puedes arrastrarla aquí</span>
+            <small>Máximo 20 MB</small>
+        </label>
 
-            <label for="entradaImagen" class="zona-carga" id="zonaCarga">
-                <span class="icono-carga">＋</span>
-                <strong>Seleccionar imagen</strong>
-                <span>Presiona aquí o arrastra una imagen</span>
-                <small>Formatos compatibles según el navegador</small>
-            </label>
+        <input
+            type="file"
+            id="entradaImagen"
+            accept="image/*"
+            hidden
+        >
 
-            <input
-                type="file"
-                id="entradaImagen"
-                accept="image/*"
-                hidden
-            >
+        <div class="vista-previa" id="contenedorVista" hidden>
 
-            <div class="vista-previa" id="contenedorVista" hidden>
-                <p class="etiqueta">DOCUMENTO CARGADO</p>
+            <p class="etiqueta">DOCUMENTO CARGADO</p>
 
-                <img id="imagenVista" alt="Vista previa del documento">
+            <img id="imagenVista" alt="Vista previa">
 
-                <p id="nombreImagen" class="nombre-imagen"></p>
-
-                <button type="button" id="btnQuitarImagen" class="boton boton-secundario">
-                    Quitar imagen
-                </button>
-            </div>
-
-        </section>
-
-        <section class="panel">
-
-            <div class="numero-seccion">02 — RECONOCIMIENTO</div>
-
-            <h2>Extraer texto</h2>
-
-            <p class="instruccion">
-                Ajusta los parámetros si el resultado no es bueno (especialmente útil en letra manuscrita).
-            </p>
-
-            <!-- Controles de ajuste -->
-            <div class="controles-ocr">
-                <div class="control-grupo">
-                    <label for="rangoUmbral">
-                        Umbral de binarización: <span id="valorUmbral">149</span>
-                    </label>
-                    <input type="range" id="rangoUmbral" min="120" max="170" value="149">
-                </div>
-
-                <div class="control-grupo">
-                    <label for="selectPSM">Modo de segmentación (PSM)</label>
-                    <select id="selectPSM">
-                        <option value="6">6 — Bloque uniforme (recomendado)</option>
-                        <option value="4">4 — Columna de texto</option>
-                        <option value="3">3 — Automático</option>
-                        <option value="11">11 — Texto disperso</option>
-                        <option value="12">12 — Texto disperso + orientación</option>
-                    </select>
-                </div>
-            </div>
+            <p id="nombreImagen" class="nombre-imagen"></p>
 
             <button
                 type="button"
-                id="btnReconocer"
+                id="btnQuitarImagen"
+                class="boton boton-secundario"
+            >
+                Quitar imagen
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- CONFIGURACIÓN -->
+
+    <section class="panel">
+
+        <div class="numero-seccion">02 — CONFIGURACIÓN</div>
+
+        <h2>Preparar reconocimiento</h2>
+
+        <div class="campo">
+
+            <label for="modoReconocimiento">Tipo de reconocimiento</label>
+
+            <select id="modoReconocimiento">
+                <option value="normal">Texto normal</option>
+                <option value="codigo" selected>Mensajes cifrados y códigos</option>
+            </select>
+
+            <p class="ayuda">
+                El modo códigos evita filtros de caracteres y prioriza
+                conservar el contenido original.
+            </p>
+
+        </div>
+
+        <div class="campo">
+
+            <label for="idiomaOCR">Idioma del reconocimiento</label>
+
+            <select id="idiomaOCR">
+                <option value="eng" selected>Inglés</option>
+                <option value="spa">Español</option>
+                <option value="spa+eng">Español + Inglés</option>
+            </select>
+
+            <p class="ayuda">
+                Para mensajes cifrados con alfabeto latino,
+                prueba primero inglés.
+            </p>
+
+        </div>
+
+        <div class="campo">
+
+            <label for="preprocesamiento">Tratamiento de imagen</label>
+
+            <select id="preprocesamiento">
+                <option value="original">Imagen original</option>
+                <option value="contraste" selected>Mejorar contraste y escala de grises</option>
+                <option value="binario">Blanco y negro (binarización)</option>
+            </select>
+
+            <p class="ayuda">
+                La imagen se prepara antes de enviarla al motor OCR.
+            </p>
+
+        </div>
+
+        <div class="campo">
+
+            <label for="segmentacion">Distribución del texto</label>
+
+            <select id="segmentacion">
+                <option value="bloque" selected>Un bloque de texto</option>
+                <option value="disperso">Texto disperso</option>
+                <option value="linea">Una sola línea</option>
+            </select>
+
+            <p class="ayuda">
+                Para un párrafo utiliza bloque. Para letras aisladas
+                o distribuidas irregularmente, prueba texto disperso.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- RECONOCIMIENTO -->
+
+    <section class="panel">
+
+        <div class="numero-seccion">03 — PROCESAMIENTO</div>
+
+        <h2>Reconocer caracteres</h2>
+
+        <p class="instruccion">
+            Puedes ejecutar el reconocimiento varias veces,
+            cambiando la configuración para comparar resultados.
+        </p>
+
+        <button
+            type="button"
+            id="btnReconocer"
+            class="boton boton-principal"
+            disabled
+        >
+            Iniciar reconocimiento
+        </button>
+
+        <div class="progreso-contenedor" id="contenedorProgreso" hidden>
+
+            <div class="progreso-textos">
+                <span id="estadoProceso">Preparando...</span>
+                <span id="porcentaje">0%</span>
+            </div>
+
+            <progress id="barraProgreso" value="0" max="100"></progress>
+
+        </div>
+
+        <p id="mensajeEstado" class="mensaje-estado" role="status" aria-live="polite">
+            Esperando una imagen.
+        </p>
+
+        <div class="confianza" id="contenedorConfianza" hidden>
+            Confianza estimada del OCR:
+            <strong id="valorConfianza">--</strong>
+        </div>
+
+    </section>
+
+
+    <!-- RESULTADO -->
+
+    <section class="panel">
+
+        <div class="numero-seccion">04 — RESULTADO</div>
+
+        <h2>Texto reconocido</h2>
+
+        <p class="instruccion">
+            El resultado es editable. Puedes corregir caracteres
+            antes de copiarlo.
+        </p>
+
+        <textarea
+            id="textoResultado"
+            placeholder="El texto reconocido aparecerá aquí..."
+            spellcheck="false"
+            autocapitalize="off"
+            autocomplete="off"
+        ></textarea>
+
+        <div class="estadisticas">
+            <span>Caracteres: <strong id="totalCaracteres">0</strong></span>
+            <span>Palabras: <strong id="totalPalabras">0</strong></span>
+        </div>
+
+        <div class="acciones">
+
+            <button
+                type="button"
+                id="btnCopiar"
                 class="boton boton-principal"
                 disabled
             >
-                Iniciar reconocimiento
+                Copiar texto
             </button>
 
-            <div class="progreso-contenedor" id="contenedorProgreso" hidden>
+            <button
+                type="button"
+                id="btnLimpiarTexto"
+                class="boton boton-secundario"
+            >
+                Limpiar texto
+            </button>
 
-                <div class="progreso-textos">
-                    <span id="estadoProceso">Preparando...</span>
-                    <span id="porcentaje">0%</span>
-                </div>
+        </div>
 
-                <progress id="barraProgreso" value="0" max="100"></progress>
+        <button
+            type="button"
+            id="btnLimpiarTodo"
+            class="boton boton-peligro"
+        >
+            Reiniciar laboratorio
+        </button>
 
-            </div>
+        <p id="mensajeCopia" class="mensaje-copia" aria-live="polite"></p>
 
-            <p id="mensajeEstado" class="mensaje-estado" role="status" aria-live="polite">
-                Esperando una imagen.
-            </p>
+    </section>
 
-            <!-- Vista de la imagen preprocesada -->
-            <div id="vistaProcesada" class="vista-procesada" hidden>
-                <p class="etiqueta">IMAGEN PREPROCESADA (lo que analiza el OCR)</p>
-                <img id="imagenProcesada" alt="Imagen preprocesada">
-            </div>
 
-        </section>
+    <footer class="pie">
+        <p>SINDICATO ENIGMA</p>
+        <span>LABORATORIO DE INVESTIGACIÓN DIGITAL</span>
+    </footer>
 
-        <section class="panel">
-
-            <div class="numero-seccion">03 — RESULTADO</div>
-
-            <h2>Texto reconocido</h2>
-
-            <p class="instruccion">
-                Puedes editar el resultado manualmente para corregir
-                los caracteres que el sistema haya confundido.
-            </p>
-
-            <textarea
-                id="textoResultado"
-                placeholder="El texto reconocido aparecerá aquí..."
-                spellcheck="false"
-            ></textarea>
-
-            <div class="acciones">
-
-                <button
-                    type="button"
-                    id="btnCopiar"
-                    class="boton boton-principal"
-                    disabled
-                >
-                    Copiar texto
-                </button>
-
-                <button
-                    type="button"
-                    id="btnLimpiar"
-                    class="boton boton-secundario"
-                >
-                    Limpiar todo
-                </button>
-
-            </div>
-
-            <p id="mensajeCopia" class="mensaje-copia" aria-live="polite"></p>
-
-        </section>
-
-        <footer class="pie">
-            <p>SINDICATO ENIGMA</p>
-            <span>LABORATORIO DE INVESTIGACIÓN DIGITAL</span>
-        </footer>
-
-    </main>
+</main>
 
 </body>
 </html>
