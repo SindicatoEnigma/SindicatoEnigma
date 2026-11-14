@@ -1117,12 +1117,16 @@ async function analizarDocumento() {
         }
 
         const textoFinal = reconstruirDocumento(
-            parrafosProcesados
-        );
+    parrafosProcesados
+);
 
-        if (resultado) {
-            resultado.value = textoFinal;
-        }
+const informeCompleto = construirInformeComparaciones(
+    parrafosProcesados
+);
+
+if (resultado) {
+    resultado.value = informeCompleto;
+}
 
         actualizarEstadisticas(parrafosProcesados);
         mostrarComparaciones(parrafosProcesados);
@@ -1134,10 +1138,9 @@ async function analizarDocumento() {
             estadoResultado.textContent =
                 "Documento procesado correctamente.";
         }
-
-        if (btnCopiar) {
-            btnCopiar.disabled = !textoFinal;
-        }
+if (btnCopiar) {
+    btnCopiar.disabled = !informeCompleto;
+}
 
     } catch (error) {
         console.error(error);
