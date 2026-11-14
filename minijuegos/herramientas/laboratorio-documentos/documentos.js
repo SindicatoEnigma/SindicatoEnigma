@@ -2,7 +2,7 @@
 /* =========================================================
    SINDICATO ENIGMA
    LABORATORIO DE DOCUMENTOS OCR
-   Nueva arquitectura: párrafos -> líneas -> OCR
+   ARQUITECTURA: BLOQUES -> RECORTES -> CUATRO OCR
    ========================================================= */
 
 
@@ -12,6 +12,7 @@
 
 const inputImagen = document.getElementById("inputImagen");
 const nombreArchivo = document.getElementById("nombreArchivo");
+
 const vistaPrevia = document.getElementById("vistaPrevia");
 const contenedorVista = document.getElementById("contenedorVista");
 
@@ -40,23 +41,36 @@ const coincidencia = document.getElementById("coincidencia");
    ========================================================= */
 
 const MAX_DIMENSION = 2600;
-const ESCALA_RECORTE = 2.5;
 
-// Margen alrededor de cada línea.
-// Evita cortar letras con ascendentes y descendentes.
-const MARGEN_LINEA = 0.22;
+// Margen alrededor de cada bloque.
+const MARGEN_BLOQUE = 0.025;
 
-// Variantes que se probarán en cada línea.
-const NOMBRES_VARIANTES = [
-    "Original",
-    "Contraste",
-    "Otsu",
-    "Adaptativa",
-    "Nitida"
+// Separación máxima entre líneas que pueden pertenecer
+// al mismo bloque.
+const FACTOR_SEPARACION_BLOQUES = 2.5;
+
+// Los cuatro modos de segmentación de Tesseract.
+const MODELOS_OCR = [
+    {
+        nombre: "PSM 3 - Segmentación automática",
+        psm: "3"
+    },
+    {
+        nombre: "PSM 4 - Una columna de texto",
+        psm: "4"
+    },
+    {
+        nombre: "PSM 6 - Bloque uniforme",
+        psm: "6"
+    },
+    {
+        nombre: "PSM 11 - Texto disperso",
+        psm: "11"
+    }
 ];
 
-let imagenCargada = null;
 let canvasOriginal = null;
+let imagenCargada = false;
 let workerOCR = null;
 let analizando = false;
 
@@ -66,30 +80,28 @@ let analizando = false;
    ========================================================= */
 
 function actualizarEstado(mensaje) {
-    if (estado) estado.textContent = mensaje;
+    if (estado) {
+        estado.textContent = mensaje;
+    }
 }
 
 function actualizarProgreso(valor) {
-    const porcentaje = Math.max(0, Math.min(100, valor));
+    const porcentaje = Math.max(
+        0,
+        Math.min(100, valor)
+    );
 
     if (barraProgreso) {
         barraProgreso.style.width = porcentaje + "%";
     }
 }
 
-function escaparHTML(texto) {
-    return String(texto)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
 function crearCanvas(ancho, alto) {
     const canvas = document.createElement("canvas");
+
     canvas.width = ancho;
     canvas.height = alto;
+
     return canvas;
 }
 
@@ -102,19 +114,25 @@ function obtenerContexto(canvas) {
 function mediana(valores) {
     if (!valores.length) return 0;
 
-    const ordenados = [...valores].sort((a, b) => a - b);
-    const medio = Math.floor(ordenados.length / 2);
+    const ordenados = [...valores].sort(
+        (a, b) => a - b
+    );
 
-    if (ordenados.length % 2) {
-        return ordenados[medio];
+    const mitad = Math.floor(ordenados.length / 2);
+
+    if (ordenados.length % 2 === 0) {
+        return (
+            ordenados[mitad - 1] +
+            ordenados[mitad]
+        ) / 2;
     }
 
-    return (ordenados[medio - 1] + ordenados[medio]) / 2;
+    return ordenados[mitad];
 }
 
 
 /* =========================================================
-   4. CARGAR IMAGEN EN CANVAS
+   4. PREPARAR IMAGEN
    ========================================================= */
 
 function prepararImagen(imagen) {
@@ -125,6 +143,7 @@ function prepararImagen(imagen) {
 
     if (mayor > MAX_DIMENSION) {
         const factor = MAX_DIMENSION / mayor;
+
         ancho = Math.round(ancho * factor);
         alto = Math.round(alto * factor);
     }
@@ -132,24 +151,37 @@ function prepararImagen(imagen) {
     const canvas = crearCanvas(ancho, alto);
     const ctx = obtenerContexto(canvas);
 
-    ctx.drawImage(imagen, 0, 0, ancho, alto);
+    ctx.drawImage(
+        imagen,
+        0,
+        0,
+        ancho,
+        alto
+    );
 
     return canvas;
 }
 
 
 /* =========================================================
-   5. CONVERTIR A ESCALA DE GRISES
+   5. CONVERTIR IMAGEN A ESCALA DE GRISES
    ========================================================= */
 
 function convertirGrises(canvas) {
-    const salida = crearCanvas(canvas.width, canvas.height);
+    const salida = crearCanvas(
+        canvas.width,
+        canvas.height
+    );
+
     const ctx = obtenerContexto(salida);
 
     ctx.drawImage(canvas, 0, 0);
 
     const imagen = ctx.getImageData(
-        0, 0, salida.width, salida.height
+        0,
+        0,
+        salida.width,
+        salida.height
     );
 
     const datos = imagen.data;
@@ -172,7 +204,7 @@ function convertirGrises(canvas) {
 
 
 /* =========================================================
-   6. CALCULAR UMBRAL DE OTSU
+   6. CALCULAR UMBRAL DE OT SU
    ========================================================= */
 
 function calcularOtsu(datos) {
@@ -192,6 +224,7 @@ function calcularOtsu(datos) {
 
     let sumaFondo = 0;
     let pesoFondo = 0;
+
     let mejorVarianza = -1;
     let umbral = 127;
 
@@ -207,6 +240,7 @@ function calcularOtsu(datos) {
         sumaFondo += i * histograma[i];
 
         const mediaFondo = sumaFondo / pesoFondo;
+
         const mediaTexto =
             (sumaTotal - sumaFondo) / pesoTexto;
 
@@ -226,219 +260,80 @@ function calcularOtsu(datos) {
 
 
 /* =========================================================
-   7. CREAR VARIANTE DE CONTRASTE
+   7. DETECTAR EL COLOR DEL FONDO
    ========================================================= */
 
-function crearContraste(canvas) {
-    const salida = crearCanvas(canvas.width, canvas.height);
-    const ctx = obtenerContexto(salida);
+function fondoEsClaro(datos, ancho, alto) {
+    let suma = 0;
+    let cantidad = 0;
 
-    ctx.drawImage(canvas, 0, 0);
+    // Examinar los bordes de la imagen.
+    for (let x = 0; x < ancho; x += 5) {
+        suma += datos[x * 4];
+        cantidad++;
 
-    const imagen = ctx.getImageData(
-        0, 0, salida.width, salida.height
-    );
+        const inferior =
+            ((alto - 1) * ancho + x) * 4;
 
-    const datos = imagen.data;
-    const factor = 1.45;
-
-    for (let i = 0; i < datos.length; i += 4) {
-        const gris = datos[i];
-
-        const nuevo = Math.max(
-            0,
-            Math.min(255, (gris - 128) * factor + 128)
-        );
-
-        datos[i] = nuevo;
-        datos[i + 1] = nuevo;
-        datos[i + 2] = nuevo;
+        suma += datos[inferior];
+        cantidad++;
     }
 
-    ctx.putImageData(imagen, 0, 0);
+    for (let y = 0; y < alto; y += 5) {
+        const izquierda = y * ancho * 4;
 
-    return salida;
+        const derecha =
+            (y * ancho + ancho - 1) * 4;
+
+        suma += datos[izquierda];
+        suma += datos[derecha];
+
+        cantidad += 2;
+    }
+
+    return suma / cantidad >= 127;
 }
 
 
 /* =========================================================
-   8. CREAR VARIANTE BINARIA OTSU
-   ========================================================= */
-
-function crearOtsu(canvas) {
-    const salida = crearCanvas(canvas.width, canvas.height);
-    const ctx = obtenerContexto(salida);
-
-    ctx.drawImage(canvas, 0, 0);
-
-    const imagen = ctx.getImageData(
-        0, 0, salida.width, salida.height
-    );
-
-    const datos = imagen.data;
-    const umbral = calcularOtsu(datos);
-
-    for (let i = 0; i < datos.length; i += 4) {
-        const valor = datos[i] < umbral ? 0 : 255;
-
-        datos[i] = valor;
-        datos[i + 1] = valor;
-        datos[i + 2] = valor;
-    }
-
-    ctx.putImageData(imagen, 0, 0);
-
-    return salida;
-}
-
-
-/* =========================================================
-   9. CREAR VARIANTE ADAPTATIVA
-   ========================================================= */
-
-function crearAdaptativa(canvas) {
-    const salida = crearCanvas(canvas.width, canvas.height);
-    const ctx = obtenerContexto(salida);
-
-    ctx.drawImage(canvas, 0, 0);
-
-    const imagen = ctx.getImageData(
-        0, 0, salida.width, salida.height
-    );
-
-    const datos = imagen.data;
-    const ancho = salida.width;
-    const alto = salida.height;
-
-    // Imagen integral para calcular promedios locales.
-    const integral = new Float64Array(
-        (ancho + 1) * (alto + 1)
-    );
-
-    for (let y = 1; y <= alto; y++) {
-        let sumaFila = 0;
-
-        for (let x = 1; x <= ancho; x++) {
-            const indice = ((y - 1) * ancho + (x - 1)) * 4;
-
-            sumaFila += datos[indice];
-
-            integral[y * (ancho + 1) + x] =
-                integral[(y - 1) * (ancho + 1) + x] +
-                sumaFila;
-        }
-    }
-
-    const radio = Math.max(
-        8,
-        Math.round(Math.min(ancho, alto) * 0.012)
-    );
-
-    for (let y = 0; y < alto; y++) {
-        for (let x = 0; x < ancho; x++) {
-            const x1 = Math.max(0, x - radio);
-            const y1 = Math.max(0, y - radio);
-            const x2 = Math.min(ancho, x + radio + 1);
-            const y2 = Math.min(alto, y + radio + 1);
-
-            const suma =
-                integral[y2 * (ancho + 1) + x2] -
-                integral[y1 * (ancho + 1) + x2] -
-                integral[y2 * (ancho + 1) + x1] +
-                integral[y1 * (ancho + 1) + x1];
-
-            const cantidad = (x2 - x1) * (y2 - y1);
-            const promedio = suma / cantidad;
-
-            const indice = (y * ancho + x) * 4;
-            const valor = datos[indice] < promedio - 7
-                ? 0
-                : 255;
-
-            datos[indice] = valor;
-            datos[indice + 1] = valor;
-            datos[indice + 2] = valor;
-        }
-    }
-
-    ctx.putImageData(imagen, 0, 0);
-
-    return salida;
-}
-
-
-/* =========================================================
-   10. CREAR VARIANTE NÍTIDA
-   ========================================================= */
-
-function crearNitida(canvas) {
-    const salida = crearCanvas(canvas.width, canvas.height);
-    const ctx = obtenerContexto(salida);
-
-    // Conservamos el original y reforzamos el contraste.
-    ctx.drawImage(canvas, 0, 0);
-
-    const imagen = ctx.getImageData(
-        0, 0, salida.width, salida.height
-    );
-
-    const datos = imagen.data;
-
-    for (let i = 0; i < datos.length; i += 4) {
-        const valor = datos[i];
-
-        const nuevo = Math.max(
-            0,
-            Math.min(255, (valor - 128) * 1.8 + 128)
-        );
-
-        datos[i] = nuevo;
-        datos[i + 1] = nuevo;
-        datos[i + 2] = nuevo;
-    }
-
-    ctx.putImageData(imagen, 0, 0);
-
-    return salida;
-}
-
-
-/* =========================================================
-   11. GENERAR LAS CINCO VARIANTES
-   ========================================================= */
-
-function generarVariantes(canvasGris) {
-    return [
-        canvasGris,
-        crearContraste(canvasGris),
-        crearOtsu(canvasGris),
-        crearAdaptativa(canvasGris),
-        crearNitida(canvasGris)
-    ];
-}
-
-
-/* =========================================================
-   12. CREAR MÁSCARA PARA DETECTAR TEXTO
+   8. CREAR MÁSCARA DE TEXTO
    ========================================================= */
 
 function crearMascara(canvasGris) {
     const ctx = obtenerContexto(canvasGris);
 
     const imagen = ctx.getImageData(
-        0, 0, canvasGris.width, canvasGris.height
+        0,
+        0,
+        canvasGris.width,
+        canvasGris.height
     );
 
-    const umbral = calcularOtsu(imagen.data);
     const datos = imagen.data;
 
+    const ancho = canvasGris.width;
+    const alto = canvasGris.height;
+
+    const umbral = calcularOtsu(datos);
+
+    const fondoClaro = fondoEsClaro(
+        datos,
+        ancho,
+        alto
+    );
+
     const mascara = new Uint8Array(
-        canvasGris.width * canvasGris.height
+        ancho * alto
     );
 
     for (let i = 0; i < mascara.length; i++) {
-        mascara[i] =
-            datos[i * 4] < umbral ? 1 : 0;
+        const valor = datos[i * 4];
+
+        const esTexto = fondoClaro
+            ? valor < umbral
+            : valor > umbral;
+
+        mascara[i] = esTexto ? 1 : 0;
     }
 
     return mascara;
@@ -446,15 +341,16 @@ function crearMascara(canvasGris) {
 
 
 /* =========================================================
-   13. DETECTAR FILAS DE TEXTO
+   9. DETECTAR FILAS HORIZONTALES
    ========================================================= */
 
 function detectarFilas(mascara, ancho, alto) {
     const proyeccion = new Int32Array(alto);
 
-    // Contar píxeles de texto por cada fila horizontal.
+    // Contar píxeles de texto en cada fila.
     for (let y = 0; y < alto; y++) {
         let cantidad = 0;
+
         const inicio = y * ancho;
 
         for (let x = 0; x < ancho; x++) {
@@ -466,18 +362,22 @@ function detectarFilas(mascara, ancho, alto) {
 
     const maximo = Math.max(...proyeccion);
 
-    // Evita considerar ruido aislado como una línea.
+    if (maximo === 0) return [];
+
     const umbral = Math.max(
         2,
-        Math.round(Math.min(maximo * 0.08, ancho * 0.003))
+        Math.round(ancho * 0.001)
     );
 
     const filas = [];
+
     let inicio = -1;
 
     for (let y = 0; y < alto; y++) {
         if (proyeccion[y] >= umbral) {
-            if (inicio === -1) inicio = y;
+            if (inicio === -1) {
+                inicio = y;
+            }
         } else if (inicio !== -1) {
             filas.push({
                 y0: inicio,
@@ -495,13 +395,16 @@ function detectarFilas(mascara, ancho, alto) {
         });
     }
 
-    // Unir fragmentos separados por huecos pequeños.
+    // Unir pequeños fragmentos verticales.
     const unidas = [];
 
     for (const fila of filas) {
         const anterior = unidas[unidas.length - 1];
 
-        if (anterior && fila.y0 - anterior.y1 <= 2) {
+        if (
+            anterior &&
+            fila.y0 - anterior.y1 <= 2
+        ) {
             anterior.y1 = fila.y1;
         } else {
             unidas.push({ ...fila });
@@ -515,120 +418,127 @@ function detectarFilas(mascara, ancho, alto) {
 
 
 /* =========================================================
-   14. DELIMITAR LOS EXTREMOS DE CADA FILA
+   10. AGRUPAR FILAS EN BLOQUES DE TEXTO
    ========================================================= */
+
+function agruparBloques(filas) {
+    if (!filas.length) return [];
+
+    const alturas = filas.map(
+        fila => fila.y1 - fila.y0 + 1
+    );
+
+    const alturaMedia = mediana(alturas);
+
+    const separacionMaxima = Math.max(
+        8,
+        alturaMedia * FACTOR_SEPARACION_BLOQUES
+    );
+
+    const bloques = [];
+
+    let actual = {
+        y0: filas[0].y0,
+        y1: filas[0].y1,
+        filas: [filas[0]]
+    };
+
+    for (let i = 1; i < filas.length; i++) {
+        const anterior = filas[i - 1];
+        const fila = filas[i];
+
+        const espacio =
+            fila.y0 - anterior.y1 - 1;
+
+        if (espacio > separacionMaxima) {
+            bloques.push(actual);
+
+            actual = {
+                y0: fila.y0,
+                y1: fila.y1,
+                filas: [fila]
+            };
+        } else {
+            actual.y1 = fila.y1;
+            actual.filas.push(fila);
+        }
+    }
+
+    bloques.push(actual);
+
+    return bloques;
+}
 
 
 /* =========================================================
-   14. DELIMITAR LOS EXTREMOS DE CADA FILA
+   11. DELIMITAR HORIZONTALMENTE CADA BLOQUE
    ========================================================= */
 
-function delimitarFila(fila, mascara, ancho, alto) {
-    const proyeccion = new Int32Array(ancho);
+function delimitarBloque(
+    bloque,
+    mascara,
+    ancho,
+    alto
+) {
+    let x0 = ancho;
+    let x1 = -1;
 
-    // Contar píxeles de texto por columna.
-    for (let y = fila.y0; y <= fila.y1; y++) {
+    let y0 = alto;
+    let y1 = -1;
+
+    const inicioY = bloque.y0;
+    const finalY = bloque.y1;
+
+    // Buscar todos los píxeles de texto dentro del bloque.
+    for (let y = inicioY; y <= finalY; y++) {
         const inicio = y * ancho;
 
         for (let x = 0; x < ancho; x++) {
-            proyeccion[x] += mascara[inicio + x];
+            if (mascara[inicio + x] === 1) {
+                if (x < x0) x0 = x;
+                if (x > x1) x1 = x;
+
+                if (y < y0) y0 = y;
+                if (y > y1) y1 = y;
+            }
         }
     }
 
-    const altura = fila.y1 - fila.y0 + 1;
-
-    // Umbral menos agresivo para conservar trazos finos.
-    const umbral = Math.max(
-        1,
-        Math.round(altura * 0.015)
-    );
-
-    let x0 = -1;
-    let x1 = -1;
-
-    for (let x = 0; x < ancho; x++) {
-        if (proyeccion[x] >= umbral) {
-            if (x0 === -1) x0 = x;
-            x1 = x;
-        }
-    }
-
-    if (x0 === -1 || x1 === -1) {
+    if (x1 < x0 || y1 < y0) {
         return null;
     }
 
-    const margenY = Math.max(
-        3,
-        Math.round(altura * MARGEN_LINEA)
-    );
-
     const margenX = Math.max(
         8,
-        Math.round(altura * 0.5)
+        Math.round(ancho * MARGEN_BLOQUE)
+    );
+
+    const margenY = Math.max(
+        6,
+        Math.round((y1 - y0 + 1) * 0.20)
     );
 
     return {
         x0: Math.max(0, x0 - margenX),
         x1: Math.min(ancho - 1, x1 + margenX),
-        y0: Math.max(0, fila.y0 - margenY),
-        y1: Math.min(alto - 1, fila.y1 + margenY),
-        centroY: (fila.y0 + fila.y1) / 2,
-        altura
+
+        y0: Math.max(0, y0 - margenY),
+        y1: Math.min(alto - 1, y1 + margenY),
+
+        numeroLineas: bloque.filas.length
     };
 }
 
 
-
 /* =========================================================
-   15. AGRUPAR FILAS EN PÁRRAFOS
+   12. DETECTAR TODOS LOS BLOQUES
    ========================================================= */
 
-function agruparParrafos(lineas) {
-    if (!lineas.length) return [];
-
-    const alturas = lineas.map(linea => linea.altura);
-    const alturaMedia = mediana(alturas);
-
-    // Si la separación vertical supera este valor,
-    // comenzamos un párrafo nuevo.
-    const separacionParrafo = Math.max(
-        5,
-        alturaMedia * 0.90
-    );
-
-    const parrafos = [];
-    let actual = [lineas[0]];
-
-    for (let i = 1; i < lineas.length; i++) {
-        const anterior = lineas[i - 1];
-        const actualLinea = lineas[i];
-
-        const espacio =
-            actualLinea.y0 - anterior.y1 - 1;
-
-        if (espacio > separacionParrafo) {
-            parrafos.push(actual);
-            actual = [actualLinea];
-        } else {
-            actual.push(actualLinea);
-        }
-    }
-
-    if (actual.length) {
-        parrafos.push(actual);
-    }
-
-    return parrafos;
-}
-
-
-/* =========================================================
-   16. DETECTAR PÁRRAFOS Y SUS LÍNEAS
-   ========================================================= */
-
-function detectarEstructura(canvasGris) {
+function detectarBloques(canvasGris) {
     const ancho = canvasGris.width;
     const alto = canvasGris.height;
+
+    actualizarEstado("Detectando regiones de texto...");
 
     const mascara = crearMascara(canvasGris);
 
@@ -638,44 +548,58 @@ function detectarEstructura(canvasGris) {
         alto
     );
 
-    const lineas = filas
-        .map(fila => delimitarFila(
-            fila,
-            mascara,
-            ancho,
-            alto
-        ))
-        .filter(Boolean);
+    const grupos = agruparBloques(filas);
 
-    const parrafos = agruparParrafos(lineas);
+    const bloques = grupos
+        .map(grupo =>
+            delimitarBloque(
+                grupo,
+                mascara,
+                ancho,
+                alto
+            )
+        )
+        .filter(Boolean);
 
     return {
         mascara,
-        lineas,
-        parrafos
+        filas,
+        bloques
     };
 }
 
 
 /* =========================================================
-   17. RECORTAR UNA LÍNEA
+   13. RECORTAR UN BLOQUE DE TEXTO
    ========================================================= */
 
-function recortarLinea(canvas, linea) {
-    const ancho = linea.x1 - linea.x0 + 1;
-    const alto = linea.y1 - linea.y0 + 1;
+function recortarBloque(canvas, bloque) {
+    const ancho =
+        bloque.x1 - bloque.x0 + 1;
+
+    const alto =
+        bloque.y1 - bloque.y0 + 1;
 
     const recorte = crearCanvas(
-        Math.max(1, ancho),
-        Math.max(1, alto)
+        ancho,
+        alto
     );
 
     const ctx = obtenerContexto(recorte);
 
+    ctx.fillStyle = "#ffffff";
+
+    ctx.fillRect(
+        0,
+        0,
+        ancho,
+        alto
+    );
+
     ctx.drawImage(
         canvas,
-        linea.x0,
-        linea.y0,
+        bloque.x0,
+        bloque.y0,
         ancho,
         alto,
         0,
@@ -684,21 +608,30 @@ function recortarLinea(canvas, linea) {
         alto
     );
 
-    // Aumentar tamaño para facilitar el reconocimiento.
+    // Ampliar para facilitar el reconocimiento.
+    const escala = Math.min(
+        3,
+        Math.max(1.5, 1200 / ancho)
+    );
+
     const ampliado = crearCanvas(
-        Math.round(ancho * ESCALA_RECORTE),
-        Math.round(alto * ESCALA_RECORTE)
+        Math.round(ancho * escala),
+        Math.round(alto * escala)
     );
 
     const ctxAmpliado = obtenerContexto(ampliado);
 
+    ctxAmpliado.fillStyle = "#ffffff";
+
+    ctxAmpliado.fillRect(
+        0,
+        0,
+        ampliado.width,
+        ampliado.height
+    );
+
     ctxAmpliado.imageSmoothingEnabled = true;
     ctxAmpliado.imageSmoothingQuality = "high";
-
-    ctxAmpliado.fillStyle = "#ffffff";
-    ctxAmpliado.fillRect(
-        0, 0, ampliado.width, ampliado.height
-    );
 
     ctxAmpliado.drawImage(
         recorte,
@@ -713,7 +646,7 @@ function recortarLinea(canvas, linea) {
 
 
 /* =========================================================
-   18. INICIALIZAR TESSERACT
+   14. INICIAR MOTOR OCR
    ========================================================= */
 
 async function iniciarOCR() {
@@ -721,11 +654,11 @@ async function iniciarOCR() {
 
     if (typeof Tesseract === "undefined") {
         throw new Error(
-            "No se encontró Tesseract.js. Revisa la conexión a internet."
+            "No se encontró Tesseract.js. Comprueba tu conexión."
         );
     }
 
-    actualizarEstado("Preparando motor OCR...");
+    actualizarEstado("Iniciando motor OCR...");
 
     workerOCR = await Tesseract.createWorker(
         "spa+eng",
@@ -738,29 +671,37 @@ async function iniciarOCR() {
                     );
 
                     actualizarEstado(
-                        "Reconociendo texto: " + porcentaje + "%"
+                        "Reconociendo texto: " +
+                        porcentaje +
+                        "%"
                     );
                 }
             }
         }
     );
 
-    await workerOCR.setParameters({
-        tessedit_pageseg_mode: "7"
-    });
-
     return workerOCR;
 }
 
 
 /* =========================================================
-   19. RECONOCER UNA LÍNEA
+   15. EJECUTAR UN RECONOCIMIENTO
    ========================================================= */
 
-async function reconocerLinea(worker, canvas) {
+async function reconocerBloque(
+    worker,
+    canvas,
+    modelo
+) {
+    // Cambiar el modo de segmentación.
+    await worker.setParameters({
+        tessedit_pageseg_mode: modelo.psm
+    });
+
     const respuesta = await worker.recognize(canvas);
 
     return {
+        nombre: modelo.nombre,
         texto: (respuesta.data.text || "").trim(),
         confianza: Number(
             respuesta.data.confidence || 0
@@ -770,382 +711,282 @@ async function reconocerLinea(worker, canvas) {
 
 
 /* =========================================================
-   20. ELEGIR LA MEJOR LECTURA
+   16. PROCESAR UN BLOQUE CON CUATRO MODOS OCR
    ========================================================= */
 
-function elegirMejorLectura(lecturas) {
-    const validas = lecturas.filter(
-        lectura => lectura.texto.length > 0
-    );
-
-    if (!validas.length) {
-        return {
-            texto: "",
-            confianza: 0,
-            variante: "Ninguna"
-        };
-    }
-
-    // La confianza es una medida del motor, no una
-    // garantía de que el texto sea correcto.
-    validas.sort(
-        (a, b) => b.confianza - a.confianza
-    );
-
-    return validas[0];
-}
-
-
-/* =========================================================
-   21. PROCESAR UNA LÍNEA CON CINCO VARIANTES
-   ========================================================= */
-
-async function procesarLinea(
+async function procesarBloque(
     worker,
-    variantes,
-    linea
+    canvas,
+    bloque
 ) {
-    const lecturas = [];
+    const recorte = recortarBloque(
+        canvas,
+        bloque
+    );
 
-    for (let i = 0; i < variantes.length; i++) {
-        const recorte = recortarLinea(
-            variantes[i],
-            linea
-        );
+    const resultados = [];
 
-        if (i === 0) {
-    console.log("Coordenadas de la línea:", linea);
-    console.log("Dimensiones del recorte:", {
-        ancho: recorte.width,
-        alto: recorte.height
-    });
-
-    const prueba = document.createElement("img");
-    prueba.src = recorte.toDataURL();
-
-    prueba.style.maxWidth = "100%";
-    prueba.style.border = "2px solid red";
-    prueba.style.margin = "10px 0";
-
-    document.body.appendChild(prueba);
-        }
-
-        const lectura = await reconocerLinea(
+    for (const modelo of MODELOS_OCR) {
+        const lectura = await reconocerBloque(
             worker,
-            recorte
+            recorte,
+            modelo
         );
 
-        lecturas.push({
-            texto: lectura.texto,
-            confianza: lectura.confianza,
-            variante: NOMBRES_VARIANTES[i]
-        });
+        resultados.push(lectura);
     }
-
-    const mejor = elegirMejorLectura(lecturas);
 
     return {
-        ...mejor,
-        lecturas
+        coordenadas: bloque,
+        recorte,
+        resultados
     };
 }
 
 
 /* =========================================================
-   22. CONSTRUIR EL TEXTO FINAL
+   17. CONSTRUIR INFORME DE RESULTADOS
    ========================================================= */
 
-function reconstruirDocumento(parrafos) {
-    return parrafos
-        .map(parrafo =>
-            parrafo
-                .map(linea => linea.texto)
-                .filter(texto => texto.length > 0)
-                .join(" ")
-        )
-        .filter(texto => texto.length > 0)
-        .join("\n\n");
-}
-
-
-/* =========================================================
-   CONSTRUIR INFORME COMPLETO DE COMPARACIONES
-   ========================================================= */
-
-function construirInformeComparaciones(parrafos) {
+function construirInforme(bloquesProcesados) {
     let informe = "";
 
-    informe += "========== TEXTO RECONOCIDO ==========\n\n";
-    informe += reconstruirDocumento(parrafos) || "(Sin texto reconocido)";
-    informe += "\n\n========== COMPARACIÓN DE LECTURAS ==========\n";
+    informe += "SINDICATO ENIGMA\n";
+    informe += "LABORATORIO DE DOCUMENTOS OCR\n";
 
-    parrafos.forEach((parrafo, indiceParrafo) => {
-        informe += `\nPÁRRAFO ${indiceParrafo + 1}\n`;
+    informe += "\n====================================\n";
+    informe += "RESULTADOS DE RECONOCIMIENTO\n";
+    informe += "====================================\n\n";
 
-        parrafo.forEach((linea, indiceLinea) => {
-            informe += `\nLÍNEA ${indiceLinea + 1}\n`;
+    bloquesProcesados.forEach((bloque, indice) => {
+        informe += "\n\n";
+        informe += "####################################\n";
+        informe += `BLOQUE ${indice + 1}\n`;
+        informe += "####################################\n";
 
-            linea.lecturas.forEach(lectura => {
-                informe += `\n${lectura.variante} `;
-                informe += `(${lectura.confianza.toFixed(1)}%):\n`;
-                informe += lectura.texto || "(Sin lectura)";
-                informe += "\n";
-            });
+        bloque.resultados.forEach(lectura => {
+            informe += "\n------------------------------------\n";
+            informe += lectura.nombre + "\n";
+            informe += "Confianza: ";
+            informe += lectura.confianza.toFixed(1) + "%\n";
+            informe += "------------------------------------\n";
+
+            informe += lectura.texto || "(Sin lectura)";
+
+            informe += "\n";
         });
     });
+
+    informe += "\n\n====================================\n";
+    informe += "FIN DEL INFORME\n";
+    informe += "====================================";
 
     return informe;
 }
 
 
-
 /* =========================================================
-   23. MOSTRAR COMPARACIÓN DE VARIANTES
+   18. ACTUALIZAR ESTADÍSTICAS
    ========================================================= */
 
-function mostrarComparaciones(parrafos) {
-    const detalles = parrafos.map(
-        (parrafo, indiceParrafo) => {
+function actualizarEstadisticas(
+    bloquesProcesados,
+    numeroFilas
+) {
+    const cantidadBloques = bloquesProcesados.length;
 
-            const lineasHTML = parrafo.map(
-                (linea, indiceLinea) => {
-
-                    const alternativas = linea.lecturas
-                        .map(lectura => `
-                            <div>
-                                <strong>${escaparHTML(lectura.variante)}</strong>
-                                — ${lectura.confianza.toFixed(1)}%
-                                <br>
-                                ${escaparHTML(
-                                    lectura.texto || "(Sin lectura)"
-                                )}
-                            </div>
-                        `)
-                        .join("");
-
-                    return `
-                        <details>
-                            <summary>
-                                Línea ${indiceLinea + 1}:
-                                ${escaparHTML(linea.texto)}
-                                (${linea.confianza.toFixed(1)}%)
-                            </summary>
-                            ${alternativas}
-                        </details>
-                    `;
-                }
-            ).join("");
-
-            return `
-                <details>
-                    <summary>
-                        Párrafo ${indiceParrafo + 1}
-                        — ${parrafo.length} líneas
-                    </summary>
-                    ${lineasHTML}
-                </details>
-            `;
-        }
-    ).join("");
-
-    let panel = document.getElementById(
-        "comparacionOCR"
+    const todasLasLecturas = bloquesProcesados.flatMap(
+        bloque => bloque.resultados
     );
 
-    if (!panel) {
-        panel = document.createElement("div");
-        panel.id = "comparacionOCR";
+    const lecturasConTexto = todasLasLecturas.filter(
+        lectura => lectura.texto.length > 0
+    );
 
-        if (resultado && resultado.parentElement) {
-            resultado.parentElement.appendChild(panel);
-        }
-    }
-
-    panel.innerHTML = `
-        <h3>Comparación de lecturas</h3>
-        ${detalles}
-    `;
-}
-
-
-/* =========================================================
-   24. ACTUALIZAR ESTADÍSTICAS
-   ========================================================= */
-
-function actualizarEstadisticas(parrafos) {
-    const lineas = parrafos.flat();
-
-    const texto = reconstruirDocumento(parrafos);
-
-    const palabras = texto
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean);
-
-    const caracteres = texto.length;
-
-    const confianzas = lineas
-        .filter(linea => linea.texto.length > 0)
-        .map(linea => linea.confianza);
-
-    const promedio = confianzas.length
-        ? confianzas.reduce((a, b) => a + b, 0) /
-          confianzas.length
+    const promedio = lecturasConTexto.length
+        ? lecturasConTexto.reduce(
+            (suma, lectura) => suma + lectura.confianza,
+            0
+        ) / lecturasConTexto.length
         : 0;
 
+    const mejorTexto = lecturasConTexto.length > 0;
+
     if (totalBloques) {
-        totalBloques.textContent = parrafos.length;
+        totalBloques.textContent =
+            cantidadBloques + " bloques";
     }
 
     if (totalLineas) {
-        totalLineas.textContent = lineas.length;
+        totalLineas.textContent =
+            numeroFilas + " líneas";
     }
 
     if (totalPalabras) {
-        totalPalabras.textContent = palabras.length;
+        totalPalabras.textContent =
+            todasLasLecturas.length + " lecturas";
     }
 
     if (totalCaracteres) {
-        totalCaracteres.textContent = caracteres;
+        totalCaracteres.textContent =
+            lecturasConTexto.length + " resultados";
     }
 
     if (confianza) {
-        confianza.textContent = promedio.toFixed(1) + "%";
+        confianza.textContent =
+            "Confianza media: " + promedio.toFixed(1) + "%";
     }
 
     if (coincidencia) {
-        coincidencia.textContent = "No calculada";
+        coincidencia.textContent =
+            mejorTexto ? "Lecturas disponibles" : "Sin lecturas";
     }
 
     if (resumen) {
+        resumen.hidden = false;
+
         resumen.textContent =
-            `${parrafos.length} párrafos, ` +
-            `${lineas.length} líneas procesadas.`;
+            `${cantidadBloques} bloques detectados · ` +
+            `${numeroFilas} filas detectadas · ` +
+            `${lecturasConTexto.length} lecturas con texto`;
     }
 }
 
 
 /* =========================================================
-   25. PROCESO PRINCIPAL
+   19. PROCESO PRINCIPAL
    ========================================================= */
 
 async function analizarDocumento() {
-    if (!imagenCargada || analizando) return;
+    if (!canvasOriginal || analizando) return;
 
     analizando = true;
+
     btnAnalizar.disabled = true;
 
-    if (btnCopiar) btnCopiar.disabled = true;
+    if (btnCopiar) {
+        btnCopiar.disabled = true;
+    }
+
+    if (progresoContenedor) {
+        progresoContenedor.hidden = false;
+    }
+
+    if (resultado) {
+        resultado.value = "";
+    }
 
     try {
         actualizarProgreso(0);
-        actualizarEstado("Preparando imagen...");
 
         const gris = convertirGrises(canvasOriginal);
 
         actualizarProgreso(5);
 
-        // Primero se detecta la estructura del documento.
-        // Todavía no se utiliza OCR.
-        const estructura = detectarEstructura(gris);
+        // PASO 1: DETECTAR BLOQUES.
+        const estructura = detectarBloques(gris);
 
-        const parrafosDetectados = estructura.parrafos;
+        const bloques = estructura.bloques;
 
-        if (!parrafosDetectados.length) {
+        if (!bloques.length) {
             throw new Error(
-                "No se detectaron filas de texto. Prueba con una imagen más clara."
+                "No se detectaron bloques de texto. " +
+                "Prueba con una imagen más clara."
             );
         }
 
         actualizarProgreso(10);
 
-        const variantes = generarVariantes(gris);
-
         actualizarEstado(
             "Se detectaron " +
-            parrafosDetectados.length +
-            " párrafos y " +
-            estructura.lineas.length +
-            " líneas."
+            bloques.length +
+            " bloques de texto."
         );
 
+        // PASO 2: INICIAR OCR.
         const worker = await iniciarOCR();
 
-        const parrafosProcesados = [];
+        const procesados = [];
 
-        const totalLineas = estructura.lineas.length;
-        let lineasProcesadas = 0;
+        const totalOperaciones =
+            bloques.length * MODELOS_OCR.length;
 
-        for (
-            let p = 0;
-            p < parrafosDetectados.length;
-            p++
-        ) {
-            const parrafoActual = [];
+        let operaciones = 0;
 
-            for (
-                let l = 0;
-                l < parrafosDetectados[p].length;
-                l++
-            ) {
-                const linea = parrafosDetectados[p][l];
+        // PASO 3: RECORTAR Y RECONOCER.
+        for (let i = 0; i < bloques.length; i++) {
+            actualizarEstado(
+                `Procesando bloque ${i + 1} de ${bloques.length}...`
+            );
 
+            const recorte = recortarBloque(
+                canvasOriginal,
+                bloques[i]
+            );
+
+            const resultados = [];
+
+            for (const modelo of MODELOS_OCR) {
                 actualizarEstado(
-                    `Párrafo ${p + 1} de ${parrafosDetectados.length}. ` +
-                    `Línea ${l + 1} de ${parrafosDetectados[p].length}.`
+                    `Bloque ${i + 1} de ${bloques.length}: ` +
+                    modelo.nombre
                 );
 
-                const lectura = await procesarLinea(
+                const lectura = await reconocerBloque(
                     worker,
-                    variantes,
-                    linea
+                    recorte,
+                    modelo
                 );
 
-                parrafoActual.push({
-                    ...lectura,
-                    coordenadas: linea
-                });
+                resultados.push(lectura);
 
-                lineasProcesadas++;
+                operaciones++;
 
                 actualizarProgreso(
-                    10 + (lineasProcesadas / totalLineas) * 85
+                    10 + (operaciones / totalOperaciones) * 85
                 );
             }
 
-            parrafosProcesados.push(parrafoActual);
+            procesados.push({
+                coordenadas: bloques[i],
+                resultados
+            });
         }
 
-        const textoFinal = reconstruirDocumento(
-    parrafosProcesados
-);
+        // PASO 4: MOSTRAR TODOS LOS RESULTADOS.
+        const informe = construirInforme(procesados);
 
-const informeCompleto = construirInformeComparaciones(
-    parrafosProcesados
-);
+        if (resultado) {
+            resultado.value = informe;
+        }
 
-if (resultado) {
-    resultado.value = informeCompleto;
-}
-
-        actualizarEstadisticas(parrafosProcesados);
-        mostrarComparaciones(parrafosProcesados);
+        actualizarEstadisticas(
+            procesados,
+            estructura.filas.length
+        );
 
         actualizarProgreso(100);
-        actualizarEstado("Análisis terminado.");
+
+        actualizarEstado(
+            "Análisis terminado. " +
+            "Se completaron las cuatro pruebas OCR."
+        );
 
         if (estadoResultado) {
             estadoResultado.textContent =
-                "Documento procesado correctamente.";
+                "Comparación de cuatro modos OCR terminada.";
         }
-if (btnCopiar) {
-    btnCopiar.disabled = !informeCompleto;
-}
+
+        if (btnCopiar) {
+            btnCopiar.disabled = !informe;
+        }
 
     } catch (error) {
-        console.error(error);
+        console.error("Error en el análisis OCR:", error);
 
-        actualizarEstado("No se pudo completar el análisis.");
+        actualizarEstado(
+            "Error: " + error.message
+        );
 
         if (estadoResultado) {
             estadoResultado.textContent = error.message;
@@ -1153,31 +994,49 @@ if (btnCopiar) {
 
     } finally {
         analizando = false;
-        btnAnalizar.disabled = !imagenCargada;
+
+        if (btnAnalizar) {
+            btnAnalizar.disabled = !imagenCargada;
+        }
     }
 }
 
 
 /* =========================================================
-   26. CARGAR IMAGEN
-   ========================================================= */
-
- 
-/* =========================================================
-   26. CARGAR IMAGEN
+   20. CARGAR IMAGEN
    ========================================================= */
 
 function cargarImagen(archivo) {
     if (!archivo) return;
 
-    actualizarEstado("Leyendo imagen...");
-    
-    if (btnAnalizar) btnAnalizar.disabled = true;
+    const extension = archivo.name
+        .split(".")
+        .pop()
+        .toLowerCase();
 
-    if (!archivo.type.startsWith("image/")) {
-        actualizarEstado("El archivo seleccionado no es una imagen compatible.");
+    const formatosPermitidos = [
+        "jpg",
+        "jpeg",
+        "png",
+        "webp"
+    ];
+
+    if (
+        !archivo.type.startsWith("image/") &&
+        !formatosPermitidos.includes(extension)
+    ) {
+        actualizarEstado("Formato de imagen no compatible.");
         return;
     }
+
+    imagenCargada = false;
+    canvasOriginal = null;
+
+    if (btnAnalizar) {
+        btnAnalizar.disabled = true;
+    }
+
+    actualizarEstado("Cargando imagen...");
 
     const lector = new FileReader();
 
@@ -1186,10 +1045,8 @@ function cargarImagen(archivo) {
 
         imagen.onload = () => {
             try {
-                const nuevoCanvas = prepararImagen(imagen);
-
-                imagenCargada = imagen;
-                canvasOriginal = nuevoCanvas;
+                canvasOriginal = prepararImagen(imagen);
+                imagenCargada = true;
 
                 if (vistaPrevia) {
                     vistaPrevia.src = lector.result;
@@ -1197,6 +1054,7 @@ function cargarImagen(archivo) {
                 }
 
                 if (contenedorVista) {
+                    contenedorVista.hidden = false;
                     contenedorVista.style.display = "block";
                 }
 
@@ -1208,34 +1066,52 @@ function cargarImagen(archivo) {
                     btnAnalizar.disabled = false;
                 }
 
-                actualizarEstado(
-                    "Imagen cargada correctamente. Ya puedes analizarla."
-                );
+                if (resultado) {
+                    resultado.value = "";
+                }
+
+                if (btnCopiar) {
+                    btnCopiar.disabled = true;
+                }
+
+                if (resumen) {
+                    resumen.hidden = true;
+                }
+
+                if (estadoResultado) {
+                    estadoResultado.textContent =
+                        "Esperando análisis";
+                }
 
                 actualizarProgreso(0);
 
-                if (resultado) resultado.value = "";
-
-                if (btnCopiar) btnCopiar.disabled = true;
-
-                const panel = document.getElementById("comparacionOCR");
-                if (panel) panel.remove();
+                actualizarEstado(
+                    "Imagen cargada. Ya puedes analizarla."
+                );
 
             } catch (error) {
-                console.error("Error al preparar imagen:", error);
-                actualizarEstado("Error al preparar la imagen: " + error.message);
+                console.error(error);
+
+                actualizarEstado(
+                    "Error al preparar la imagen: " +
+                    error.message
+                );
             }
         };
 
         imagen.onerror = () => {
-            actualizarEstado("El navegador no pudo interpretar esta imagen.");
+            actualizarEstado(
+                "El navegador no pudo interpretar esta imagen."
+            );
         };
 
         imagen.src = lector.result;
     };
 
     lector.onerror = () => {
-        actualizarEstado("No se pudo leer el archivo seleccionado.");
+        actualizarEstado(
+            "No se pudo leer el archivo seleccionado."
+        );
     };
 
     lector.readAsDataURL(archivo);
@@ -1243,13 +1119,7 @@ function cargarImagen(archivo) {
 
 
 /* =========================================================
-   27. COPIAR RESULTADO
-   ========================================================= */
-
-
-
-/* =========================================================
-   27. COPIAR RESULTADO
+   21. COPIAR RESULTADO
    ========================================================= */
 
 async function copiarResultado() {
@@ -1260,7 +1130,9 @@ async function copiarResultado() {
             resultado.value
         );
 
-        actualizarEstado("Texto copiado.");
+        actualizarEstado(
+            "Informe completo copiado."
+        );
 
     } catch (error) {
         resultado.select();
@@ -1269,59 +1141,67 @@ async function copiarResultado() {
 
         actualizarEstado(
             correcto
-                ? "Texto copiado."
-                : "No se pudo copiar el texto."
+                ? "Informe completo copiado."
+                : "No se pudo copiar el informe."
         );
     }
 }
 
 
 /* =========================================================
-   28. LIMPIAR LABORATORIO
+   22. LIMPIAR LABORATORIO
    ========================================================= */
 
 function limpiarLaboratorio() {
-    imagenCargada = null;
+    imagenCargada = false;
     canvasOriginal = null;
 
-    if (inputImagen) inputImagen.value = "";
+    if (inputImagen) {
+        inputImagen.value = "";
+    }
 
-    if (vistaPrevia) vistaPrevia.removeAttribute("src");
-
-    if (nombreArchivo) nombreArchivo.textContent = "";
-
-    if (resultado) resultado.value = "";
+    if (vistaPrevia) {
+        vistaPrevia.removeAttribute("src");
+    }
 
     if (contenedorVista) {
+        contenedorVista.hidden = true;
         contenedorVista.style.display = "none";
     }
 
-    if (btnAnalizar) btnAnalizar.disabled = true;
+    if (nombreArchivo) {
+        nombreArchivo.textContent =
+            "Ningún documento seleccionado";
+    }
 
-    if (btnCopiar) btnCopiar.disabled = true;
+    if (resultado) {
+        resultado.value = "";
+    }
 
-    const panel = document.getElementById(
-        "comparacionOCR"
-    );
+    if (btnAnalizar) {
+        btnAnalizar.disabled = true;
+    }
 
-    if (panel) panel.remove();
+    if (btnCopiar) {
+        btnCopiar.disabled = true;
+    }
 
-    [
-        totalBloques,
-        totalLineas,
-        totalPalabras,
-        totalCaracteres
-    ].forEach(elemento => {
-        if (elemento) elemento.textContent = "0";
-    });
+    if (resumen) {
+        resumen.hidden = true;
+    }
 
-    if (confianza) confianza.textContent = "0%";
+    if (estadoResultado) {
+        estadoResultado.textContent =
+            "Esperando análisis";
+    }
 
-    if (coincidencia) coincidencia.textContent = "—";
+    if (totalBloques) totalBloques.textContent = "0 bloques";
+    if (totalLineas) totalLineas.textContent = "0 líneas";
+    if (totalPalabras) totalPalabras.textContent = "0 lecturas";
+    if (totalCaracteres) totalCaracteres.textContent = "0 resultados";
 
-    if (resumen) resumen.textContent = "";
-
-    if (estadoResultado) estadoResultado.textContent = "";
+    if (confianza) confianza.textContent = "Confianza: --";
+    if (coincidencia) coincidencia.textContent = "Coincidencia: --";
 
     actualizarProgreso(0);
     actualizarEstado("Esperando imagen...");
@@ -1329,12 +1209,7 @@ function limpiarLaboratorio() {
 
 
 /* =========================================================
-   29. CONECTAR BOTONES
-   ========================================================= */
-
-
-/* =========================================================
-   29. CONECTAR BOTONES
+   23. CONECTAR BOTONES
    ========================================================= */
 
 if (inputImagen) {
@@ -1346,44 +1221,46 @@ if (inputImagen) {
         }
     });
 } else {
-    console.error("No se encontró el elemento inputImagen.");
+    console.error("No se encontró inputImagen.");
 }
 
 if (btnAnalizar) {
-    btnAnalizar.addEventListener("click", analizarDocumento);
-} else {
-    console.error("No se encontró el botón btnAnalizar.");
+    btnAnalizar.addEventListener(
+        "click",
+        analizarDocumento
+    );
 }
 
 if (btnCopiar) {
-    btnCopiar.addEventListener("click", copiarResultado);
+    btnCopiar.addEventListener(
+        "click",
+        copiarResultado
+    );
 }
 
 if (btnLimpiar) {
-    btnLimpiar.addEventListener("click", limpiarLaboratorio);
+    btnLimpiar.addEventListener(
+        "click",
+        limpiarLaboratorio
+    );
 }
 
 
 /* =========================================================
-   30. ESTADO INICIAL
+   24. ESTADO INICIAL
    ========================================================= */
 
-if (btnAnalizar) btnAnalizar.disabled = true;
+if (btnAnalizar) {
+    btnAnalizar.disabled = true;
+}
 
-if (btnCopiar) btnCopiar.disabled = true;
+if (btnCopiar) {
+    btnCopiar.disabled = true;
+}
 
-actualizarEstado("Esperando imagen...");
-actualizarProgreso(0);
-
-
-
-/* =========================================================
-   30. ESTADO INICIAL
-   ========================================================= */
-
-if (btnAnalizar) btnAnalizar.disabled = true;
-
-if (btnCopiar) btnCopiar.disabled = true;
+if (progresoContenedor) {
+    progresoContenedor.hidden = false;
+}
 
 actualizarEstado("Esperando imagen...");
 actualizarProgreso(0);
