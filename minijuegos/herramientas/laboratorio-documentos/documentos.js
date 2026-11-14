@@ -813,6 +813,23 @@ async function procesarLinea(
             linea
         );
 
+        if (i === 0) {
+    console.log("Coordenadas de la línea:", linea);
+    console.log("Dimensiones del recorte:", {
+        ancho: recorte.width,
+        alto: recorte.height
+    });
+
+    const prueba = document.createElement("img");
+    prueba.src = recorte.toDataURL();
+
+    prueba.style.maxWidth = "100%";
+    prueba.style.border = "2px solid red";
+    prueba.style.margin = "10px 0";
+
+    document.body.appendChild(prueba);
+        }
+
         const lectura = await reconocerLinea(
             worker,
             recorte
