@@ -2,7 +2,13 @@
 /* =========================================================
    SINDICATO ENIGMA
    LABORATORIO DE DOCUMENTOS OCR
-   ARQUITECTURA: BLOQUES -> RECORTES -> CINCO OCR
+
+   PROCESO:
+   1. Detectar bloques de texto.
+   2. Recortar cada bloque.
+   3. Crear cuatro versiones de cada recorte.
+   4. Ejecutar PSM 3 en las cuatro versiones.
+   5. Mostrar los cuatro resultados.
    ========================================================= */
 
 
@@ -46,27 +52,24 @@ const MARGEN_BLOQUE = 0.025;
 
 const FACTOR_SEPARACION_BLOQUES = 2.5;
 
-// Cinco configuraciones de reconocimiento OCR.
-const MODELOS_OCR = [
+const MODO_OCR = "3";
+
+const VARIANTES_IMAGEN = [
     {
-        nombre: "PSM 3 - Segmentación automática",
-        psm: "3"
+        nombre: "PASADA 1 - Imagen original",
+        tipo: "original"
     },
     {
-        nombre: "PSM 6 - Bloque uniforme",
-        psm: "6"
+        nombre: "PASADA 2 - Escala de grises y contraste",
+        tipo: "contraste"
     },
     {
-        nombre: "PSM 7 - Una línea de texto",
-        psm: "7"
+        nombre: "PASADA 3 - Blanco y negro",
+        tipo: "binaria"
     },
     {
-        nombre: "PSM 8 - Una palabra",
-        psm: "8"
-    },
-    {
-        nombre: "PSM 13 - Línea sin procesamiento adicional",
-        psm: "13"
+        nombre: "PASADA 4 - Blanco y negro invertido",
+        tipo: "invertida"
     }
 ];
 
@@ -261,7 +264,7 @@ function calcularOtsu(datos) {
 
 
 /* =========================================================
-   7. DETECTAR EL COLOR DEL FONDO
+   7. DETECTAR SI EL FONDO ES CLARO
    ========================================================= */
 
 function fondoEsClaro(datos, ancho, alto) {
@@ -359,16 +362,6 @@ function detectarFilas(mascara, ancho, alto) {
         proyeccion[y] = cantidad;
     }
 
-    let maximo = 0;
-
-    for (let y = 0; y < alto; y++) {
-        if (proyeccion[y] > maximo) {
-            maximo = proyeccion[y];
-        }
-    }
-
-    if (maximo === 0) return [];
-
     const umbral = Math.max(
         2,
         Math.round(ancho * 0.001)
@@ -422,7 +415,7 @@ function detectarFilas(mascara, ancho, alto) {
 
 
 /* =========================================================
-   10. AGRUPAR FILAS EN BLOQUES DE TEXTO
+   10. AGRUPAR FILAS EN BLOQUES
    ========================================================= */
 
 function agruparBloques(filas) {
@@ -475,7 +468,7 @@ function agruparBloques(filas) {
 
 
 /* =========================================================
-   11. DELIMITAR HORIZONTALMENTE CADA BLOQUE
+   11. DELIMITAR HORIZONTALMENTE LOS BLOQUES
    ========================================================= */
 
 function delimitarBloque(
@@ -490,10 +483,7 @@ function delimitarBloque(
     let y0 = alto;
     let y1 = -1;
 
-    const inicioY = bloque.y0;
-    const finalY = bloque.y1;
-
-    for (let y = inicioY; y <= finalY; y++) {
+    for (let y = bloque.y0; y <= bloque.y1; y++) {
         const inicio = y * ancho;
 
         for (let x = 0; x < ancho; x++) {
@@ -648,7 +638,203 @@ function recortarBloque(canvas, bloque) {
 
 
 /* =========================================================
-   14. INICIAR MOTOR OCR
+   14. CREAR IMAGEN ORIGINAL
+   ========================================================= */
+
+function crearVersionOriginal(canvas) {
+    return canvas;
+}
+
+
+/* =========================================================
+   15. MEJORAR CONTRASTE
+   ========================================================= */
+
+function crearVersionContraste(canvas) {
+    const gris = convertirGrises(canvas);
+
+    const ctx = obtenerContexto(gris);
+
+    const imagen = ctx.getImageData(
+        0,
+        0,
+        gris.width,
+        gris.height
+    );
+
+    const datos = imagen.data;
+
+    const histograma = new Array(256).fill(0);
+
+    const total = datos.length / 4;
+
+    for (let i = 0; i < datos.length; i += 4) {
+        histograma[datos[i]]++;
+    }
+
+    // Buscar límites de intensidad evitando extremos aislados.
+    const limiteInferior = total * 0.02;
+    const limiteSuperior = total * 0.98;
+
+    let acumulado = 0;
+    let minimo = 0;
+    let maximo = 255;
+
+    for (let i = 0; i < 256; i++) {
+        acumulado += histograma[i];
+
+        if (acumulado >= limiteInferior) {
+            minimo = i;
+            break;
+        }
+    }
+
+    acumulado = 0;
+
+    for (let i = 255; i >= 0; i--) {
+        acumulado += histograma[i];
+
+        if (acumulado >= total - limiteSuperior) {
+            maximo = i;
+            break;
+        }
+    }
+
+    if (maximo <= minimo) {
+        return gris;
+    }
+
+    for (let i = 0; i < datos.length; i += 4) {
+        let valor =
+            (datos[i] - minimo) *
+            255 /
+            (maximo - minimo);
+
+        valor = Math.max(
+            0,
+            Math.min(255, valor)
+        );
+
+        datos[i] = valor;
+        datos[i + 1] = valor;
+        datos[i + 2] = valor;
+    }
+
+    ctx.putImageData(imagen, 0, 0);
+
+    return gris;
+}
+
+
+/* =========================================================
+   16. CREAR IMAGEN BINARIZADA
+   ========================================================= */
+
+function crearVersionBinaria(canvas) {
+    const gris = convertirGrises(canvas);
+
+    const ctx = obtenerContexto(gris);
+
+    const imagen = ctx.getImageData(
+        0,
+        0,
+        gris.width,
+        gris.height
+    );
+
+    const datos = imagen.data;
+
+    const umbral = calcularOtsu(datos);
+
+    const fondoClaro = fondoEsClaro(
+        datos,
+        gris.width,
+        gris.height
+    );
+
+    for (let i = 0; i < datos.length; i += 4) {
+        const valor = datos[i];
+
+        let salida;
+
+        if (fondoClaro) {
+            salida = valor < umbral ? 0 : 255;
+        } else {
+            salida = valor > umbral ? 255 : 0;
+        }
+
+        datos[i] = salida;
+        datos[i + 1] = salida;
+        datos[i + 2] = salida;
+        datos[i + 3] = 255;
+    }
+
+    ctx.putImageData(imagen, 0, 0);
+
+    return gris;
+}
+
+
+/* =========================================================
+   17. CREAR IMAGEN BINARIZADA INVERTIDA
+   ========================================================= */
+
+function crearVersionInvertida(canvas) {
+    const binaria = crearVersionBinaria(canvas);
+
+    const ctx = obtenerContexto(binaria);
+
+    const imagen = ctx.getImageData(
+        0,
+        0,
+        binaria.width,
+        binaria.height
+    );
+
+    const datos = imagen.data;
+
+    for (let i = 0; i < datos.length; i += 4) {
+        const invertido = 255 - datos[i];
+
+        datos[i] = invertido;
+        datos[i + 1] = invertido;
+        datos[i + 2] = invertido;
+    }
+
+    ctx.putImageData(imagen, 0, 0);
+
+    return binaria;
+}
+
+
+/* =========================================================
+   18. GENERAR LAS CUATRO VERSIONES
+   ========================================================= */
+
+function generarVariantes(canvasOriginal) {
+    return [
+        {
+            nombre: VARIANTES_IMAGEN[0].nombre,
+            canvas: crearVersionOriginal(canvasOriginal)
+        },
+        {
+            nombre: VARIANTES_IMAGEN[1].nombre,
+            canvas: crearVersionContraste(canvasOriginal)
+        },
+        {
+            nombre: VARIANTES_IMAGEN[2].nombre,
+            canvas: crearVersionBinaria(canvasOriginal)
+        },
+        {
+            nombre: VARIANTES_IMAGEN[3].nombre,
+            canvas: crearVersionInvertida(canvasOriginal)
+        }
+    ];
+}
+
+
+/* =========================================================
+   19. INICIAR MOTOR OCR
    ========================================================= */
 
 async function iniciarOCR() {
@@ -687,22 +873,17 @@ async function iniciarOCR() {
 
 
 /* =========================================================
-   15. EJECUTAR UN RECONOCIMIENTO
+   20. EJECUTAR PSM 3
    ========================================================= */
 
-async function reconocerBloque(
-    worker,
-    canvas,
-    modelo
-) {
+async function reconocerImagen(worker, canvas) {
     await worker.setParameters({
-        tessedit_pageseg_mode: modelo.psm
+        tessedit_pageseg_mode: MODO_OCR
     });
 
     const respuesta = await worker.recognize(canvas);
 
     return {
-        nombre: modelo.nombre,
         texto: (respuesta.data.text || "").trim(),
         confianza: Number(
             respuesta.data.confidence || 0
@@ -712,41 +893,48 @@ async function reconocerBloque(
 
 
 /* =========================================================
-   16. PROCESAR UN BLOQUE CON CINCO MODOS OCR
+   21. PROCESAR UN BLOQUE CON LAS CUATRO VERSIONES
    ========================================================= */
 
 async function procesarBloque(
     worker,
-    canvas,
+    canvasOriginal,
     bloque
 ) {
+    // Recortar una sola vez el bloque.
     const recorte = recortarBloque(
-        canvas,
+        canvasOriginal,
         bloque
     );
 
+    // Crear las cuatro variantes desde ese recorte.
+    const variantes = generarVariantes(recorte);
+
     const resultados = [];
 
-    for (const modelo of MODELOS_OCR) {
-        const lectura = await reconocerBloque(
+    // Ejecutar el mismo PSM 3 en cada variante.
+    for (const variante of variantes) {
+        const lectura = await reconocerImagen(
             worker,
-            recorte,
-            modelo
+            variante.canvas
         );
 
-        resultados.push(lectura);
+        resultados.push({
+            nombre: variante.nombre,
+            texto: lectura.texto,
+            confianza: lectura.confianza
+        });
     }
 
     return {
         coordenadas: bloque,
-        recorte,
         resultados
     };
 }
 
 
 /* =========================================================
-   17. CONSTRUIR INFORME DE RESULTADOS
+   22. CONSTRUIR INFORME
    ========================================================= */
 
 function construirInforme(bloquesProcesados) {
@@ -756,8 +944,10 @@ function construirInforme(bloquesProcesados) {
     informe += "LABORATORIO DE DOCUMENTOS OCR\n";
 
     informe += "\n====================================\n";
-    informe += "RESULTADOS DE RECONOCIMIENTO\n";
-    informe += "====================================\n\n";
+    informe += "MOTOR: TESSERACT OCR\n";
+    informe += "MODO: PSM 3\n";
+    informe += "CUATRO VERSIONES DE IMAGEN\n";
+    informe += "====================================\n";
 
     bloquesProcesados.forEach((bloque, indice) => {
         informe += "\n\n";
@@ -787,7 +977,7 @@ function construirInforme(bloquesProcesados) {
 
 
 /* =========================================================
-   18. ACTUALIZAR ESTADÍSTICAS
+   23. ACTUALIZAR ESTADÍSTICAS
    ========================================================= */
 
 function actualizarEstadisticas(
@@ -855,7 +1045,7 @@ function actualizarEstadisticas(
 
 
 /* =========================================================
-   19. PROCESO PRINCIPAL
+   24. PROCESO PRINCIPAL
    ========================================================= */
 
 async function analizarDocumento() {
@@ -880,11 +1070,9 @@ async function analizarDocumento() {
     try {
         actualizarProgreso(0);
 
+        // PASO 1: DETECTAR BLOQUES.
         const gris = convertirGrises(canvasOriginal);
 
-        actualizarProgreso(5);
-
-        // PASO 1: DETECTAR BLOQUES.
         const estructura = detectarBloques(gris);
 
         const bloques = estructura.bloques;
@@ -896,7 +1084,7 @@ async function analizarDocumento() {
             );
         }
 
-        actualizarProgreso(10);
+        actualizarProgreso(5);
 
         actualizarEstado(
             "Se detectaron " +
@@ -910,51 +1098,32 @@ async function analizarDocumento() {
         const procesados = [];
 
         const totalOperaciones =
-            bloques.length * MODELOS_OCR.length;
+            bloques.length * VARIANTES_IMAGEN.length;
 
         let operaciones = 0;
 
-        // PASO 3: RECORTAR Y RECONOCER.
+        // PASO 3: PROCESAR CADA BLOQUE.
         for (let i = 0; i < bloques.length; i++) {
             actualizarEstado(
-                `Procesando bloque ${i + 1} de ${bloques.length}...`
+                `Preparando bloque ${i + 1} de ${bloques.length}...`
             );
 
-            const recorte = recortarBloque(
+            const procesado = await procesarBloque(
+                worker,
                 canvasOriginal,
                 bloques[i]
             );
 
-            const resultados = [];
+            procesados.push(procesado);
 
-            for (const modelo of MODELOS_OCR) {
-                actualizarEstado(
-                    `Bloque ${i + 1} de ${bloques.length}: ` +
-                    modelo.nombre
-                );
+            operaciones += VARIANTES_IMAGEN.length;
 
-                const lectura = await reconocerBloque(
-                    worker,
-                    recorte,
-                    modelo
-                );
-
-                resultados.push(lectura);
-
-                operaciones++;
-
-                actualizarProgreso(
-                    10 + (operaciones / totalOperaciones) * 85
-                );
-            }
-
-            procesados.push({
-                coordenadas: bloques[i],
-                resultados
-            });
+            actualizarProgreso(
+                5 + (operaciones / totalOperaciones) * 90
+            );
         }
 
-        // PASO 4: MOSTRAR TODOS LOS RESULTADOS.
+        // PASO 4: MOSTRAR RESULTADOS.
         const informe = construirInforme(procesados);
 
         if (resultado) {
@@ -970,12 +1139,12 @@ async function analizarDocumento() {
 
         actualizarEstado(
             "Análisis terminado. " +
-            "Se completaron las cinco pruebas OCR."
+            "Se completaron las cuatro pasadas PSM 3."
         );
 
         if (estadoResultado) {
             estadoResultado.textContent =
-                "Comparación de cinco modos OCR terminada.";
+                "Comparación de cuatro versiones de imagen terminada.";
         }
 
         if (btnCopiar) {
@@ -1004,7 +1173,7 @@ async function analizarDocumento() {
 
 
 /* =========================================================
-   20. CARGAR IMAGEN
+   25. CARGAR IMAGEN
    ========================================================= */
 
 function cargarImagen(archivo) {
@@ -1026,7 +1195,10 @@ function cargarImagen(archivo) {
         !archivo.type.startsWith("image/") &&
         !formatosPermitidos.includes(extension)
     ) {
-        actualizarEstado("Formato de imagen no compatible.");
+        actualizarEstado(
+            "Formato de imagen no compatible."
+        );
+
         return;
     }
 
@@ -1047,6 +1219,7 @@ function cargarImagen(archivo) {
         imagen.onload = () => {
             try {
                 canvasOriginal = prepararImagen(imagen);
+
                 imagenCargada = true;
 
                 if (vistaPrevia) {
@@ -1120,7 +1293,7 @@ function cargarImagen(archivo) {
 
 
 /* =========================================================
-   21. COPIAR RESULTADO
+   26. COPIAR RESULTADO
    ========================================================= */
 
 async function copiarResultado() {
@@ -1150,7 +1323,7 @@ async function copiarResultado() {
 
 
 /* =========================================================
-   22. LIMPIAR LABORATORIO
+   27. LIMPIAR LABORATORIO
    ========================================================= */
 
 function limpiarLaboratorio() {
@@ -1196,21 +1369,38 @@ function limpiarLaboratorio() {
             "Esperando análisis";
     }
 
-    if (totalBloques) totalBloques.textContent = "0 bloques";
-    if (totalLineas) totalLineas.textContent = "0 líneas";
-    if (totalPalabras) totalPalabras.textContent = "0 lecturas";
-    if (totalCaracteres) totalCaracteres.textContent = "0 resultados";
+    if (totalBloques) {
+        totalBloques.textContent = "0 bloques";
+    }
 
-    if (confianza) confianza.textContent = "Confianza: --";
-    if (coincidencia) coincidencia.textContent = "Coincidencia: --";
+    if (totalLineas) {
+        totalLineas.textContent = "0 líneas";
+    }
+
+    if (totalPalabras) {
+        totalPalabras.textContent = "0 lecturas";
+    }
+
+    if (totalCaracteres) {
+        totalCaracteres.textContent = "0 resultados";
+    }
+
+    if (confianza) {
+        confianza.textContent = "Confianza: --";
+    }
+
+    if (coincidencia) {
+        coincidencia.textContent = "Coincidencia: --";
+    }
 
     actualizarProgreso(0);
+
     actualizarEstado("Esperando imagen...");
 }
 
 
 /* =========================================================
-   23. CONECTAR BOTONES
+   28. CONECTAR BOTONES
    ========================================================= */
 
 if (inputImagen) {
@@ -1248,7 +1438,7 @@ if (btnLimpiar) {
 
 
 /* =========================================================
-   24. ESTADO INICIAL
+   29. ESTADO INICIAL
    ========================================================= */
 
 if (btnAnalizar) {
