@@ -869,6 +869,37 @@ function reconstruirDocumento(parrafos) {
 
 
 /* =========================================================
+   CONSTRUIR INFORME COMPLETO DE COMPARACIONES
+   ========================================================= */
+
+function construirInformeComparaciones(parrafos) {
+    let informe = "";
+
+    informe += "========== TEXTO RECONOCIDO ==========\n\n";
+    informe += reconstruirDocumento(parrafos) || "(Sin texto reconocido)";
+    informe += "\n\n========== COMPARACIÓN DE LECTURAS ==========\n";
+
+    parrafos.forEach((parrafo, indiceParrafo) => {
+        informe += `\nPÁRRAFO ${indiceParrafo + 1}\n`;
+
+        parrafo.forEach((linea, indiceLinea) => {
+            informe += `\nLÍNEA ${indiceLinea + 1}\n`;
+
+            linea.lecturas.forEach(lectura => {
+                informe += `\n${lectura.variante} `;
+                informe += `(${lectura.confianza.toFixed(1)}%):\n`;
+                informe += lectura.texto || "(Sin lectura)";
+                informe += "\n";
+            });
+        });
+    });
+
+    return informe;
+}
+
+
+
+/* =========================================================
    23. MOSTRAR COMPARACIÓN DE VARIANTES
    ========================================================= */
 
