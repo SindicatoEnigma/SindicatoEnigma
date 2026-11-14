@@ -518,9 +518,15 @@ function detectarFilas(mascara, ancho, alto) {
    14. DELIMITAR LOS EXTREMOS DE CADA FILA
    ========================================================= */
 
+
+/* =========================================================
+   14. DELIMITAR LOS EXTREMOS DE CADA FILA
+   ========================================================= */
+
 function delimitarFila(fila, mascara, ancho, alto) {
     const proyeccion = new Int32Array(ancho);
 
+    // Contar píxeles de texto por columna.
     for (let y = fila.y0; y <= fila.y1; y++) {
         const inicio = y * ancho;
 
@@ -530,31 +536,35 @@ function delimitarFila(fila, mascara, ancho, alto) {
     }
 
     const altura = fila.y1 - fila.y0 + 1;
-    const umbral = Math.max(1, Math.round(altura * 0.04));
 
-    let x0 = 0;
-    let x1 = ancho - 1;
+    // Umbral menos agresivo para conservar trazos finos.
+    const umbral = Math.max(
+        1,
+        Math.round(altura * 0.015)
+    );
 
-    while (x0 < ancho && proyeccion[x0] < umbral) {
-        x0++;
+    let x0 = -1;
+    let x1 = -1;
+
+    for (let x = 0; x < ancho; x++) {
+        if (proyeccion[x] >= umbral) {
+            if (x0 === -1) x0 = x;
+            x1 = x;
+        }
     }
 
-    while (x1 > x0 && proyeccion[x1] < umbral) {
-        x1--;
-    }
-
-    if (x0 >= ancho || x1 <= x0) {
+    if (x0 === -1 || x1 === -1) {
         return null;
     }
 
     const margenY = Math.max(
-        2,
+        3,
         Math.round(altura * MARGEN_LINEA)
     );
 
     const margenX = Math.max(
-        3,
-        Math.round(altura * 0.25)
+        8,
+        Math.round(altura * 0.5)
     );
 
     return {
@@ -566,6 +576,7 @@ function delimitarFila(fila, mascara, ancho, alto) {
         altura
     };
 }
+
 
 
 /* =========================================================
