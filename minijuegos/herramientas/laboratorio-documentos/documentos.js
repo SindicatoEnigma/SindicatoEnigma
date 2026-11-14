@@ -2,7 +2,7 @@
 /* =========================================================
    SINDICATO ENIGMA
    LABORATORIO DE DOCUMENTOS OCR
-   ARQUITECTURA: BLOQUES -> RECORTES -> CUATRO OCR
+   ARQUITECTURA: BLOQUES -> RECORTES -> CINCO OCR
    ========================================================= */
 
 
@@ -42,30 +42,31 @@ const coincidencia = document.getElementById("coincidencia");
 
 const MAX_DIMENSION = 2600;
 
-// Margen alrededor de cada bloque.
 const MARGEN_BLOQUE = 0.025;
 
-// Separación máxima entre líneas que pueden pertenecer
-// al mismo bloque.
 const FACTOR_SEPARACION_BLOQUES = 2.5;
 
-// Los cuatro modos de segmentación de Tesseract.
+// Cinco configuraciones de reconocimiento OCR.
 const MODELOS_OCR = [
     {
         nombre: "PSM 3 - Segmentación automática",
         psm: "3"
     },
     {
-        nombre: "PSM 4 - Una columna de texto",
-        psm: "4"
-    },
-    {
         nombre: "PSM 6 - Bloque uniforme",
         psm: "6"
     },
     {
-        nombre: "PSM 11 - Texto disperso",
-        psm: "11"
+        nombre: "PSM 7 - Una línea de texto",
+        psm: "7"
+    },
+    {
+        nombre: "PSM 8 - Una palabra",
+        psm: "8"
+    },
+    {
+        nombre: "PSM 13 - Línea sin procesamiento adicional",
+        psm: "13"
     }
 ];
 
@@ -204,7 +205,7 @@ function convertirGrises(canvas) {
 
 
 /* =========================================================
-   6. CALCULAR UMBRAL DE OT SU
+   6. CALCULAR UMBRAL DE OTSU
    ========================================================= */
 
 function calcularOtsu(datos) {
@@ -267,7 +268,6 @@ function fondoEsClaro(datos, ancho, alto) {
     let suma = 0;
     let cantidad = 0;
 
-    // Examinar los bordes de la imagen.
     for (let x = 0; x < ancho; x += 5) {
         suma += datos[x * 4];
         cantidad++;
@@ -347,7 +347,6 @@ function crearMascara(canvasGris) {
 function detectarFilas(mascara, ancho, alto) {
     const proyeccion = new Int32Array(alto);
 
-    // Contar píxeles de texto en cada fila.
     for (let y = 0; y < alto; y++) {
         let cantidad = 0;
 
@@ -360,7 +359,13 @@ function detectarFilas(mascara, ancho, alto) {
         proyeccion[y] = cantidad;
     }
 
-    const maximo = Math.max(...proyeccion);
+    let maximo = 0;
+
+    for (let y = 0; y < alto; y++) {
+        if (proyeccion[y] > maximo) {
+            maximo = proyeccion[y];
+        }
+    }
 
     if (maximo === 0) return [];
 
@@ -395,7 +400,6 @@ function detectarFilas(mascara, ancho, alto) {
         });
     }
 
-    // Unir pequeños fragmentos verticales.
     const unidas = [];
 
     for (const fila of filas) {
@@ -489,7 +493,6 @@ function delimitarBloque(
     const inicioY = bloque.y0;
     const finalY = bloque.y1;
 
-    // Buscar todos los píxeles de texto dentro del bloque.
     for (let y = inicioY; y <= finalY; y++) {
         const inicio = y * ancho;
 
@@ -608,7 +611,6 @@ function recortarBloque(canvas, bloque) {
         alto
     );
 
-    // Ampliar para facilitar el reconocimiento.
     const escala = Math.min(
         3,
         Math.max(1.5, 1200 / ancho)
@@ -693,7 +695,6 @@ async function reconocerBloque(
     canvas,
     modelo
 ) {
-    // Cambiar el modo de segmentación.
     await worker.setParameters({
         tessedit_pageseg_mode: modelo.psm
     });
@@ -711,7 +712,7 @@ async function reconocerBloque(
 
 
 /* =========================================================
-   16. PROCESAR UN BLOQUE CON CUATRO MODOS OCR
+   16. PROCESAR UN BLOQUE CON CINCO MODOS OCR
    ========================================================= */
 
 async function procesarBloque(
@@ -810,8 +811,6 @@ function actualizarEstadisticas(
         ) / lecturasConTexto.length
         : 0;
 
-    const mejorTexto = lecturasConTexto.length > 0;
-
     if (totalBloques) {
         totalBloques.textContent =
             cantidadBloques + " bloques";
@@ -839,7 +838,9 @@ function actualizarEstadisticas(
 
     if (coincidencia) {
         coincidencia.textContent =
-            mejorTexto ? "Lecturas disponibles" : "Sin lecturas";
+            lecturasConTexto.length > 0
+                ? "Lecturas disponibles"
+                : "Sin lecturas";
     }
 
     if (resumen) {
@@ -969,12 +970,12 @@ async function analizarDocumento() {
 
         actualizarEstado(
             "Análisis terminado. " +
-            "Se completaron las cuatro pruebas OCR."
+            "Se completaron las cinco pruebas OCR."
         );
 
         if (estadoResultado) {
             estadoResultado.textContent =
-                "Comparación de cuatro modos OCR terminada.";
+                "Comparación de cinco modos OCR terminada.";
         }
 
         if (btnCopiar) {
