@@ -1226,60 +1226,14 @@ async function procesarBloque(
    25. CONSTRUIR INFORME
    ========================================================= */
 
+
 function construirInforme(bloquesProcesados) {
-    let informe = "";
-
-    informe += "SINDICATO ENIGMA\n";
-    informe += "LABORATORIO DE DOCUMENTOS OCR\n";
-
-    informe += "\n====================================\n";
-    informe += "MOTOR: TESSERACT OCR\n";
-    informe += "MODO: PSM 3\n";
-    informe += "CUATRO VERSIONES DE IMAGEN\n";
-    informe += "CONSENSO POR REPETICIÓN DE CARACTERES\n";
-    informe += "====================================\n";
-
-    bloquesProcesados.forEach((bloque, indice) => {
-        informe += "\n\n";
-        informe += "####################################\n";
-        informe += `BLOQUE ${indice + 1}\n`;
-        informe += "####################################\n";
-
-        // TEXTO COMBINADO.
-        informe += "\n====================================\n";
-        informe += "TEXTO DE CONSENSO\n";
-        informe += "====================================\n";
-
-        informe += bloque.consenso || "(Sin consenso)";
-
-        informe += "\n\n";
-
-        // LECTURAS INDIVIDUALES.
-        informe += "====================================\n";
-        informe += "LECTURAS INDIVIDUALES\n";
-        informe += "====================================\n";
-
-        bloque.resultados.forEach(lectura => {
-            informe += "\n------------------------------------\n";
-            informe += lectura.nombre + "\n";
-
-            informe += "Confianza: ";
-            informe += lectura.confianza.toFixed(1) + "%\n";
-
-            informe += "------------------------------------\n";
-
-            informe += lectura.texto || "(Sin lectura)";
-
-            informe += "\n";
-        });
-    });
-
-    informe += "\n\n====================================\n";
-    informe += "FIN DEL INFORME\n";
-    informe += "====================================";
-
-    return informe;
+    return bloquesProcesados
+        .map(bloque => bloque.consenso || "")
+        .filter(texto => texto.length > 0)
+        .join("\n\n");
 }
+
 
 
 /* =========================================================
