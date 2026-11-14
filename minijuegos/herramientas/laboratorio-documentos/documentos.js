@@ -3,12 +3,14 @@
    SINDICATO ENIGMA
    LABORATORIO DE DOCUMENTOS OCR
 
-   PROCESO:
+   PROCESO GENERAL:
    1. Detectar bloques de texto.
    2. Recortar cada bloque.
    3. Crear cuatro versiones de cada recorte.
    4. Ejecutar PSM 3 en las cuatro versiones.
-   5. Mostrar los cuatro resultados.
+   5. Alinear las cuatro lecturas.
+   6. Votar carácter por carácter.
+   7. Construir texto de consenso.
    ========================================================= */
 
 
@@ -638,7 +640,7 @@ function recortarBloque(canvas, bloque) {
 
 
 /* =========================================================
-   14. CREAR IMAGEN ORIGINAL
+   14. CREAR VERSIÓN ORIGINAL
    ========================================================= */
 
 function crearVersionOriginal(canvas) {
@@ -672,7 +674,6 @@ function crearVersionContraste(canvas) {
         histograma[datos[i]]++;
     }
 
-    // Buscar límites de intensidad evitando extremos aislados.
     const limiteInferior = total * 0.02;
     const limiteSuperior = total * 0.98;
 
@@ -811,23 +812,23 @@ function crearVersionInvertida(canvas) {
    18. GENERAR LAS CUATRO VERSIONES
    ========================================================= */
 
-function generarVariantes(canvasOriginal) {
+function generarVariantes(canvas) {
     return [
         {
             nombre: VARIANTES_IMAGEN[0].nombre,
-            canvas: crearVersionOriginal(canvasOriginal)
+            canvas: crearVersionOriginal(canvas)
         },
         {
             nombre: VARIANTES_IMAGEN[1].nombre,
-            canvas: crearVersionContraste(canvasOriginal)
+            canvas: crearVersionContraste(canvas)
         },
         {
             nombre: VARIANTES_IMAGEN[2].nombre,
-            canvas: crearVersionBinaria(canvasOriginal)
+            canvas: crearVersionBinaria(canvas)
         },
         {
             nombre: VARIANTES_IMAGEN[3].nombre,
-            canvas: crearVersionInvertida(canvasOriginal)
+            canvas: crearVersionInvertida(canvas)
         }
     ];
 }
@@ -893,7 +894,294 @@ async function reconocerImagen(worker, canvas) {
 
 
 /* =========================================================
-   21. PROCESAR UN BLOQUE CON LAS CUATRO VERSIONES
+   21. ALINEAR DOS TEXTOS
+   ========================================================= */
+
+function alinearTextos(textoA, textoB) {
+    const a = Array.from(textoA);
+    const b = Array.from(textoB);
+
+    const n = a.length;
+    const m = b.length;
+
+    const ancho = m + 1;
+
+    // Matriz de direcciones.
+    const direcciones = new Uint8Array(
+        (n + 1) * (m + 1)
+    );
+
+    let anterior = new Int32Array(m + 1);
+    let actual = new Int32Array(m + 1);
+
+    // Inicializar primera fila.
+    for (let j = 1; j <= m; j++) {
+        anterior[j] = -j;
+        direcciones[j] = 2;
+    }
+
+    // Inicializar primera columna.
+    for (let i = 1; i <= n; i++) {
+        direcciones[i * ancho] = 1;
+    }
+
+    // Alineación dinámica.
+    for (let i = 1; i <= n; i++) {
+        actual[0] = -i;
+
+        for (let j = 1; j <= m; j++) {
+            const indice = i * ancho + j;
+
+            const puntuacion =
+                a[i - 1] === b[j - 1] ? 2 : -1;
+
+            const diagonal =
+                anterior[j - 1] + puntuacion;
+
+            const arriba =
+                anterior[j] - 1;
+
+            const izquierda =
+                actual[j - 1] - 1;
+
+            let mejor = diagonal;
+            let direccion = 0;
+
+            if (arriba > mejor) {
+                mejor = arriba;
+                direccion = 1;
+            }
+
+            if (izquierda > mejor) {
+                mejor = izquierda;
+                direccion = 2;
+            }
+
+            actual[j] = mejor;
+            direcciones[indice] = direccion;
+        }
+
+        [anterior, actual] = [actual, anterior];
+    }
+
+    // Reconstruir la alineación.
+    const alineadoA = [];
+    const alineadoB = [];
+
+    let i = n;
+    let j = m;
+
+    while (i > 0 || j > 0) {
+        const direccion =
+            direcciones[i * ancho + j];
+
+        if (i > 0 && j > 0 && direccion === 0) {
+            alineadoA.push(a[i - 1]);
+            alineadoB.push(b[j - 1]);
+
+            i--;
+            j--;
+
+        } else if (
+            i > 0 &&
+            (j === 0 || direccion === 1)
+        ) {
+            alineadoA.push(a[i - 1]);
+            alineadoB.push(null);
+
+            i--;
+
+        } else {
+            alineadoA.push(null);
+            alineadoB.push(b[j - 1]);
+
+            j--;
+        }
+    }
+
+    return {
+        a: alineadoA.reverse(),
+        b: alineadoB.reverse()
+    };
+}
+
+
+/* =========================================================
+   22. ELEGIR CARÁCTER POR MAYOR REPETICIÓN
+   ========================================================= */
+
+function elegirCaracter(
+    columna,
+    considerarAusencia = true
+) {
+    const conteo = new Map();
+
+    let ausencias = 0;
+
+    for (const lectura of columna) {
+        if (!lectura) {
+            ausencias++;
+            continue;
+        }
+
+        const caracter = lectura.caracter;
+
+        if (!conteo.has(caracter)) {
+            conteo.set(caracter, {
+                cantidad: 0,
+                confianzaMaxima: -1
+            });
+        }
+
+        const registro = conteo.get(caracter);
+
+        registro.cantidad++;
+
+        registro.confianzaMaxima = Math.max(
+            registro.confianzaMaxima,
+            lectura.confianza
+        );
+    }
+
+    if (conteo.size === 0) {
+        return null;
+    }
+
+    let mejorCaracter = null;
+    let mejorCantidad = -1;
+    let mejorConfianza = -1;
+
+    for (const [caracter, registro] of conteo) {
+        if (
+            registro.cantidad > mejorCantidad ||
+            (
+                registro.cantidad === mejorCantidad &&
+                registro.confianzaMaxima > mejorConfianza
+            )
+        ) {
+            mejorCaracter = caracter;
+            mejorCantidad = registro.cantidad;
+            mejorConfianza = registro.confianzaMaxima;
+        }
+    }
+
+    // Si hay más ausencias que apariciones,
+    // se considera que el carácter debe omitirse.
+    if (
+        considerarAusencia &&
+        ausencias > mejorCantidad
+    ) {
+        return null;
+    }
+
+    // En empate entre ausencia y carácter,
+    // se conserva el carácter.
+    return mejorCaracter;
+}
+
+
+/* =========================================================
+   23. COMBINAR LAS CUATRO LECTURAS
+   ========================================================= */
+
+function combinarResultados(resultados) {
+    const lecturas = resultados.filter(
+        lectura => lectura.texto.length > 0
+    );
+
+    if (!lecturas.length) {
+        return "";
+    }
+
+    // La primera lectura sirve como referencia.
+    let columnas = Array.from(
+        lecturas[0].texto,
+        caracter => [{
+            caracter,
+            confianza: lecturas[0].confianza
+        }]
+    );
+
+    // Incorporar las demás lecturas.
+    for (let r = 1; r < lecturas.length; r++) {
+        const lectura = lecturas[r];
+
+        const referencia = columnas.map(columna => {
+            return elegirCaracter(columna, false);
+        }).join("");
+
+        const alineacion = alinearTextos(
+            referencia,
+            lectura.texto
+        );
+
+        const nuevasColumnas = [];
+
+        let indiceAnterior = 0;
+
+        for (let i = 0; i < alineacion.a.length; i++) {
+            const caracterA = alineacion.a[i];
+            const caracterB = alineacion.b[i];
+
+            // Carácter nuevo que no estaba en la referencia.
+            if (caracterA === null) {
+                const nuevaColumna = Array(r).fill(null);
+
+                nuevaColumna.push(
+                    caracterB === null
+                        ? null
+                        : {
+                            caracter: caracterB,
+                            confianza: lectura.confianza
+                        }
+                );
+
+                nuevasColumnas.push(nuevaColumna);
+
+            } else {
+                // Carácter alineado con una columna existente.
+                const columna = [
+                    ...columnas[indiceAnterior]
+                ];
+
+                columna.push(
+                    caracterB === null
+                        ? null
+                        : {
+                            caracter: caracterB,
+                            confianza: lectura.confianza
+                        }
+                );
+
+                nuevasColumnas.push(columna);
+
+                indiceAnterior++;
+            }
+        }
+
+        columnas = nuevasColumnas;
+    }
+
+    // Votar cada posición.
+    let textoFinal = "";
+
+    for (const columna of columnas) {
+        const caracter = elegirCaracter(
+            columna,
+            true
+        );
+
+        if (caracter !== null) {
+            textoFinal += caracter;
+        }
+    }
+
+    return textoFinal.trim();
+}
+
+
+/* =========================================================
+   24. PROCESAR UN BLOQUE CON LAS CUATRO VERSIONES
    ========================================================= */
 
 async function procesarBloque(
@@ -901,18 +1189,15 @@ async function procesarBloque(
     canvasOriginal,
     bloque
 ) {
-    // Recortar una sola vez el bloque.
     const recorte = recortarBloque(
         canvasOriginal,
         bloque
     );
 
-    // Crear las cuatro variantes desde ese recorte.
     const variantes = generarVariantes(recorte);
 
     const resultados = [];
 
-    // Ejecutar el mismo PSM 3 en cada variante.
     for (const variante of variantes) {
         const lectura = await reconocerImagen(
             worker,
@@ -926,15 +1211,19 @@ async function procesarBloque(
         });
     }
 
+    // Combinar las cuatro lecturas.
+    const consenso = combinarResultados(resultados);
+
     return {
         coordenadas: bloque,
-        resultados
+        resultados,
+        consenso
     };
 }
 
 
 /* =========================================================
-   22. CONSTRUIR INFORME
+   25. CONSTRUIR INFORME
    ========================================================= */
 
 function construirInforme(bloquesProcesados) {
@@ -947,6 +1236,7 @@ function construirInforme(bloquesProcesados) {
     informe += "MOTOR: TESSERACT OCR\n";
     informe += "MODO: PSM 3\n";
     informe += "CUATRO VERSIONES DE IMAGEN\n";
+    informe += "CONSENSO POR REPETICIÓN DE CARACTERES\n";
     informe += "====================================\n";
 
     bloquesProcesados.forEach((bloque, indice) => {
@@ -955,11 +1245,27 @@ function construirInforme(bloquesProcesados) {
         informe += `BLOQUE ${indice + 1}\n`;
         informe += "####################################\n";
 
+        // TEXTO COMBINADO.
+        informe += "\n====================================\n";
+        informe += "TEXTO DE CONSENSO\n";
+        informe += "====================================\n";
+
+        informe += bloque.consenso || "(Sin consenso)";
+
+        informe += "\n\n";
+
+        // LECTURAS INDIVIDUALES.
+        informe += "====================================\n";
+        informe += "LECTURAS INDIVIDUALES\n";
+        informe += "====================================\n";
+
         bloque.resultados.forEach(lectura => {
             informe += "\n------------------------------------\n";
             informe += lectura.nombre + "\n";
+
             informe += "Confianza: ";
             informe += lectura.confianza.toFixed(1) + "%\n";
+
             informe += "------------------------------------\n";
 
             informe += lectura.texto || "(Sin lectura)";
@@ -977,7 +1283,7 @@ function construirInforme(bloquesProcesados) {
 
 
 /* =========================================================
-   23. ACTUALIZAR ESTADÍSTICAS
+   26. ACTUALIZAR ESTADÍSTICAS
    ========================================================= */
 
 function actualizarEstadisticas(
@@ -1045,7 +1351,7 @@ function actualizarEstadisticas(
 
 
 /* =========================================================
-   24. PROCESO PRINCIPAL
+   27. PROCESO PRINCIPAL
    ========================================================= */
 
 async function analizarDocumento() {
@@ -1105,7 +1411,7 @@ async function analizarDocumento() {
         // PASO 3: PROCESAR CADA BLOQUE.
         for (let i = 0; i < bloques.length; i++) {
             actualizarEstado(
-                `Preparando bloque ${i + 1} de ${bloques.length}...`
+                `Procesando bloque ${i + 1} de ${bloques.length}...`
             );
 
             const procesado = await procesarBloque(
@@ -1123,7 +1429,7 @@ async function analizarDocumento() {
             );
         }
 
-        // PASO 4: MOSTRAR RESULTADOS.
+        // PASO 4: CONSTRUIR INFORME.
         const informe = construirInforme(procesados);
 
         if (resultado) {
@@ -1139,12 +1445,12 @@ async function analizarDocumento() {
 
         actualizarEstado(
             "Análisis terminado. " +
-            "Se completaron las cuatro pasadas PSM 3."
+            "Se completaron las cuatro pasadas PSM 3 y el consenso."
         );
 
         if (estadoResultado) {
             estadoResultado.textContent =
-                "Comparación de cuatro versiones de imagen terminada.";
+                "Cuatro lecturas procesadas y texto de consenso generado.";
         }
 
         if (btnCopiar) {
@@ -1173,7 +1479,7 @@ async function analizarDocumento() {
 
 
 /* =========================================================
-   25. CARGAR IMAGEN
+   28. CARGAR IMAGEN
    ========================================================= */
 
 function cargarImagen(archivo) {
@@ -1293,7 +1599,7 @@ function cargarImagen(archivo) {
 
 
 /* =========================================================
-   26. COPIAR RESULTADO
+   29. COPIAR RESULTADO
    ========================================================= */
 
 async function copiarResultado() {
@@ -1323,7 +1629,7 @@ async function copiarResultado() {
 
 
 /* =========================================================
-   27. LIMPIAR LABORATORIO
+   30. LIMPIAR LABORATORIO
    ========================================================= */
 
 function limpiarLaboratorio() {
@@ -1400,7 +1706,7 @@ function limpiarLaboratorio() {
 
 
 /* =========================================================
-   28. CONECTAR BOTONES
+   31. CONECTAR BOTONES
    ========================================================= */
 
 if (inputImagen) {
@@ -1438,7 +1744,7 @@ if (btnLimpiar) {
 
 
 /* =========================================================
-   29. ESTADO INICIAL
+   32. ESTADO INICIAL
    ========================================================= */
 
 if (btnAnalizar) {
