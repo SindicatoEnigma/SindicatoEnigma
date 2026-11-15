@@ -190,10 +190,11 @@ function mostrarSeccionPortal(nombre) {
              mostrarNoticiasPortal();
              break;
 
+        
         case "herramientas":
-            UI.listaHerramientas.textContent =
-                "Esta sección estará disponible próximamente.";
-            break;
+             mostrarHerramientasPortal();
+             break;
+
 
         case "nosotros":
             UI.contenidoNosotros.textContent =
