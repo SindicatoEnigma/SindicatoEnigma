@@ -1,4 +1,12 @@
 
+
 {
-    "noticias": []
+    "noticias": [
+        {
+            "id": 3,
+            "titulo": "Expediente 003 - El problema de Monty Hall",
+            "fecha": "14/11/2026",
+            "archivo": "Expediente_003_Monty_Hall.pdf"
+        }
+    ]
 }
