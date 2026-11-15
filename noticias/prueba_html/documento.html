@@ -1,0 +1,779 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Permite adaptar la página a teléfonos -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Laboratorio HTML - Sindicato Enigma</title>
+
+    <style>
+
+        /* =========================================
+           1. VARIABLES GENERALES
+           Aquí podemos cambiar los colores de toda
+           la página desde un solo lugar.
+        ========================================= */
+
+        :root {
+            --negro: #111111;
+            --gris: #333333;
+            --marfil: #eee9dc;
+            --rojo: #9b3030;
+            --dorado: #c5a66b;
+        }
+
+
+        /* =========================================
+           2. CONFIGURACIÓN GENERAL
+        ========================================= */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--marfil);
+            line-height: 1.8;
+            background: var(--negro);
+        }
+
+
+        /* =========================================
+           3. FONDO FIJO DE PANTALLA COMPLETA
+
+           ::before crea una capa detrás del contenido.
+           position: fixed hace que no se mueva al bajar.
+           background-size: cover cubre toda la pantalla.
+        ========================================= */
+
+        body::before {
+            content: "";
+
+            position: fixed;
+            inset: 0;
+
+            background-image: url("fondo.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+
+            z-index: -2;
+        }
+
+        /* Capa oscura para mejorar la lectura */
+
+        body::after {
+            content: "";
+
+            position: fixed;
+            inset: 0;
+
+            background: rgba(0, 0, 0, 0.78);
+
+            z-index: -1;
+        }
+
+
+        /* =========================================
+           4. CONTENEDOR PRINCIPAL
+        ========================================= */
+
+        .pagina {
+            width: min(92%, 1000px);
+            margin: auto;
+            padding: 25px 0;
+        }
+
+
+        /* =========================================
+           5. ENCABEZADO
+        ========================================= */
+
+        .encabezado {
+            text-align: center;
+            padding: 35px 15px;
+            border-bottom: 2px solid var(--dorado);
+            margin-bottom: 35px;
+        }
+
+        .encabezado h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            letter-spacing: 5px;
+            margin: 0;
+            color: var(--marfil);
+        }
+
+        .subtitulo {
+            color: var(--dorado);
+            font-size: 0.95rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .numero-expediente {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 6px 16px;
+            border: 1px solid var(--rojo);
+            color: #e8a0a0;
+            letter-spacing: 2px;
+        }
+
+
+        /* =========================================
+           6. TAMAÑOS Y COLORES DE TEXTO
+        ========================================= */
+
+        h2 {
+            color: var(--dorado);
+            font-size: 2rem;
+            border-bottom: 1px solid rgba(197, 166, 107, 0.5);
+            padding-bottom: 8px;
+            margin-top: 45px;
+        }
+
+        h3 {
+            color: #d6b8a0;
+            font-size: 1.4rem;
+        }
+
+        .texto-grande {
+            font-size: 1.35rem;
+        }
+
+        .texto-pequeno {
+            font-size: 0.8rem;
+            color: #bdb5a8;
+        }
+
+        .texto-rojo {
+            color: #e36b6b;
+        }
+
+        .texto-dorado {
+            color: var(--dorado);
+        }
+
+        .texto-azul {
+            color: #86b9e5;
+        }
+
+        .centrado {
+            text-align: center;
+        }
+
+        .derecha {
+            text-align: right;
+        }
+
+        .izquierda {
+            text-align: left;
+        }
+
+        /* Justificar distribuye el texto
+           para alinear ambos márgenes. */
+
+        .justificado {
+            text-align: justify;
+            hyphens: auto;
+        }
+
+
+        /* =========================================
+           7. PÁRRAFOS Y ESPACIADO
+        ========================================= */
+
+        p {
+            margin: 0 0 20px;
+        }
+
+        .letra-inicial::first-letter {
+            float: left;
+            font-size: 4rem;
+            line-height: 0.85;
+            padding: 5px 10px 0 0;
+            color: var(--rojo);
+        }
+
+
+        /* =========================================
+           8. IMÁGENES
+        ========================================= */
+
+        .imagen {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid var(--dorado);
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Imagen centrada */
+
+        .imagen-centro {
+            display: block;
+            width: min(100%, 600px);
+            margin: 25px auto;
+        }
+
+        /* Imagen a la izquierda con texto alrededor */
+
+        .imagen-izquierda {
+            float: left;
+            width: 42%;
+            margin: 5px 22px 15px 0;
+        }
+
+        /* Imagen a la derecha con texto alrededor */
+
+        .imagen-derecha {
+            float: right;
+            width: 42%;
+            margin: 5px 0 15px 22px;
+        }
+
+        /* Evita que elementos posteriores
+           queden atrapados junto a imágenes flotantes. */
+
+        .limpiar {
+            clear: both;
+        }
+
+        figure {
+            margin: 30px auto;
+        }
+
+        figcaption {
+            text-align: center;
+            color: #c9bca9;
+            font-size: 0.85rem;
+            font-style: italic;
+            margin-top: 8px;
+        }
+
+
+        /* =========================================
+           9. ENLACES
+        ========================================= */
+
+        a {
+            color: #e6bd75;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        .boton-enlace {
+            display: inline-block;
+            padding: 10px 18px;
+            background: var(--rojo);
+            color: white;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+
+        /* =========================================
+           10. CITAS Y RECUADROS
+        ========================================= */
+
+        blockquote {
+            margin: 30px 0;
+            padding: 20px 25px;
+            border-left: 5px solid var(--rojo);
+            background: rgba(30, 30, 30, 0.85);
+            font-style: italic;
+            color: #ddd0bd;
+        }
+
+        .recuadro {
+            padding: 20px;
+            margin: 25px 0;
+            background: rgba(20, 20, 20, 0.85);
+            border: 1px solid #666;
+            border-radius: 5px;
+        }
+
+        .alerta {
+            border-left: 5px solid var(--rojo);
+        }
+
+
+        /* =========================================
+           11. LISTAS
+        ========================================= */
+
+        ul, ol {
+            padding-left: 30px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+
+        /* =========================================
+           12. TABLAS
+        ========================================= */
+
+        .tabla-contenedor {
+            overflow-x: auto;
+            margin: 25px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(20, 20, 20, 0.9);
+        }
+
+        th, td {
+            border: 1px solid #666;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #642323;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+
+        /* =========================================
+           13. SEPARADORES
+        ========================================= */
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--dorado);
+            margin: 40px 0;
+        }
+
+
+        /* =========================================
+           14. PIE DE PÁGINA
+        ========================================= */
+
+        .pie-pagina {
+            margin-top: 60px;
+            padding: 25px 10px;
+            border-top: 2px solid var(--dorado);
+            text-align: center;
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+
+
+        /* =========================================
+           15. ADAPTACIÓN PARA TELÉFONOS
+        ========================================= */
+
+        @media (max-width: 600px) {
+
+            .pagina {
+                width: 94%;
+            }
+
+            .encabezado h1 {
+                letter-spacing: 2px;
+            }
+
+            .imagen-izquierda,
+            .imagen-derecha {
+                float: none;
+                display: block;
+                width: 100%;
+                max-width: 450px;
+                margin: 20px auto;
+            }
+
+            .texto-grande {
+                font-size: 1.15rem;
+            }
+
+            h2 {
+                font-size: 1.6rem;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+<div class="pagina">
+
+
+    <!-- =====================================
+         ENCABEZADO DE LA PUBLICACIÓN
+    ====================================== -->
+
+    <header class="encabezado">
+
+        <p class="subtitulo">
+            Archivo de investigaciones extraordinarias
+        </p>
+
+        <h1>SINDICATO ENIGMA</h1>
+
+        <div class="numero-expediente">
+            EXPEDIENTE DE PRUEBA Nº 001
+        </div>
+
+    </header>
+
+
+    <!-- =====================================
+         CONTENIDO PRINCIPAL
+    ====================================== -->
+
+    <main>
+
+        <article>
+
+            <h2>El misterio de las tres puertas</h2>
+
+            <p class="texto-pequeno">
+                Investigación · Matemáticas · Probabilidad
+            </p>
+
+            <!-- Párrafo con letra inicial decorativa,
+                 texto justificado y negritas. -->
+
+            <p class="justificado letra-inicial">
+                Imagina que participas en un concurso.
+                Frente a ti aparecen tres puertas idénticas.
+                Detrás de una se encuentra un premio extraordinario,
+                mientras que las otras dos esconden objetos sin valor.
+                Tu misión consiste en elegir correctamente.
+            </p>
+
+            <p class="justificado">
+                El presentador conoce lo que hay detrás de cada puerta.
+                Después de tu elección, abre una de las otras dos
+                y revela que está vacía.
+                Entonces te ofrece una oportunidad:
+                <strong>¿quieres conservar tu elección o cambiarla?</strong>
+            </p>
+
+
+            <!-- Imagen flotante a la derecha.
+                 El texto rodeará la imagen. -->
+
+            <figure class="imagen-derecha">
+
+                <img
+                    src="prueba.png"
+                    alt="Ilustración del expediente de las tres puertas"
+                    class="imagen"
+                >
+
+                <figcaption>
+                    Figura 1. Ilustración del expediente.
+                </figcaption>
+
+            </figure>
+
+            <h3>Una decisión aparentemente sencilla</h3>
+
+            <p class="justificado">
+                Muchas personas consideran que las probabilidades
+                son ahora iguales: una posibilidad entre dos.
+                Sin embargo, la información revelada por el
+                presentador cambia el análisis del problema.
+                La respuesta depende de las reglas del concurso.
+            </p>
+
+            <p class="justificado">
+                Observa cómo la posición de una imagen puede modificar
+                la lectura. En este caso, el texto continúa alrededor
+                de la ilustración y recupera el ancho completo
+                cuando termina el elemento flotante.
+            </p>
+
+            <!-- Limpia el espacio de la imagen flotante -->
+
+            <div class="limpiar"></div>
+
+
+            <!-- =================================
+                 EJEMPLOS DE FORMATO DE TEXTO
+            ================================== -->
+
+            <h2>El lenguaje de una investigación</h2>
+
+            <p>
+                Podemos utilizar distintos formatos para destacar
+                información:
+            </p>
+
+            <p>
+                <strong>Negrita:</strong> resalta una conclusión
+                o concepto importante.
+            </p>
+
+            <p>
+                <em>Cursiva:</em> sirve para enfatizar una expresión
+                o introducir un término.
+            </p>
+
+            <p>
+                <u>Subrayado:</u> permite destacar una frase.
+            </p>
+
+            <p>
+                <del>Texto eliminado:</del>
+                <mark>Texto resaltado.</mark>
+            </p>
+
+            <p class="texto-grande texto-dorado">
+                Este es un texto de mayor tamaño y color dorado.
+            </p>
+
+            <p class="texto-rojo">
+                Este mensaje utiliza un color rojo.
+            </p>
+
+            <p class="texto-azul centrado">
+                Este texto está centrado y utiliza color azul.
+            </p>
+
+            <p class="derecha">
+                Este párrafo está alineado a la derecha.
+            </p>
+
+
+            <!-- =================================
+                 IMAGEN CENTRADA
+            ================================== -->
+
+            <h2>Observación visual</h2>
+
+            <figure>
+
+                <img
+                    src="prueba.png"
+                    alt="Imagen central del expediente"
+                    class="imagen imagen-centro"
+                >
+
+                <figcaption>
+                    Figura 2. Imagen centrada y adaptada al ancho disponible.
+                </figcaption>
+
+            </figure>
+
+
+            <!-- =================================
+                 CITAS
+            ================================== -->
+
+            <blockquote>
+                «La primera impresión puede ser convincente,
+                pero una investigación comienza cuando ponemos
+                a prueba nuestras suposiciones».
+            </blockquote>
+
+
+            <!-- =================================
+                 RECUADROS INFORMATIVOS
+            ================================== -->
+
+            <div class="recuadro">
+
+                <h3>Nota del investigador</h3>
+
+                <p class="justificado">
+                    Un buen análisis debe distinguir entre los datos
+                    observados, las hipótesis y las conclusiones.
+                    No debemos confundir una posibilidad con una certeza.
+                </p>
+
+            </div>
+
+            <div class="recuadro alerta">
+
+                <h3 class="texto-rojo">Advertencia</h3>
+
+                <p>
+                    No todas las reglas de un problema matemático
+                    pueden darse por supuestas.
+                </p>
+
+            </div>
+
+
+            <!-- =================================
+                 ENLACES INTERNOS Y EXTERNOS
+            ================================== -->
+
+            <h2>Fuentes para continuar investigando</h2>
+
+            <p class="justificado">
+                Puedes consultar una explicación del famoso
+                problema de Monty Hall en la siguiente dirección:
+            </p>
+
+            <!-- Enlace dentro del texto.
+                 Al pulsarlo abre la dirección indicada. -->
+
+            <p>
+                Consulta el
+                <a
+                    href="https://es.wikipedia.org/wiki/Problema_de_Monty_Hall"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    problema de Monty Hall en Wikipedia
+                </a>
+                para conocer más sobre este desafío.
+            </p>
+
+            <!-- Enlace con apariencia de botón -->
+
+            <a
+                class="boton-enlace"
+                href="https://es.wikipedia.org/wiki/Problema_de_Monty_Hall"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Consultar referencia externa
+            </a>
+
+            <!-- Enlace interno a una sección de esta misma página -->
+
+            <p>
+                <a href="#conclusion">
+                    Ir directamente a la conclusión
+                </a>
+            </p>
+
+
+            <!-- =================================
+                 LISTAS
+            ================================== -->
+
+            <h2>Elementos que debemos investigar</h2>
+
+            <ul>
+                <li>Las reglas del concurso.</li>
+                <li>La información que conoce el presentador.</li>
+                <li>Las decisiones disponibles.</li>
+            </ul>
+
+            <h3>Procedimiento de análisis</h3>
+
+            <ol>
+                <li>Identificar las posibilidades iniciales.</li>
+                <li>Examinar la información revelada.</li>
+                <li>Calcular las probabilidades finales.</li>
+            </ol>
+
+
+            <!-- =================================
+                 TABLA DE INFORMACIÓN
+            ================================== -->
+
+            <h2>Ejemplo de tabla</h2>
+
+            <div class="tabla-contenedor">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Decisión</th>
+                            <th>Probabilidad inicial</th>
+                            <th>Observación</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td>Conservar</td>
+                            <td>1/3</td>
+                            <td>Mantiene la elección inicial.</td>
+                        </tr>
+
+                        <tr>
+                            <td>Cambiar</td>
+                            <td>2/3</td>
+                            <td>Aprovecha la información revelada.</td>
+                        </tr>
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- =================================
+                 CONCLUSIÓN
+            ================================== -->
+
+            <h2 id="conclusion">Conclusión del expediente</h2>
+
+            <p class="justificado">
+                Este documento es una demostración de las posibilidades
+                editoriales de HTML. Podemos combinar texto, imágenes,
+                tablas, enlaces, citas y elementos gráficos dentro de
+                una misma publicación.
+            </p>
+
+            <p class="texto-grande centrado texto-dorado">
+                La investigación continúa...
+            </p>
+
+
+        </article>
+
+    </main>
+
+
+    <!-- =====================================
+         PIE DE PÁGINA
+    ====================================== -->
+
+    <footer class="pie-pagina">
+
+        <p>
+            SINDICATO ENIGMA
+        </p>
+
+        <p>
+            Archivo de investigaciones extraordinarias
+        </p>
+
+        <p>
+            Documento de demostración HTML
+        </p>
+
+        <p class="texto-pequeno">
+            © Sindicato Enigma · Todos los derechos reservados
+        </p>
+
+    </footer>
+
+
+</div>
+
+</body>
+</html>
