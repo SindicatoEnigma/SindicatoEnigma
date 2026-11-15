@@ -104,10 +104,7 @@ function abrirNoticia(noticia) {
 
     titulo.textContent = noticia.titulo || "Documento sin título";
 
-    const direccionPDF = new URL(rutaPDF, window.location.href).href;
-
-pdf.src = "https://docs.google.com/gview?embedded=1&url=" +
-    encodeURIComponent(direccionPDF);
+    pdf.src = rutaPDF;
     
     enlace.href = rutaPDF;
 
