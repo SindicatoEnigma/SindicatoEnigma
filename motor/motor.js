@@ -187,9 +187,8 @@ function mostrarSeccionPortal(nombre) {
             break;
 
         case "noticias":
-            UI.listaNoticias.textContent =
-                "Aquí aparecerán las noticias del Sindicato Enigma.";
-            break;
+             mostrarNoticiasPortal();
+             break;
 
         case "herramientas":
             UI.listaHerramientas.textContent =
