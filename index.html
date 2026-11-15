@@ -173,28 +173,52 @@
                     </div>
 
                     <!-- MINIJUEGOS -->
-                    <div id="seccion-minijuegos"
-                         class="seccion-portal oculto">
+                    <!-- MINIJUEGOS -->
+<div id="seccion-minijuegos" class="seccion-portal oculto">
 
-                        <h2>Minijuegos</h2>
+    <!-- Catálogo de tipos de juegos -->
+    <div id="vista-listado-minijuegos">
+        <h2>Minijuegos</h2>
+        <div id="lista-minijuegos"></div>
+    </div>
 
-                        <div id="lista-minijuegos">
-                            <!-- Aquí se cargarán los minijuegos -->
-                        </div>
+    <!-- Catálogo de partidas -->
+    <div id="vista-partidas-minijuegos" class="oculto">
 
-                    </div>
+        <button id="btn-volver-minijuegos" type="button">
+            ← Volver a minijuegos
+        </button>
 
-                    <!-- HERRAMIENTAS -->
-                    <div id="seccion-herramientas"
-                         class="seccion-portal oculto">
+        <h2 id="titulo-partidas-minijuegos"></h2>
 
-                        <h2>Herramientas</h2>
+        <div id="lista-partidas-minijuegos"></div>
 
-                        <div id="lista-herramientas">
-                            <!-- Aquí se cargarán las herramientas -->
-                        </div>
+    </div>
 
-                    </div>
+    <!-- Visor de minijuegos -->
+    <div id="visor-minijuego" class="oculto">
+
+        <header id="encabezado-minijuego">
+            <span id="titulo-minijuego">SINDICATO ENIGMA</span>
+        </header>
+
+        <iframe
+            id="marco-minijuego"
+            title="Minijuego de Sindicato Enigma"
+            src="about:blank">
+        </iframe>
+
+        <footer id="pie-minijuego">
+            <button id="btn-volver-partidas" type="button">
+                ← Regresar
+            </button>
+        </footer>
+
+    </div>
+
+</div>
+
+                    
 
                     <!-- NOSOTROS -->
                     <div id="seccion-nosotros"
@@ -433,6 +457,8 @@
 <script src="motor/audio.js"></script>
 <script src="motor/noticias.js"></script>
 <script src="motor/herramientas.js"></script>
+    
+<script src="motor/minijuegos.js"></script>
 <script src="motor/motor.js"></script>
 
 </body>
