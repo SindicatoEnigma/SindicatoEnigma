@@ -82,6 +82,11 @@ window.mostrarNoticiasPortal = async function () {
 // ABRIR UNA NOTICIA
 // =================================
 
+
+// =================================
+// ABRIR UNA NOTICIA
+// =================================
+
 function abrirNoticia(noticia) {
 
     const vistaListado = document.getElementById("vista-listado-noticias");
@@ -90,27 +95,37 @@ function abrirNoticia(noticia) {
     const pdf = document.getElementById("pdf-noticia");
     const enlace = document.getElementById("enlace-pdf-noticia");
 
-    // Aceptar únicamente nombres de archivo PDF simples
+    // Obtener la ruta del documento HTML
+    const rutaArchivo = noticia.archivo;
+
+    // Validar que sea una ruta HTML segura
     if (
-        typeof noticia.archivo !== "string" ||
-        !/^[a-zA-Z0-9_.-]+\.pdf$/i.test(noticia.archivo) ||
-        noticia.archivo.includes("..")
+        typeof rutaArchivo !== "string" ||
+        !/^[a-zA-Z0-9_./-]+\.html$/i.test(rutaArchivo) ||
+        rutaArchivo.includes("..") ||
+        rutaArchivo.startsWith("/")
     ) {
-        alert("El nombre del archivo PDF no es válido.");
+        alert("La ruta del documento HTML no es válida.");
         return;
     }
 
-    const rutaPDF = "noticias/" + encodeURIComponent(noticia.archivo);
+    // Construir la dirección conservando las subcarpetas
+    const rutaHTML = "noticias/" +
+        rutaArchivo.split("/").map(encodeURIComponent).join("/");
 
+    // Actualizar título y documento
     titulo.textContent = noticia.titulo || "Documento sin título";
 
-    pdf.src = rutaPDF;
-    
-    enlace.href = rutaPDF;
+    pdf.src = rutaHTML;
 
+    enlace.href = rutaHTML;
+    enlace.textContent = "Abrir documento en otra pestaña";
+
+    // Mostrar el documento
     vistaListado.classList.add("oculto");
     visor.classList.remove("oculto");
 }
+
 
 
 // =================================
