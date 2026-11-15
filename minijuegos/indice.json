@@ -9,7 +9,7 @@
                 {
                     "id": "crucigrama-002",
                     "titulo": "Crucigrama 002",
-                    "archivo": "minijuegos/crucigrama/pruebas.html",
+                    "archivo": "minijuegos/crucigrama/prueba.html",
                     "datos": "datos/Crucigrama002.txt"
                 }
             ]
