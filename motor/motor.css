@@ -1039,3 +1039,149 @@ button:hover {
     padding: 8px;
     box-sizing: border-box;
 }
+
+
+/* ==========================================
+   SISTEMA DE MINIJUEGOS
+   SINDICATO ENIGMA
+   ========================================== */
+
+/* Catálogos */
+
+#vista-listado-minijuegos,
+#vista-partidas-minijuegos {
+    width: 100%;
+}
+
+#lista-minijuegos,
+#lista-partidas-minijuegos {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Elementos del catálogo */
+
+.minijuego-item,
+.partida-minijuego-item {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    text-align: left;
+    background: #292929;
+    border: 1px solid #555;
+    border-left: 4px solid var(--rojo);
+    border-radius: 3px;
+    transition: background 200ms ease;
+}
+
+.minijuego-item:hover,
+.partida-minijuego-item:hover {
+    background: #383838;
+    border-color: var(--rojo-claro);
+}
+
+.minijuego-item h3,
+.partida-minijuego-item h3 {
+    margin: 0 0 8px;
+    color: var(--marfil);
+    font-size: 1.1rem;
+}
+
+.minijuego-item p,
+.partida-minijuego-item p {
+    margin: 0;
+    color: #aaa;
+    font-size: 0.85rem;
+}
+
+/* Botones para regresar entre catálogos */
+
+#btn-volver-minijuegos {
+    margin-bottom: 18px;
+    background: var(--rojo);
+    border-color: var(--rojo-claro);
+}
+
+#btn-volver-minijuegos:hover {
+    background: var(--rojo-claro);
+}
+
+/* ==========================================
+   VISOR DE MINIJUEGOS
+   ========================================== */
+
+#visor-minijuego {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 8px;
+
+    padding: 8px;
+    box-sizing: border-box;
+    background: #171717;
+}
+
+#visor-minijuego.oculto {
+    display: none !important;
+}
+
+#encabezado-minijuego {
+    padding: 7px 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: var(--marfil);
+    border-bottom: 1px solid #555;
+}
+
+#marco-minijuego {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border: 1px solid #555;
+    background: #fff;
+}
+
+#pie-minijuego {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 5px;
+}
+
+#btn-volver-partidas {
+    padding: 7px 16px;
+    font-size: 0.8rem;
+    background: #292929;
+    border: 1px solid #666;
+    border-radius: 3px;
+    color: var(--marfil);
+}
+
+#btn-volver-partidas:hover {
+    background: var(--rojo);
+    border-color: var(--rojo-claro);
+}
+
+/* Adaptación móvil */
+
+@media (max-width: 600px) {
+
+    .minijuego-item,
+    .partida-minijuego-item {
+        padding: 14px;
+    }
+
+    #encabezado-minijuego {
+        font-size: 0.72rem;
+    }
+}
