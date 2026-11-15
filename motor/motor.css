@@ -139,7 +139,7 @@ button:hover {
     background: #242424;
     border: 1px solid #555;
     border-radius: 3px;
-    font-size: clamp(0.85rem, 1.8vw, 1.1rem);
+    font-size: clamp(0.85rem, 1.7vw, 1.1rem);
     letter-spacing: 1px;
     transition:
         background 200ms ease,
