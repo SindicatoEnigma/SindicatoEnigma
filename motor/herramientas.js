@@ -48,10 +48,15 @@ function inicializarHerramientas() {
     }
 
     // Conectar el botón de regreso
+    if (!contenedorHerramientas.botonRegresar.dataset.conectado) {
+
     contenedorHerramientas.botonRegresar.addEventListener(
         "click",
         regresarCatalogoHerramientas
     );
+
+    contenedorHerramientas.botonRegresar.dataset.conectado = "true";
+}
 
     return true;
 }
