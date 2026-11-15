@@ -781,3 +781,108 @@ button:hover {
     }
 
 }
+
+
+
+/* ================================= */
+/* SISTEMA DE NOTICIAS Y DOCUMENTOS  */
+/* ================================= */
+
+#vista-listado-noticias {
+    width: 100%;
+}
+
+#lista-noticias {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Tarjetas individuales de noticias */
+
+.noticia-item {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    text-align: left;
+    background: #292929;
+    border: 1px solid #555;
+    border-left: 4px solid var(--rojo);
+    border-radius: 3px;
+    transition: background 200ms ease;
+}
+
+.noticia-item:hover {
+    background: #383838;
+    border-color: var(--rojo-claro);
+}
+
+.noticia-item h3 {
+    margin: 0 0 8px;
+    color: var(--marfil);
+    font-size: 1.1rem;
+}
+
+.noticia-item p {
+    margin: 0;
+    color: #aaa;
+    font-size: 0.85rem;
+}
+
+/* Visor de PDF */
+
+#visor-noticia {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#visor-noticia.oculto {
+    display: none !important;
+}
+
+#btn-volver-noticias {
+    align-self: flex-start;
+    background: var(--rojo);
+    border-color: var(--rojo-claro);
+}
+
+#titulo-noticia-abierta {
+    margin: 4px 0;
+    font-size: 1.1rem;
+    overflow-wrap: anywhere;
+}
+
+#pdf-noticia {
+    display: block;
+    width: 100%;
+    height: 75dvh;
+    min-height: 420px;
+    border: 1px solid #555;
+    background: #fff;
+}
+
+#enlace-pdf-noticia {
+    color: #d7cfbf;
+    text-decoration: underline;
+}
+
+/* Adaptación del visor para móviles */
+
+@media (max-width: 600px) {
+
+    .noticia-item {
+        padding: 14px;
+    }
+
+    #pdf-noticia {
+        height: 65dvh;
+        min-height: 350px;
+    }
+
+    #titulo-noticia-abierta {
+        font-size: 1rem;
+    }
+}
