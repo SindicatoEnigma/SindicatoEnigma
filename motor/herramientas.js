@@ -86,7 +86,7 @@ window.mostrarHerramientasPortal = async function () {
 
     try {
 
-        const respuesta = await fetch("herramientas/indice.json", {
+        const respuesta = await fetch("minijuegos/herramientas/indice.json", {
             cache: "no-store"
         });
 
