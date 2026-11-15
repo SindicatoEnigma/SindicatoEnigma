@@ -136,12 +136,12 @@ button:hover {
     min-height: 52px;
     padding: 12px 3px;
     text-align: center;
+    white-space: nowrap;
     background: #242424;
     border: 1px solid #555;
     border-radius: 3px;
-    font-size: clamp(0.85rem, 1.7vw, 1.1rem);
-    letter-spacing: 0.5px;
-    overflow-wrap: anywhere;
+    font-size: clamp(0.70rem, 1.5vw, 1.1rem);
+    letter-spacing: 0.3px;
     box-sizing: border-box;
     transition:
         background 200ms ease,
