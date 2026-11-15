@@ -889,3 +889,133 @@ button:hover {
         font-size: 1rem;
     }
 }
+
+
+/* ==========================================
+   CATÁLOGO DE HERRAMIENTAS
+   ========================================== */
+
+#vista-listado-herramientas {
+    width: 100%;
+}
+
+#lista-herramientas {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.herramienta-item {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    text-align: left;
+    background: #292929;
+    border: 1px solid #555;
+    border-left: 4px solid var(--rojo);
+    border-radius: 3px;
+    transition: background 200ms ease;
+}
+
+.herramienta-item:hover {
+    background: #383838;
+    border-color: var(--rojo-claro);
+}
+
+.herramienta-item h3 {
+    margin: 0 0 8px;
+    color: var(--marfil);
+    font-size: 1.1rem;
+}
+
+.herramienta-item p {
+    margin: 0;
+    color: #aaa;
+    font-size: 0.85rem;
+}
+
+
+/* ==========================================
+   VISOR DE HERRAMIENTAS
+   ========================================== */
+
+#visor-herramienta {
+    width: 100%;
+    height: 78dvh;
+    min-height: 420px;
+    min-width: 0;
+
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 8px;
+}
+
+#visor-herramienta.oculto {
+    display: none !important;
+}
+
+
+/* Encabezado */
+
+#encabezado-herramienta {
+    padding: 7px 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: var(--marfil);
+    border-bottom: 1px solid #555;
+}
+
+
+/* Aplicación */
+
+#marco-herramienta {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border: 1px solid #555;
+    background: #fff;
+}
+
+
+/* Pie y regreso */
+
+#pie-herramienta {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 5px;
+}
+
+#btn-volver-herramientas {
+    padding: 7px 16px;
+    font-size: 0.8rem;
+    background: #292929;
+    border: 1px solid #666;
+    border-radius: 3px;
+    color: var(--marfil);
+}
+
+#btn-volver-herramientas:hover {
+    background: var(--rojo);
+    border-color: var(--rojo-claro);
+}
+
+
+/* Adaptación móvil */
+
+@media (max-width: 600px) {
+
+    #visor-herramienta {
+        height: 72dvh;
+        min-height: 350px;
+    }
+
+    .herramienta-item {
+        padding: 14px;
+    }
+
+    #encabezado-herramienta {
+        font-size: 0.72rem;
+    }
+}
