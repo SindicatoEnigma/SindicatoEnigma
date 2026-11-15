@@ -71,16 +71,45 @@
                 <div id="contenido-portal">
 
                     <!-- NOTICIAS SERÁ LA SECCIÓN INICIAL -->
-                    <div id="seccion-noticias"
-                         class="seccion-portal">
+                    
+<div id="seccion-noticias" class="seccion-portal">
+    <h2>Noticias</h2>
 
-                        <h2>Noticias</h2>
+    <!-- Catálogo de noticias -->
+    <div id="vista-listado-noticias">
+        <div id="lista-noticias">
+            <!-- Las noticias se cargarán automáticamente -->
+        </div>
+    </div>
 
-                        <div id="lista-noticias">
-                            <!-- Aquí se cargarán las noticias -->
-                        </div>
+    <!-- Visor de documentos PDF -->
+    <div id="visor-noticia" class="oculto">
 
-                    </div>
+        <button id="btn-volver-noticias" type="button">
+            ← Volver a noticias
+        </button>
+
+        <h3 id="titulo-noticia-abierta"></h3>
+
+        <iframe
+            id="pdf-noticia"
+            title="Documento de noticia"
+        ></iframe>
+
+        <p>
+            <a
+                id="enlace-pdf-noticia"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Abrir PDF en otra pestaña
+            </a>
+        </p>
+
+    </div>
+</div>
+
 
                     <!-- HISTORIAS -->
                     <div id="seccion-historias"
