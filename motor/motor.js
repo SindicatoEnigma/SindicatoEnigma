@@ -182,8 +182,7 @@ function mostrarSeccionPortal(nombre) {
             break;
 
         case "minijuegos":
-            UI.listaMinijuegos.textContent =
-                "Próximamente encontrarás aquí los minijuegos independientes.";
+            mostrarMinijuegosPortal();
             break;
 
         case "noticias":
