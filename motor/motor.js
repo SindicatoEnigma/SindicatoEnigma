@@ -203,6 +203,10 @@ function mostrarSeccionPortal(nombre) {
         case "contacto":
             // El formulario se carga dentro del iframe.
             break;
+
+        case "redes":
+            // Los enlaces se encuentran directamente en el HTML.
+            break;
     }
 }
 
@@ -247,6 +251,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
+    
+    // Conectar el enlace Redes sociales del footer.
+    const enlaceRedes = document.querySelector(
+        '#portal-pie a[data-seccion="redes"]'
+    );
+
+    if (enlaceRedes) {
+
+        enlaceRedes.addEventListener("click", evento => {
+
+            evento.preventDefault();
+
+            AudioEngine.click();
+
+            mostrarSeccionPortal("redes");
+
+        });
+
+    }
+
+    
     // Recibir resultados enviados por los minijuegos.
 window.addEventListener(
     "message",
