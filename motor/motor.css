@@ -1231,3 +1231,143 @@ button:hover {
     }
 
 }
+
+
+
+/* ========================================= */
+/* SECCIÓN DE REDES SOCIALES                 */
+/* ========================================= */
+
+#seccion-redes {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 15px;
+}
+
+.encabezado-redes {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.encabezado-redes h2 {
+    color: #e8e3d8;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.encabezado-redes p {
+    color: #aaa;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+#lista-redes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.tarjeta-red {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    padding: 25px 12px;
+    box-sizing: border-box;
+
+    color: #e8e3d8;
+    background: #222;
+    border: 1px solid #555;
+    border-radius: 6px;
+
+    text-align: center;
+    text-decoration: none;
+
+    transition:
+        background 0.2s,
+        border-color 0.2s,
+        transform 0.2s;
+}
+
+.tarjeta-red:hover {
+    background: #303030;
+    border-color: #b9a77a;
+    transform: translateY(-3px);
+}
+
+.icono-red {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 52px;
+    height: 52px;
+    margin-bottom: 12px;
+
+    color: #d2c29a;
+    border: 1px solid #777;
+    border-radius: 50%;
+
+    font-size: 27px;
+    font-weight: bold;
+}
+
+.tarjeta-red h3 {
+    margin: 5px 0;
+    font-size: 18px;
+}
+
+.tarjeta-red p {
+    margin: 5px 0 15px;
+    color: #aaa;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.texto-visitar {
+    color: #d2c29a;
+    font-size: 13px;
+}
+
+.mensaje-redes {
+    margin-top: 30px;
+    color: #999;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Adaptación para teléfonos */
+
+@media (max-width: 480px) {
+
+    #seccion-redes {
+        padding: 10px 5px;
+    }
+
+    #lista-redes {
+        gap: 10px;
+    }
+
+    .tarjeta-red {
+        padding: 20px 8px;
+    }
+
+    .tarjeta-red h3 {
+        font-size: 16px;
+    }
+
+    .icono-red {
+        width: 45px;
+        height: 45px;
+        font-size: 24px;
+    }
+}
+
+
