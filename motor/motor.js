@@ -199,6 +199,10 @@ function mostrarSeccionPortal(nombre) {
             UI.contenidoNosotros.textContent =
                 "Conoce el proyecto, sus colaboradores y sus creadores.";
             break;
+
+        case "contacto":
+            // El formulario se carga dentro del iframe.
+            break;
     }
 }
 
@@ -223,6 +227,25 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
     });
+
+        // Conectar el enlace Contacto del footer.
+    const enlaceContacto = document.querySelector(
+        '#portal-pie a[data-seccion="contacto"]'
+    );
+
+    if (enlaceContacto) {
+
+        enlaceContacto.addEventListener("click", evento => {
+
+            evento.preventDefault();
+
+            AudioEngine.click();
+
+            mostrarSeccionPortal("contacto");
+
+        });
+
+    }
 
     // Recibir resultados enviados por los minijuegos.
 window.addEventListener(
