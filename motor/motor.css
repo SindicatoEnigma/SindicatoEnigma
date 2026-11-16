@@ -1185,3 +1185,43 @@ button:hover {
         font-size: 0.72rem;
     }
 }
+
+/* =====================================================
+   FORMULARIO DE CONTACTO
+   ===================================================== */
+
+#seccion-contacto {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+#marco-contacto {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: 85vh;
+    min-height: 650px;
+    border: none;
+    box-sizing: border-box;
+    background: #171717;
+}
+
+@media (max-width: 768px) {
+
+    #seccion-contacto {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    #marco-contacto {
+        width: 100%;
+        max-width: 100%;
+        height: 85vh;
+        min-height: 750px;
+    }
+
+}
