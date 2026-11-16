@@ -19,22 +19,22 @@
         }
 
         body {
-            margin: 0;
-            padding: 25px 15px;
-            background: #171717;
-            color: #e8e3d8;
-            font-family: Georgia, serif;
-        }
+    margin: 0;
+    padding: 10px;
+    background: #171717;
+    color: #e8e3d8;
+    font-family: Georgia, serif;
+}
 
         .contenedor {
-            width: 100%;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 25px;
-            background: #222;
-            border: 1px solid #555;
-            border-radius: 5px;
-        }
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 25px;
+    background: #222;
+    border: 1px solid #555;
+    border-radius: 5px;
+}
 
         .encabezado {
             text-align: center;
@@ -90,10 +90,12 @@
         }
 
         .captcha {
-            display: flex;
-            justify-content: center;
-            margin: 25px 0;
-        }
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin: 20px 0;
+    overflow: visible;
+}
 
         .boton {
             width: 100%;
@@ -142,22 +144,51 @@
         }
 
         @media (max-width: 480px) {
-            .contenedor {
-                padding: 18px;
-            }
 
-            .encabezado h1 {
-                font-size: 21px;
-            }
+    body {
+        padding: 0;
+    }
 
-            .captcha {
-                overflow-x: auto;
-            }
+    .contenedor {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 14px;
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+    }
+
+    .encabezado {
+        margin-bottom: 18px;
+        padding-bottom: 12px;
+    }
+
+    .encabezado h1 {
+        font-size: 21px;
+    }
+
+    .campo {
+        margin-bottom: 14px;
+    }
+
+    .captcha {
+        justify-content: center;
+        overflow: visible;
+        margin: 20px 0;
+    }
+
+    .g-recaptcha {
+        transform: scale(0.85);
+        transform-origin: center top;
+        margin-bottom: -12px;
+    }
+
         }
         /* Ajuste del CAPTCHA para teléfonos */
 .g-recaptcha {
     transform: scale(0.85);
-    transform-origin: left top;
+    transform-origin: center top;
     width: 304px;
     margin-bottom: -12px;
 }
