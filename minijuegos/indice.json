@@ -11,7 +11,7 @@
                     "titulo": "Crucigrama 002",
                     "archivo": "minijuegos/crucigrama/prueba.html",
                     "datos": "datos/Crucigrama002.txt"
-                }
+                },
                 {
                     "id": "nuevoprueba",
                     "titulo": "Crucigrama prueba",
