@@ -110,6 +110,7 @@ button:hover {
     grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
     flex: 1;
     min-height: 0;
+    overflow: hidden;
 }
 
 /* ---------- Menú lateral ---------- */
@@ -119,6 +120,8 @@ button:hover {
     border-right: 1px solid #555;
     padding: 25px 18px;
     min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 #portal-menu h2 {
@@ -160,8 +163,12 @@ button:hover {
 
 #portal-contenido {
     min-width: 0;
+    min-height: 0;
     padding: 25px;
     background: #202020;
+
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #contenido-portal {
