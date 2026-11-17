@@ -168,6 +168,15 @@ function mostrarSeccionPortal(nombre) {
     );
 
     if (!seccion) {
+
+        // Regresar el panel derecho al principio.
+const panelContenido = document.getElementById("portal-contenido");
+
+if (panelContenido) {
+    panelContenido.scrollTop = 0;
+}
+
+        
         console.warn("[SE] Sección no encontrada:", nombre);
         return;
     }
