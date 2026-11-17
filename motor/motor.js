@@ -200,9 +200,9 @@ function mostrarSeccionPortal(nombre) {
                 "Conoce el proyecto, sus colaboradores y sus creadores.";
             break;
 
-        case "contacto":
-            // El formulario se carga dentro del iframe.
-            break;
+        case "nosotros":
+              // El contenido se carga desde nosotros/index.html.
+             break;
 
         case "redes":
             // Los enlaces se encuentran directamente en el HTML.
