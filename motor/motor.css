@@ -68,7 +68,9 @@ button:hover {
     display: flex;
     flex-direction: column;
     width: 100%;
-    min-height: 100dvh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
     background: var(--negro);
 }
 
@@ -85,6 +87,7 @@ button:hover {
     align-items: center;
     background: #171717;
     border-bottom: 2px solid #555;
+    flex-shrink: 0;
 }
 
 #portal-encabezado h1 {
@@ -188,6 +191,7 @@ button:hover {
     border-top: 1px solid #555;
     color: #aaa;
     font-size: 0.85rem;
+    flex-shrink: 0;
 }
 
 #portal-pie p {
