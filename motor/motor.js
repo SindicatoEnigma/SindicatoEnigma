@@ -153,6 +153,7 @@ function mostrarPortal() {
 
 
 // Mostrar una sección del portal.
+
 function mostrarSeccionPortal(nombre) {
 
     mostrarPortal();
@@ -162,26 +163,40 @@ function mostrarSeccionPortal(nombre) {
         seccion.classList.add("oculto");
     });
 
-    // Mostramos la sección seleccionada.
+    // Buscamos la sección seleccionada.
     const seccion = document.getElementById(
         `seccion-${nombre}`
     );
 
     if (!seccion) {
-
-        // Regresar el panel derecho al principio.
-const panelContenido = document.getElementById("portal-contenido");
-
-if (panelContenido) {
-    panelContenido.scrollTop = 0;
-}
-
-        
         console.warn("[SE] Sección no encontrada:", nombre);
         return;
     }
 
+    // Mostramos la sección.
     seccion.classList.remove("oculto");
+
+    // Reiniciamos el desplazamiento del panel derecho.
+    const panelContenido = document.getElementById("portal-contenido");
+
+    requestAnimationFrame(() => {
+
+        if (panelContenido) {
+            panelContenido.scrollTop = 0;
+        }
+
+        // Reiniciamos también el desplazamiento de los iframes.
+        const marcos = seccion.querySelectorAll("iframe");
+
+        marcos.forEach(marco => {
+            try {
+                marco.contentWindow.scrollTo(0, 0);
+            } catch (error) {
+                console.warn("[SE] No se pudo reiniciar el iframe:", error);
+            }
+        });
+
+    });
 
     // Acciones específicas de cada sección.
     switch (nombre) {
@@ -195,29 +210,27 @@ if (panelContenido) {
             break;
 
         case "noticias":
-             mostrarNoticiasPortal();
-             break;
+            mostrarNoticiasPortal();
+            break;
 
-        
         case "herramientas":
-             mostrarHerramientasPortal();
-             break;
-
-
-        case "nosotros":
-            UI.contenidoNosotros.textContent =
-                "Conoce el proyecto, sus colaboradores y sus creadores.";
+            mostrarHerramientasPortal();
             break;
 
         case "nosotros":
-              // El contenido se carga desde nosotros/index.html.
-             break;
+            // El contenido se carga desde nosotros/index.html.
+            break;
 
         case "redes":
             // Los enlaces se encuentran directamente en el HTML.
             break;
+
+        case "contacto":
+            // El formulario se carga dentro de un iframe.
+            break;
     }
 }
+
 
 // ============================================================
 // 4. CARGA INICIAL
