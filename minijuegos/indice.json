@@ -13,7 +13,7 @@
                     "datos": "datos/Crucigrama002.txt"
                 }
                 {
-                    "id": "nuevoprueba.txt",
+                    "id": "nuevoprueba",
                     "titulo": "Crucigrama prueba",
                     "archivo": "minijuegos/crucigrama/prueba.html",
                     "datos": "datos/nuevoprueba.txt"
