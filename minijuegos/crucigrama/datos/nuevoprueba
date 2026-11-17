@@ -1,0 +1,34 @@
+[TABLERO]
+FILAS=8
+COLUMNAS=7
+#######
+#ROJOMC
+#I##JOO
+#Z##ORM
+#A###AE
+#DADODT
+#O#O#OA
+###S###
+
+[PISTAS_H]
+1|2|1|Color calido que comparten el fuego y la sangre
+2|6|1|Tiene seis caras y se usa en juegos de mesa
+
+[PISTAS_V]
+1|1|2|Tipo de cabello que se enrolla
+2|1|5|Parte de la cara que sirve para ver
+3|5|4|Segundo numero
+4|1|7|Roca que viaja por el espacio dejando una estela de luz
+5|1|6|Resultado de combinar azul y rojo
+
+[RESPUESTAS]
+H|1|ROJOMC
+H|2|DADODT
+V|1|RIZADO
+V|2|OJO
+V|3|DOS
+V|4|COMETA
+V|5|MORADO
+
+[FINAL]
+MENSAJE=Has completado correctamente el crucigrama.
