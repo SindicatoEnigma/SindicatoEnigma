@@ -635,13 +635,18 @@ function dibujarTablero() {
 
             if (celda.negra) {
 
-                casilla.classList.add("negra");
-                entrada.value = "#";
-                entrada.disabled = true;
+    casilla.classList.add("negra");
+    entrada.disabled = true;
 
-            } else {
+    const tieneMarcador = marcadores.some(m =>
+        m.fila === f && m.columna === c
+    );
 
-                entrada.value = celda.letra;
+    entrada.value = tieneMarcador ? "" : "#";
+
+} else {
+
+    entrada.value = celda.letra;
 
             }
 
