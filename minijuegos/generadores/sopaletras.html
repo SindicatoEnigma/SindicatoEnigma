@@ -1,0 +1,1317 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de Sopas de Letras | Sindicato Enigma</title>
+
+<style>
+:root {
+    --fondo: #171717;
+    --panel: #242424;
+    --texto: #eeeeee;
+    --secundario: #aaaaaa;
+    --borde: #494949;
+    --azul: #315b80;
+    --verde: #376b4c;
+    --rojo: #963d3d;
+    --blanco: #f0eee8;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 18px;
+    background: var(--fondo);
+    color: var(--texto);
+    font-family: Arial, sans-serif;
+}
+
+.contenedor {
+    width: 100%;
+    max-width: 950px;
+    margin: auto;
+}
+
+h1 {
+    text-align: center;
+    font-size: 25px;
+    margin-bottom: 5px;
+}
+
+h2 {
+    font-size: 18px;
+    margin-top: 0;
+}
+
+h3 {
+    font-size: 16px;
+}
+
+.subtitulo {
+    text-align: center;
+    color: var(--secundario);
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--borde);
+    border-radius: 9px;
+    padding: 16px;
+    margin-bottom: 18px;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    color: var(--secundario);
+    margin-bottom: 6px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--borde);
+    border-radius: 5px;
+    background: #181818;
+    color: white;
+    font-size: 15px;
+}
+
+input:focus, textarea:focus {
+    outline: 2px solid var(--azul);
+}
+
+button {
+    border: 0;
+    border-radius: 5px;
+    padding: 11px 15px;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+}
+
+.configuracion {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: end;
+}
+
+.campo-config {
+    flex: 1;
+    min-width: 100px;
+}
+
+.btn-crear, .btn-palabra, .btn-copiar {
+    background: var(--azul);
+}
+
+.btn-borrar {
+    background: var(--rojo);
+}
+
+.btn-relleno, .btn-generar {
+    background: var(--verde);
+}
+
+.herramientas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.instruccion {
+    color: var(--secundario);
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.info {
+    background: #191919;
+    border: 1px solid var(--borde);
+    border-radius: 5px;
+    padding: 11px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    color: var(--secundario);
+}
+
+.info.activa {
+    color: #b9d9ff;
+    border-color: var(--azul);
+}
+
+.tablero-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    padding: 5px 2px 12px;
+}
+
+.tablero {
+    display: grid;
+    gap: 3px;
+    width: max-content;
+    margin: auto;
+}
+
+.casilla {
+    width: 39px;
+    height: 39px;
+    background: var(--blanco);
+    border: 2px solid #b9b6ad;
+    border-radius: 3px;
+}
+
+.casilla.seleccionada {
+    outline: 3px solid #d6a94b;
+    outline-offset: 1px;
+    z-index: 2;
+}
+
+.casilla input {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    outline: none;
+    background: transparent;
+    color: #181818;
+    text-align: center;
+    font-size: 21px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.casilla input:focus {
+    outline: none;
+    background: #dce8f2;
+}
+
+.lista-palabras {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.registro-palabra {
+    background: #191919;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    padding: 12px;
+}
+
+.registro-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.registro-numero {
+    font-weight: bold;
+    color: #b9d9ff;
+}
+
+.registro-texto {
+    font-size: 13px;
+    color: var(--secundario);
+    overflow-wrap: anywhere;
+    line-height: 1.6;
+}
+
+.registro-palabra.activa {
+    border-color: var(--azul);
+}
+
+.sin-registros {
+    font-size: 13px;
+    color: var(--secundario);
+}
+
+.mensaje-final {
+    min-height: 75px;
+    resize: vertical;
+}
+
+.resultado {
+    min-height: 270px;
+    resize: vertical;
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 10px;
+}
+
+.estado {
+    display: none;
+    padding: 11px;
+    border-radius: 5px;
+    font-size: 13px;
+    margin-top: 12px;
+}
+
+.estado.error {
+    display: block;
+    background: #512929;
+    color: #ffdede;
+}
+
+.estado.exito {
+    display: block;
+    background: #23452f;
+    color: #d9ffe4;
+}
+
+.estado ul {
+    padding-left: 20px;
+}
+
+@media (max-width: 520px) {
+
+    body {
+        padding: 10px;
+    }
+
+    .casilla {
+        width: 34px;
+        height: 34px;
+    }
+
+    .casilla input {
+        font-size: 18px;
+    }
+
+    .herramientas button {
+        flex: 1 1 40%;
+    }
+
+    .configuracion button {
+        width: 100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+    <h1>SINDICATO ENIGMA</h1>
+    <div class="subtitulo">Generador de sopas de letras</div>
+
+
+    <!-- CONFIGURACIÓN -->
+
+    <section class="panel">
+
+        <h2>1. Configurar matriz</h2>
+
+        <div class="configuracion">
+
+            <div class="campo-config">
+                <label for="filas">Filas</label>
+                <input type="number" id="filas"
+                       min="1" max="30" value="10">
+            </div>
+
+            <div class="campo-config">
+                <label for="columnas">Columnas</label>
+                <input type="number" id="columnas"
+                       min="1" max="30" value="10">
+            </div>
+
+            <button class="btn-crear" id="crear">
+                Crear matriz
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- EDITOR -->
+
+    <section class="panel" id="editor" hidden>
+
+        <h2>2. Editor de sopa de letras</h2>
+
+        <div class="instruccion">
+            Pulsa «Palabra» para comenzar un registro.
+            Después selecciona las casillas en el orden
+            de las letras que forman la palabra.
+        </div>
+
+        <div class="herramientas">
+
+            <button class="btn-palabra" id="palabra">
+                Palabra
+            </button>
+
+            <button class="btn-borrar" id="borrar" disabled>
+                Borrar
+            </button>
+
+            <button class="btn-relleno" id="relleno">
+                Relleno
+            </button>
+
+        </div>
+
+        <div class="info" id="informacion">
+            Primero crea una palabra para comenzar.
+        </div>
+
+        <div class="tablero-contenedor">
+            <div class="tablero" id="tablero"></div>
+        </div>
+
+    </section>
+
+
+    <!-- REGISTROS -->
+
+    <section class="panel" id="panel-palabras" hidden>
+
+        <h2>3. Registro de palabras</h2>
+
+        <div class="instruccion">
+            Las coordenadas se registran automáticamente
+            al escribir o seleccionar las letras.
+        </div>
+
+        <div class="lista-palabras" id="lista-palabras"></div>
+
+    </section>
+
+
+    <!-- MENSAJE FINAL -->
+
+    <section class="panel" id="panel-final" hidden>
+
+        <h2>4. Mensaje de finalización</h2>
+
+        <label for="nombre">
+            Nombre de la sopa de letras
+        </label>
+
+        <input type="text" id="nombre"
+               value="Sopa de letras de prueba">
+
+        <br><br>
+
+        <label for="mensaje-final">
+            Mensaje que aparecerá al completar el juego
+        </label>
+
+        <textarea class="mensaje-final"
+                  id="mensaje-final">¡Has completado correctamente la sopa de letras!</textarea>
+
+    </section>
+
+
+    <!-- RESULTADO -->
+
+    <section class="panel" id="panel-resultado" hidden>
+
+        <h2>5. Generar archivo TXT</h2>
+
+        <button class="btn-generar" id="generar">
+            Generar texto
+        </button>
+
+        <div class="estado" id="estado"></div>
+
+        <div id="resultado-contenedor" hidden>
+
+            <h3>Resultado</h3>
+
+            <textarea class="resultado"
+                      id="resultado"
+                      readonly></textarea>
+
+            <div class="acciones">
+
+                <button class="btn-copiar" id="copiar">
+                    Copiar texto
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<script>
+"use strict";
+
+
+/* =========================================
+   VARIABLES
+========================================= */
+
+let filas = 0;
+let columnas = 0;
+
+let matriz = [];
+let palabras = [];
+
+let palabraActiva = null;
+let siguienteId = 1;
+
+let seleccion = null;
+
+
+/* =========================================
+   ELEMENTOS
+========================================= */
+
+const tablero = document.getElementById("tablero");
+
+const editor = document.getElementById("editor");
+
+const informacion = document.getElementById("informacion");
+
+const botonPalabra = document.getElementById("palabra");
+const botonBorrar = document.getElementById("borrar");
+const botonRelleno = document.getElementById("relleno");
+
+const listaPalabras = document.getElementById("lista-palabras");
+
+const estado = document.getElementById("estado");
+const resultado = document.getElementById("resultado");
+
+
+/* =========================================
+   CREAR MATRIZ
+========================================= */
+
+document.getElementById("crear").addEventListener("click", () => {
+
+    const nuevasFilas = Number(
+        document.getElementById("filas").value
+    );
+
+    const nuevasColumnas = Number(
+        document.getElementById("columnas").value
+    );
+
+    if (
+        !Number.isInteger(nuevasFilas) ||
+        !Number.isInteger(nuevasColumnas) ||
+        nuevasFilas < 1 ||
+        nuevasColumnas < 1 ||
+        nuevasFilas > 30 ||
+        nuevasColumnas > 30
+    ) {
+
+        alert("Introduce entre 1 y 30 filas y columnas.");
+        return;
+
+    }
+
+    if (matriz.length > 0) {
+
+        const confirmar = confirm(
+            "Crear una nueva matriz eliminará el tablero y los registros actuales. ¿Continuar?"
+        );
+
+        if (!confirmar) return;
+
+    }
+
+    filas = nuevasFilas;
+    columnas = nuevasColumnas;
+
+    matriz = [];
+    palabras = [];
+
+    palabraActiva = null;
+    seleccion = null;
+    siguienteId = 1;
+
+    for (let f = 0; f < filas; f++) {
+
+        const fila = [];
+
+        for (let c = 0; c < columnas; c++) {
+
+            fila.push("");
+
+        }
+
+        matriz.push(fila);
+
+    }
+
+    editor.hidden = false;
+
+    document.getElementById("panel-palabras").hidden = false;
+    document.getElementById("panel-final").hidden = false;
+    document.getElementById("panel-resultado").hidden = false;
+
+    document.getElementById("resultado-contenedor").hidden = true;
+
+    resultado.value = "";
+
+    ocultarEstado();
+
+    dibujarTablero();
+    dibujarPalabras();
+    actualizarInformacion();
+
+});
+
+
+/* =========================================
+   DIBUJAR TABLERO
+========================================= */
+
+function dibujarTablero() {
+
+    tablero.innerHTML = "";
+
+    tablero.style.gridTemplateColumns =
+        `repeat(${columnas}, 39px)`;
+
+    for (let f = 0; f < filas; f++) {
+
+        for (let c = 0; c < columnas; c++) {
+
+            const casilla = document.createElement("div");
+
+            casilla.className = "casilla";
+
+            casilla.dataset.fila = f;
+            casilla.dataset.columna = c;
+
+            const entrada = document.createElement("input");
+
+            entrada.type = "text";
+            entrada.maxLength = 1;
+            entrada.autocomplete = "off";
+            entrada.autocapitalize = "characters";
+            entrada.spellcheck = false;
+
+            entrada.setAttribute(
+                "aria-label",
+                `Fila ${f + 1}, columna ${c + 1}`
+            );
+
+            entrada.value = matriz[f][c];
+
+            casilla.appendChild(entrada);
+            tablero.appendChild(casilla);
+
+
+            // Seleccionar casilla.
+
+            casilla.addEventListener("click", () => {
+
+                seleccionarCasilla(f, c);
+
+                // Si ya contiene una letra, registrar su coordenada.
+                if (matriz[f][c] !== "") {
+                    registrarCoordenada(f, c);
+                }
+
+            });
+
+
+            // Registrar letra escrita.
+
+            entrada.addEventListener("input", () => {
+
+                let valor = Array.from(
+                    entrada.value.toLocaleUpperCase("es-MX")
+                )[0] || "";
+
+                // Aceptar solamente una letra.
+                if (!/^[A-ZÑ]$/.test(valor)) {
+                    valor = "";
+                }
+
+                entrada.value = valor;
+                matriz[f][c] = valor;
+
+                seleccionarCasilla(f, c);
+
+                if (valor !== "") {
+
+                    if (!palabraActiva) {
+
+                        entrada.value = "";
+                        matriz[f][c] = "";
+
+                        mostrarError(
+                            "Primero pulsa el botón Palabra para iniciar un registro."
+                        );
+
+                        return;
+
+                    }
+
+                    registrarCoordenada(f, c);
+
+                } else {
+
+                    eliminarCoordenada(f, c);
+
+                }
+
+                dibujarPalabras();
+
+                document.getElementById("resultado-contenedor").hidden = true;
+
+                ocultarEstado();
+
+            });
+
+        }
+
+    }
+
+    actualizarSeleccion();
+
+}
+
+
+/* =========================================
+   SELECCIONAR CASILLA
+========================================= */
+
+function seleccionarCasilla(f, c) {
+
+    seleccion = { fila: f, columna: c };
+
+    actualizarSeleccion();
+
+}
+
+
+function actualizarSeleccion() {
+
+    const casillas = tablero.querySelectorAll(".casilla");
+
+    casillas.forEach(casilla => {
+
+        const f = Number(casilla.dataset.fila);
+        const c = Number(casilla.dataset.columna);
+
+        casilla.classList.toggle(
+            "seleccionada",
+            seleccion !== null &&
+            seleccion.fila === f &&
+            seleccion.columna === c
+        );
+
+    });
+
+    botonBorrar.disabled = seleccion === null;
+
+}
+
+
+/* =========================================
+   CREAR PALABRA
+========================================= */
+
+botonPalabra.addEventListener("click", () => {
+
+    if (palabraActiva) {
+
+        if (palabraActiva.coordenadas.length === 0) {
+
+            mostrarError(
+                "Debes registrar al menos una letra antes de comenzar otra palabra."
+            );
+
+            return;
+
+        }
+
+    }
+
+    const nuevaPalabra = {
+        id: siguienteId++,
+        coordenadas: []
+    };
+
+    palabras.push(nuevaPalabra);
+
+    palabraActiva = nuevaPalabra;
+
+    dibujarPalabras();
+    actualizarInformacion();
+
+    document.getElementById("resultado-contenedor").hidden = true;
+
+    ocultarEstado();
+
+});
+
+
+/* =========================================
+   REGISTRAR COORDENADA
+========================================= */
+
+function registrarCoordenada(f, c) {
+
+    if (!palabraActiva) return;
+
+    const yaRegistrada = palabraActiva.coordenadas.some(coord =>
+        coord.fila === f &&
+        coord.columna === c
+    );
+
+    if (yaRegistrada) return;
+
+    palabraActiva.coordenadas.push({
+        fila: f,
+        columna: c
+    });
+
+    dibujarPalabras();
+    actualizarInformacion();
+
+}
+
+
+/* =========================================
+   ELIMINAR COORDENADA
+========================================= */
+
+function eliminarCoordenada(f, c) {
+
+    palabras.forEach(palabra => {
+
+        palabra.coordenadas = palabra.coordenadas.filter(coord =>
+            coord.fila !== f ||
+            coord.columna !== c
+        );
+
+    });
+
+    // Eliminar registros que hayan quedado vacíos.
+
+    palabras = palabras.filter(palabra =>
+        palabra.coordenadas.length > 0
+    );
+
+    // Si se eliminó la palabra activa, cerrar el registro.
+
+    if (
+        palabraActiva &&
+        !palabras.includes(palabraActiva)
+    ) {
+
+        palabraActiva = null;
+
+    }
+
+    // Mantener el contador de acuerdo con los registros existentes.
+
+    siguienteId = palabras.length + 1;
+
+    palabras.forEach((palabra, indice) => {
+        palabra.id = indice + 1;
+    });
+
+}
+
+
+/* =========================================
+   BOTÓN BORRAR
+========================================= */
+
+botonBorrar.addEventListener("click", () => {
+
+    if (!seleccion) return;
+
+    const f = seleccion.fila;
+    const c = seleccion.columna;
+
+    matriz[f][c] = "";
+
+    eliminarCoordenada(f, c);
+
+    dibujarTablero();
+    dibujarPalabras();
+    actualizarInformacion();
+
+    document.getElementById("resultado-contenedor").hidden = true;
+
+    ocultarEstado();
+
+});
+
+
+/* =========================================
+   DIBUJAR REGISTROS
+========================================= */
+
+function dibujarPalabras() {
+
+    listaPalabras.innerHTML = "";
+
+    if (palabras.length === 0) {
+
+        const texto = document.createElement("div");
+
+        texto.className = "sin-registros";
+        texto.textContent = "Todavía no hay palabras registradas.";
+
+        listaPalabras.appendChild(texto);
+
+        return;
+
+    }
+
+    palabras.forEach(palabra => {
+
+        const registro = document.createElement("div");
+
+        registro.className = "registro-palabra";
+
+        if (palabra === palabraActiva) {
+            registro.classList.add("activa");
+        }
+
+        const cabecera = document.createElement("div");
+        cabecera.className = "registro-cabecera";
+
+        const numero = document.createElement("div");
+        numero.className = "registro-numero";
+
+        numero.textContent = `Palabra ${palabra.id}`;
+
+        const cantidad = document.createElement("div");
+        cantidad.className = "registro-texto";
+
+        cantidad.textContent =
+            `${palabra.coordenadas.length} letras`;
+
+        cabecera.appendChild(numero);
+        cabecera.appendChild(cantidad);
+
+        const contenido = document.createElement("div");
+        contenido.className = "registro-texto";
+
+        const letras = palabra.coordenadas.map(coord =>
+            matriz[coord.fila][coord.columna]
+        ).join("");
+
+        const coordenadas = palabra.coordenadas.map(coord =>
+            `${coord.fila + 1},${coord.columna + 1}`
+        ).join(" | ");
+
+        contenido.textContent =
+            `Palabra: ${letras || "—"}\nCoordenadas: ${coordenadas || "—"}`;
+
+        contenido.style.whiteSpace = "pre-wrap";
+
+        registro.appendChild(cabecera);
+        registro.appendChild(contenido);
+
+        listaPalabras.appendChild(registro);
+
+    });
+
+}
+
+
+/* =========================================
+   INFORMACIÓN DE PALABRA ACTIVA
+========================================= */
+
+function actualizarInformacion() {
+
+    if (!palabraActiva) {
+
+        informacion.className = "info";
+
+        informacion.textContent =
+            "No hay una palabra activa. Pulsa Palabra para comenzar.";
+
+        return;
+
+    }
+
+    informacion.className = "info activa";
+
+    informacion.textContent =
+        `Registrando palabra ${palabraActiva.id}. ` +
+        `Letras registradas: ${palabraActiva.coordenadas.length}. ` +
+        `Pulsa Palabra para comenzar la siguiente.`;
+
+}
+
+
+/* =========================================
+   RELLENO ALEATORIO
+========================================= */
+
+botonRelleno.addEventListener("click", () => {
+
+    if (matriz.length === 0) return;
+
+    const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    let cantidad = 0;
+
+    for (let f = 0; f < filas; f++) {
+
+        for (let c = 0; c < columnas; c++) {
+
+            if (matriz[f][c] === "") {
+
+                const aleatoria = Math.floor(
+                    Math.random() * letras.length
+                );
+
+                matriz[f][c] = letras[aleatoria];
+
+                cantidad++;
+
+            }
+
+        }
+
+    }
+
+    dibujarTablero();
+    dibujarPalabras();
+    actualizarInformacion();
+
+    document.getElementById("resultado-contenedor").hidden = true;
+
+    mostrarExito(
+        `Relleno terminado. Se agregaron ${cantidad} letras aleatorias. No se registraron nuevas coordenadas.`
+    );
+
+});
+
+
+/* =========================================
+   VALIDAR SOPA DE LETRAS
+========================================= */
+
+function validarSopa() {
+
+    const errores = [];
+
+    const nombre = document.getElementById("nombre").value.trim();
+
+    const mensaje = document.getElementById("mensaje-final").value.trim();
+
+    if (!nombre) {
+        errores.push("Debes escribir el nombre de la sopa de letras.");
+    }
+
+    if (!mensaje) {
+        errores.push("Debes escribir el mensaje de finalización.");
+    }
+
+    if (/[|\r\n]/.test(nombre)) {
+        errores.push("El nombre no puede contener | ni saltos de línea.");
+    }
+
+    if (/[|\r\n]/.test(mensaje)) {
+        errores.push("El mensaje no puede contener | ni saltos de línea.");
+    }
+
+    if (palabras.length === 0) {
+        errores.push("Debes registrar al menos una palabra.");
+    }
+
+    // Comprobar que todas las casillas estén llenas.
+
+    for (let f = 0; f < filas; f++) {
+
+        for (let c = 0; c < columnas; c++) {
+
+            if (!matriz[f][c]) {
+
+                errores.push(
+                    `Casilla vacía en fila ${f + 1}, columna ${c + 1}.`
+                );
+
+            }
+
+        }
+
+    }
+
+    // Comprobar registros.
+
+    palabras.forEach(palabra => {
+
+        if (palabra.coordenadas.length === 0) {
+
+            errores.push(
+                `La palabra ${palabra.id} no tiene coordenadas.`
+            );
+
+            return;
+
+        }
+
+        if (palabra.coordenadas.length < 2) {
+
+            errores.push(
+                `La palabra ${palabra.id} necesita al menos dos letras.`
+            );
+
+        }
+
+        const coordenadasUsadas = new Set();
+
+        palabra.coordenadas.forEach(coord => {
+
+            const clave = `${coord.fila},${coord.columna}`;
+
+            if (coordenadasUsadas.has(clave)) {
+
+                errores.push(
+                    `La palabra ${palabra.id} tiene una coordenada repetida.`
+                );
+
+            }
+
+            coordenadasUsadas.add(clave);
+
+            if (!matriz[coord.fila][coord.columna]) {
+
+                errores.push(
+                    `La palabra ${palabra.id} tiene una casilla vacía.`
+                );
+
+            }
+
+        });
+
+    });
+
+    return errores;
+
+}
+
+
+/* =========================================
+   GENERAR TEXTO
+========================================= */
+
+document.getElementById("generar").addEventListener("click", () => {
+
+    ocultarEstado();
+
+    const errores = validarSopa();
+
+    if (errores.length > 0) {
+
+        mostrarErrores(errores);
+
+        document.getElementById("resultado-contenedor").hidden = true;
+
+        return;
+
+    }
+
+    const lineas = [];
+
+    // SOPA
+
+    lineas.push("[SOPA]");
+
+    lineas.push(
+        `nombre=${document.getElementById("nombre").value.trim()}`
+    );
+
+    lineas.push("");
+
+
+    // TABLERO
+
+    lineas.push("[TABLERO]");
+
+    for (let f = 0; f < filas; f++) {
+
+        lineas.push(matriz[f].join(" "));
+
+    }
+
+    lineas.push("");
+
+
+    // PALABRAS
+
+    lineas.push("[PALABRAS]");
+
+    palabras.forEach((palabra, indice) => {
+
+        const letras = palabra.coordenadas.map(coord =>
+            matriz[coord.fila][coord.columna]
+        ).join("");
+
+        const coordenadas = palabra.coordenadas.map(coord =>
+            `${coord.fila + 1},${coord.columna + 1}`
+        );
+
+        lineas.push(
+            `${indice + 1}=${letras}|${coordenadas.join("|")}`
+        );
+
+    });
+
+    lineas.push("");
+
+
+    // FINAL
+
+    lineas.push("[FINAL]");
+
+    lineas.push(
+        `mensaje=${document.getElementById("mensaje-final").value.trim()}`
+    );
+
+
+    // MOSTRAR RESULTADO
+
+    resultado.value = lineas.join("\n");
+
+    document.getElementById("resultado-contenedor").hidden = false;
+
+    mostrarExito(
+        "Sopa de letras generada correctamente. Ya puedes copiar el texto."
+    );
+
+    document.getElementById("resultado-contenedor")
+        .scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+});
+
+
+/* =========================================
+   ERRORES Y MENSAJES
+========================================= */
+
+function mostrarErrores(errores) {
+
+    estado.className = "estado error";
+
+    const titulo = document.createElement("strong");
+
+    titulo.textContent =
+        "No se puede generar la sopa de letras. Corrige lo siguiente:";
+
+    const lista = document.createElement("ul");
+
+    errores.forEach(error => {
+
+        const elemento = document.createElement("li");
+
+        elemento.textContent = error;
+
+        lista.appendChild(elemento);
+
+    });
+
+    estado.innerHTML = "";
+
+    estado.appendChild(titulo);
+    estado.appendChild(lista);
+
+}
+
+
+function mostrarError(texto) {
+
+    estado.className = "estado error";
+    estado.textContent = texto;
+
+}
+
+
+function mostrarExito(texto) {
+
+    estado.className = "estado exito";
+    estado.textContent = texto;
+
+}
+
+
+function ocultarEstado() {
+
+    estado.className = "estado";
+    estado.textContent = "";
+
+}
+
+
+/* =========================================
+   COPIAR RESULTADO
+========================================= */
+
+document.getElementById("copiar").addEventListener("click", async () => {
+
+    if (!resultado.value) return;
+
+    try {
+
+        await navigator.clipboard.writeText(resultado.value);
+
+        mostrarExito("Texto copiado correctamente.");
+
+    } catch (error) {
+
+        resultado.focus();
+        resultado.select();
+
+        const copiado = document.execCommand("copy");
+
+        if (copiado) {
+
+            mostrarExito("Texto copiado correctamente.");
+
+        } else {
+
+            mostrarError("Selecciona y copia el texto manualmente.");
+
+        }
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>
