@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Generadores | Sindicato Enigma</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: #181818;
+    color: #eeeeee;
+    font-family: Arial, sans-serif;
+}
+
+/* PORTAL PRINCIPAL */
+
+#portal {
+    min-height: 100vh;
+    padding: 30px 20px;
+}
+
+.encabezado {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.encabezado h1 {
+    color: #d6c6a5;
+    font-size: 30px;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+
+.encabezado p {
+    color: #aaa;
+    font-size: 15px;
+}
+
+/* LISTA DE GENERADORES */
+
+.generadores {
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.generador {
+    min-height: 130px;
+    padding: 20px 12px;
+    background: #292929;
+    border: 1px solid #555;
+    border-radius: 10px;
+    color: #eee;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.generador:hover {
+    background: #38332a;
+    border-color: #b9a47a;
+    transform: translateY(-3px);
+}
+
+.generador .simbolo {
+    display: block;
+    font-size: 30px;
+    margin-bottom: 12px;
+    color: #d6c6a5;
+}
+
+.generador h2 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: normal;
+}
+
+/* VISOR DEL GENERADOR */
+
+#visor {
+    display: none;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: #181818;
+    z-index: 1000;
+}
+
+#barra-visor {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    background: #252525;
+    border-bottom: 1px solid #555;
+}
+
+#boton-regresar {
+    padding: 8px 15px;
+    background: #8b7650;
+    border: 1px solid #b9a47a;
+    border-radius: 5px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#titulo-visor {
+    margin-left: 15px;
+    color: #d6c6a5;
+    font-size: 14px;
+}
+
+#iframe-generador {
+    display: block;
+    width: 100%;
+    height: calc(100% - 48px);
+    border: none;
+    background: #202020;
+}
+
+/* MÓVILES */
+
+@media (max-width: 450px) {
+
+    #portal {
+        padding: 25px 12px;
+    }
+
+    .encabezado h1 {
+        font-size: 24px;
+    }
+
+    .generadores {
+        gap: 10px;
+    }
+
+    .generador {
+        min-height: 115px;
+        padding: 15px 8px;
+    }
+
+    .generador h2 {
+        font-size: 15px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- PORTAL DE GENERADORES -->
+
+<main id="portal">
+
+    <header class="encabezado">
+        <h1>SINDICATO ENIGMA</h1>
+        <p>Centro de creación de minijuegos</p>
+    </header>
+
+    <section class="generadores">
+
+        <button class="generador"
+            onclick="abrirGenerador('crucigramas.html', 'Generador de crucigramas')">
+            <span class="simbolo">▦</span>
+            <h2>Crucigramas</h2>
+        </button>
+
+        <button class="generador"
+            onclick="abrirGenerador('nonograma.html', 'Generador de nonogramas')">
+            <span class="simbolo">▧</span>
+            <h2>Nonograma</h2>
+        </button>
+
+        <button class="generador"
+            onclick="abrirGenerador('sopaletras.html', 'Generador de sopa de letras')">
+            <span class="simbolo">▤</span>
+            <h2>Sopa de letras</h2>
+        </button>
+
+        <button class="generador"
+            onclick="abrirGenerador('zudoku.html', 'Generador de Zudoku')">
+            <span class="simbolo">▦</span>
+            <h2>Zudoku</h2>
+        </button>
+
+    </section>
+
+</main>
+
+
+<!-- VISOR A PANTALLA COMPLETA -->
+
+<section id="visor">
+
+    <div id="barra-visor">
+
+        <button id="boton-regresar" onclick="regresarPortal()">
+            ← Regresar
+        </button>
+
+        <span id="titulo-visor"></span>
+
+    </div>
+
+    <iframe
+        id="iframe-generador"
+        title="Generador de minijuegos">
+    </iframe>
+
+</section>
+
+
+<script>
+
+// ABRIR GENERADOR
+
+function abrirGenerador(archivo, titulo) {
+
+    const portal = document.getElementById("portal");
+    const visor = document.getElementById("visor");
+    const iframe = document.getElementById("iframe-generador");
+    const tituloVisor = document.getElementById("titulo-visor");
+
+    tituloVisor.textContent = titulo;
+
+    // Cargamos el generador desde esta misma carpeta.
+    iframe.src = archivo;
+
+    portal.style.display = "none";
+    visor.style.display = "block";
+
+}
+
+
+// REGRESAR AL PORTAL
+
+function regresarPortal() {
+
+    const portal = document.getElementById("portal");
+    const visor = document.getElementById("visor");
+    const iframe = document.getElementById("iframe-generador");
+
+    // Detenemos el generador al salir.
+    iframe.src = "about:blank";
+
+    visor.style.display = "none";
+    portal.style.display = "block";
+
+}
+
+</script>
+
+</body>
+</html>
