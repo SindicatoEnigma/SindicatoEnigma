@@ -21,97 +21,67 @@
             ]
         },
         {
-            "id": "crucigrama",
-            "titulo": "Crucigrama",
-            "descripcion": "Resuelve palabras mediante pistas.",
+            "id": "sopa de letras",
+            "titulo": "Sopa de letras",
+            "descripcion": "Encuentra todas las palabras.",
             "partidas": [
                 {
-                    "id": "crucigrama-002",
-                    "titulo": "Crucigrama 002",
-                    "archivo": "minijuegos/crucigrama/prueba.html",
-                    "datos": "datos/Crucigrama002.txt"
-                },
-                {
-                    "id": "nuevoprueba",
-                    "titulo": "Crucigrama prueba",
-                    "archivo": "minijuegos/crucigrama/prueba.html",
-                    "datos": "datos/nuevoprueba.txt"
+                    "id": "sopaprueba02",
+                    "titulo": "sopa prueba",
+                    "archivo": "minijuegos/sopa_letras.html",
+                    "datos": "../assets/sopa_letras/sopaprueba02.txt"
                 }
             ]
         },
         {
-            "id": "crucigrama",
-            "titulo": "Crucigrama",
-            "descripcion": "Resuelve palabras mediante pistas.",
+            "id": "nonograma",
+            "titulo": "Nonograma",
+            "descripcion": "Encuentra la figura oculta.",
             "partidas": [
                 {
-                    "id": "crucigrama-002",
-                    "titulo": "Crucigrama 002",
-                    "archivo": "minijuegos/crucigrama/prueba.html",
-                    "datos": "datos/Crucigrama002.txt"
-                },
-                {
-                    "id": "nuevoprueba",
-                    "titulo": "Crucigrama prueba",
-                    "archivo": "minijuegos/crucigrama/prueba.html",
-                    "datos": "datos/nuevoprueba.txt"
+                    "id": "nonoprueba",
+                    "titulo": "Nonograma prueba",
+                    "archivo": "minijuegos/nonograma.html",
+                    "datos": "../assets/nonograma/nonoprueba02.txt"
                 }
             ]
         },
         {
-            "id": "crucigrama",
-            "titulo": "Crucigrama",
-            "descripcion": "Resuelve palabras mediante pistas.",
+            "id": "zudoku",
+            "titulo": "Zudoku",
+            "descripcion": "Resuelve la secuencia.",
             "partidas": [
                 {
-                    "id": "crucigrama-002",
-                    "titulo": "Crucigrama 002",
-                    "archivo": "minijuegos/crucigrama/prueba.html",
-                    "datos": "datos/Crucigrama002.txt"
-                },
-                {
-                    "id": "nuevoprueba",
-                    "titulo": "Crucigrama prueba",
-                    "archivo": "minijuegos/crucigrama/prueba.html",
-                    "datos": "datos/nuevoprueba.txt"
+                    "id": "zudoku prueba",
+                    "titulo": "Zudoku prueba",
+                    "archivo": "minijuegos/zudoku.html",
+                    "datos": "../assets/zudoku/zudokuprueba02.txt"
                 }
             ]
         },
         {
-            "id": "crucigrama",
-            "titulo": "Crucigrama",
-            "descripcion": "Resuelve palabras mediante pistas.",
+            "id": "conecta3",
+            "titulo": "Conecta 3",
+            "descripcion": "Arrastra, conecta y diviertete.",
             "partidas": [
                 {
-                    "id": "crucigrama-002",
-                    "titulo": "Crucigrama 002",
-                    "archivo": "minijuegos/crucigrama/prueba.html",
-                    "datos": "datos/Crucigrama002.txt"
-                },
-                {
-                    "id": "nuevoprueba",
-                    "titulo": "Crucigrama prueba",
-                    "archivo": "minijuegos/crucigrama/prueba.html",
-                    "datos": "datos/nuevoprueba.txt"
+                    "id": "conecta 3",
+                    "titulo": "conecta 3 Halloween",
+                    "archivo": "minijuegos/conecta3.html",
+                    "datos": "../assets/crush/configuraciones/nivel_001.txt"
                 }
             ]
         },
         {
-            "id": "crucigrama",
-            "titulo": "Crucigrama",
-            "descripcion": "Resuelve palabras mediante pistas.",
+            "id": "ruleta",
+            "titulo": "Rueleta",
+            "descripcion": "Escribe tus retos y prueba suerte.",
             "partidas": [
                 {
-                    "id": "crucigrama-002",
-                    "titulo": "Crucigrama 002",
-                    "archivo": "minijuegos/crucigrama/prueba.html",
-                    "datos": "datos/Crucigrama002.txt"
-                },
-                {
-                    "id": "nuevoprueba",
-                    "titulo": "Crucigrama prueba",
-                    "archivo": "minijuegos/crucigrama/prueba.html",
-                    "datos": "datos/nuevoprueba.txt"
+                    "id": "ruleta",
+                    "titulo": "Ruleta",
+                    "archivo": "minijuegos/ruleta.html",
+                    "datos": "../assets/ruleta/halloween/descripciones.txt"
                 }
             ]
         }
