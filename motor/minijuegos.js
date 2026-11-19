@@ -256,19 +256,20 @@ function abrirMinijuegoIndependiente(partida) {
         return;
     }
 
-    if (partida.datos !== undefined) {
+    
+if (partida.datos !== undefined) {
 
-        if (
-            typeof partida.datos !== "string" ||
-            !partida.datos.startsWith("datos/") ||
-            !/^[a-zA-Z0-9_./-]+\.txt$/i.test(partida.datos) ||
-            partida.datos.split("/").includes("..")
-        ) {
+    if (
+        typeof partida.datos !== "string" ||
+        !/^[a-zA-Z0-9_./-]+\.txt$/i.test(partida.datos) ||
+        partida.datos.startsWith("/")
+    ) {
 
-            alert("La ruta del archivo de datos no es válida.");
-            return;
-        }
+        alert("La ruta del archivo de datos no es válida.");
+        return;
     }
+}
+
 
     const url = new URL(rutaArchivo, document.baseURI);
 
