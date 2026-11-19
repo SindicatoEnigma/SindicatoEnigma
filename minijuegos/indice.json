@@ -19,6 +19,101 @@
                     "datos": "datos/nuevoprueba.txt"
                 }
             ]
+        },
+        {
+            "id": "crucigrama",
+            "titulo": "Crucigrama",
+            "descripcion": "Resuelve palabras mediante pistas.",
+            "partidas": [
+                {
+                    "id": "crucigrama-002",
+                    "titulo": "Crucigrama 002",
+                    "archivo": "minijuegos/crucigrama/prueba.html",
+                    "datos": "datos/Crucigrama002.txt"
+                },
+                {
+                    "id": "nuevoprueba",
+                    "titulo": "Crucigrama prueba",
+                    "archivo": "minijuegos/crucigrama/prueba.html",
+                    "datos": "datos/nuevoprueba.txt"
+                }
+            ]
+        },
+        {
+            "id": "crucigrama",
+            "titulo": "Crucigrama",
+            "descripcion": "Resuelve palabras mediante pistas.",
+            "partidas": [
+                {
+                    "id": "crucigrama-002",
+                    "titulo": "Crucigrama 002",
+                    "archivo": "minijuegos/crucigrama/prueba.html",
+                    "datos": "datos/Crucigrama002.txt"
+                },
+                {
+                    "id": "nuevoprueba",
+                    "titulo": "Crucigrama prueba",
+                    "archivo": "minijuegos/crucigrama/prueba.html",
+                    "datos": "datos/nuevoprueba.txt"
+                }
+            ]
+        },
+        {
+            "id": "crucigrama",
+            "titulo": "Crucigrama",
+            "descripcion": "Resuelve palabras mediante pistas.",
+            "partidas": [
+                {
+                    "id": "crucigrama-002",
+                    "titulo": "Crucigrama 002",
+                    "archivo": "minijuegos/crucigrama/prueba.html",
+                    "datos": "datos/Crucigrama002.txt"
+                },
+                {
+                    "id": "nuevoprueba",
+                    "titulo": "Crucigrama prueba",
+                    "archivo": "minijuegos/crucigrama/prueba.html",
+                    "datos": "datos/nuevoprueba.txt"
+                }
+            ]
+        },
+        {
+            "id": "crucigrama",
+            "titulo": "Crucigrama",
+            "descripcion": "Resuelve palabras mediante pistas.",
+            "partidas": [
+                {
+                    "id": "crucigrama-002",
+                    "titulo": "Crucigrama 002",
+                    "archivo": "minijuegos/crucigrama/prueba.html",
+                    "datos": "datos/Crucigrama002.txt"
+                },
+                {
+                    "id": "nuevoprueba",
+                    "titulo": "Crucigrama prueba",
+                    "archivo": "minijuegos/crucigrama/prueba.html",
+                    "datos": "datos/nuevoprueba.txt"
+                }
+            ]
+        },
+        {
+            "id": "crucigrama",
+            "titulo": "Crucigrama",
+            "descripcion": "Resuelve palabras mediante pistas.",
+            "partidas": [
+                {
+                    "id": "crucigrama-002",
+                    "titulo": "Crucigrama 002",
+                    "archivo": "minijuegos/crucigrama/prueba.html",
+                    "datos": "datos/Crucigrama002.txt"
+                },
+                {
+                    "id": "nuevoprueba",
+                    "titulo": "Crucigrama prueba",
+                    "archivo": "minijuegos/crucigrama/prueba.html",
+                    "datos": "datos/nuevoprueba.txt"
+                }
+            ]
         }
     ]
 }
