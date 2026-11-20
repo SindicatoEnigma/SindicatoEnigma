@@ -119,6 +119,48 @@ let selectedCard=null;
 let showingFinalOptions=false;
 let descriptions={};
 
+
+  // ===== PRE CARGA DE IMÁGENES =====
+const imageCache = new Map();
+
+function preloadCollectionImages(collection) {
+
+    const tasks = collection.images.map(filename => {
+
+        const src = collection.path + filename;
+
+        // Si ya se cargó, reutilizamos la imagen.
+        if (imageCache.has(src)) {
+            return imageCache.get(src);
+        }
+
+        const promise = new Promise((resolve, reject) => {
+
+            const image = new Image();
+
+            image.onload = () => resolve(image);
+
+            image.onerror = () => {
+                reject(new Error("No se pudo cargar: " + filename));
+            };
+
+            image.src = src;
+        });
+
+        imageCache.set(src, promise);
+
+        return promise;
+    });
+
+    return Promise.all(tasks);
+}
+
+
+
+
+
+  
+
 /* ===== MENÚ ===== */
 function renderCollections(){
 collectionGrid.innerHTML="";
@@ -133,11 +175,30 @@ collectionGrid.appendChild(button);
 
 /* ===== ABRIR COLECCIÓN ===== */
 async function openCollection(key){
-currentCollection=COLLECTIONS[key];
-stopRoulette();
-await loadDescriptions();
-createChallengeInputs();
-showScreen(setupScreen);
+
+    currentCollection = COLLECTIONS[key];
+
+    stopRoulette();
+
+    try {
+
+        // Esperar a que las imágenes y descripciones estén listas.
+        await Promise.all([
+            preloadCollectionImages(currentCollection),
+            loadDescriptions()
+        ]);
+
+    } catch(error) {
+
+        console.error("[SE] Error al preparar la colección:", error);
+
+        alert("No se pudieron cargar todas las imágenes de la colección.");
+        return;
+    }
+
+    createChallengeInputs();
+
+    showScreen(setupScreen);
 }
 
 /* ===== DESCRIPCIONES ===== */
@@ -175,7 +236,6 @@ function startGame(){
 challenges=[];
 for(let i=1;i<=6;i++)challenges.push(document.getElementById(`challenge${i}`).value);
 assignedCards=[...currentCollection.images];
-shuffle(assignedCards);
 selectedCard=null;
 showingFinalOptions=false;
 finalPanel.classList.add("hidden");
@@ -184,16 +244,34 @@ startRoulette();
 
 /* ===== RULETA ===== */
 function startRoulette(){
-showScreen(rouletteScreen);
-rouletteRunning=true;
-currentCardIndex=Math.floor(Math.random()*assignedCards.length);
-showRouletteCard();
-rouletteTimer=setInterval(()=>{
-currentCardIndex=Math.floor(Math.random()*assignedCards.length);
-showRouletteCard();
-playRouletteSound();
-},80);
-}
+
+    showScreen(rouletteScreen);
+
+    rouletteRunning = true;
+
+    // Siempre comenzamos por la primera imagen.
+    currentCardIndex = 0;
+
+    showRouletteCard();
+
+    rouletteTimer = setInterval(() => {
+
+        // Avanzar a la siguiente imagen.
+        currentCardIndex++;
+
+        // Al llegar al final, regresar a la primera.
+        if (currentCardIndex >= assignedCards.length) {
+            currentCardIndex = 0;
+        }
+
+        showRouletteCard();
+
+        playRouletteSound();
+
+    }, 80);
+  }
+
+  
 
 function showRouletteCard(){
 rouletteImage.src=currentCollection.path+assignedCards[currentCardIndex];
@@ -280,7 +358,19 @@ return array;
 }
 
 startBtn.addEventListener("click",startGame);
+
 renderCollections();
+
+// Comenzar a cargar las imágenes desde el inicio.
+Object.values(COLLECTIONS).forEach(collection => {
+
+    preloadCollectionImages(collection).catch(error => {
+        console.warn("[SE] Error al precargar imágenes:", error);
+    });
+
+});
+
+  
 </script>
 </body>
 </html>
