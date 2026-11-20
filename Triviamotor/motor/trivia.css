@@ -1,0 +1,71 @@
+/*
+========================================================
+MOTOR DE TRIVIA — APARIENCIA
+========================================================
+MODIFICAR EL:
+  --el-left, --el-bottom, --el-width
+
+MODIFICAR MARCO:
+  --marco-right, --marco-top, --marco-width,
+  --marco-height, --marco-rotation
+
+MODIFICAR PREGUNTA:
+  --pregunta-top, --pregunta-left, --pregunta-width
+  y text-align dentro de .panel-pregunta
+
+Los valores son porcentajes o tamaños de viewport.
+Ejemplo: --marco-rotation: -3deg; inclina hacia el otro lado.
+========================================================
+*/
+:root{
+ --transicion:500ms;
+ --el-left:4%; --el-bottom:1%; --el-width:min(38vw,470px);
+ --pregunta-top:8%; --pregunta-left:8%; --pregunta-width:84%;
+ --marco-right:5%; --marco-top:27%; --marco-width:min(43vw,620px);
+ --marco-height:min(48vh,520px); --marco-rotation:2deg;
+ --respuesta-bottom:10%; --respuesta-left:30%; --respuesta-width:42%;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#f2ead9;font-family:Georgia,"Times New Roman",serif}
+body{touch-action:manipulation}
+#juego{position:relative;width:100vw;width:100dvw;height:100vh;height:100dvh;overflow:hidden;background:#111;isolation:isolate}
+#juego:fullscreen{width:100vw;height:100vh}
+#fondo,#capaOscura,.escena{position:absolute;inset:0}
+#fondo{z-index:0;background:#17130e center/cover no-repeat;transition:opacity .7s}
+#fondo video{width:100%;height:100%;object-fit:cover}
+#capaOscura{z-index:1;pointer-events:none;background:radial-gradient(circle at center,transparent 20%,rgba(0,0,0,.48) 100%),rgba(0,0,0,.12)}
+.escena{z-index:2;opacity:0;visibility:hidden}
+.escena.visible{opacity:1;visibility:visible}
+#portada{display:flex;align-items:center;justify-content:center}
+.portada-panel{width:min(850px,88vw);padding:clamp(28px,5vw,65px);text-align:center;border:2px solid rgba(220,205,175,.75);background:rgba(15,15,15,.74);box-shadow:0 0 0 8px rgba(20,20,20,.5),0 18px 60px #000;animation:entrada .9s ease both}
+.sello{font-size:clamp(.75rem,1.6vw,1.1rem);letter-spacing:.25em}
+.portada-panel h1{margin:20px 0 8px;font-size:clamp(2.2rem,7vw,6rem);letter-spacing:.08em}
+.portada-panel p{margin:8px 0}.ayuda{margin-top:45px!important;opacity:.7;animation:pulso 1.8s infinite}
+.personaje{position:absolute;z-index:5;left:var(--el-left);bottom:var(--el-bottom);width:var(--el-width);pointer-events:none}
+.personaje img{display:block;width:100%;height:auto;object-fit:contain;filter:drop-shadow(0 10px 12px rgba(0,0,0,.6))}
+.personaje.entrando{animation:elEntrada var(--transicion) ease both}
+.personaje.saliendo{animation:elSalida var(--transicion) ease both}
+.texto-el{position:absolute;z-index:7;left:7%;bottom:7%;width:min(47vw,700px);padding:18px 24px;border:1px solid rgba(230,220,195,.7);background:rgba(10,10,10,.82);box-shadow:0 10px 35px rgba(0,0,0,.65);font-size:clamp(1rem,2vw,1.55rem);line-height:1.4}
+.nombre-el{margin-bottom:7px;font-size:.75em;letter-spacing:.18em;text-transform:uppercase;opacity:.7}
+.oculto{opacity:0!important;visibility:hidden!important;transform:translateY(18px)}
+.texto-el:not(.oculto),.panel-pregunta:not(.oculto),.panel-respuesta:not(.oculto),.marco-imagen:not(.oculto),.contador:not(.oculto){animation:entradaSalida .45s ease both}
+.panel-pregunta{position:absolute;z-index:6;top:var(--pregunta-top);left:var(--pregunta-left);width:var(--pregunta-width);padding:20px 30px;text-align:center;border:1px solid rgba(225,215,190,.75);background:rgba(10,10,10,.83);box-shadow:0 10px 35px rgba(0,0,0,.6);font-size:clamp(1.2rem,3vw,2.35rem);line-height:1.25}
+.etiqueta{margin-bottom:10px;font-size:.42em;letter-spacing:.22em;opacity:.65}
+.marco-imagen{position:absolute;z-index:6;right:var(--marco-right);top:var(--marco-top);width:var(--marco-width);height:var(--marco-height);padding:13px;transform:rotate(var(--marco-rotation));background:#e7dfcd;border:7px solid #26221b;box-shadow:0 0 0 2px #9d927c,0 15px 45px rgba(0,0,0,.7)}
+.marco-cabecera{position:absolute;top:-31px;right:12px;padding:6px 14px;background:#211e19;border:1px solid #a79b82;color:#eee6d4;font-size:.72rem;letter-spacing:.15em}
+.marco-contenido{width:100%;height:100%;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.marco-contenido img{width:100%;height:100%;object-fit:contain}
+.contador{position:absolute;z-index:8;left:50%;bottom:5%;width:min(390px,50vw);transform:translateX(-50%);text-align:center}
+#contadorNumero{font-size:clamp(2rem,5vw,4rem);font-weight:bold;text-shadow:0 4px 15px #000}
+.barra-tiempo{height:10px;margin-top:7px;overflow:hidden;border:1px solid #cfc3a9;background:rgba(0,0,0,.65)}
+#barraTiempoRelleno{width:100%;height:100%;transform-origin:left center;background:#d8cbb0}
+.panel-respuesta{position:absolute;z-index:9;left:var(--respuesta-left);bottom:var(--respuesta-bottom);width:var(--respuesta-width);padding:15px 25px;text-align:center;border:2px solid #d2c5a8;background:rgba(7,7,7,.9);box-shadow:0 12px 45px #000;font-size:clamp(1.2rem,3vw,2.2rem)}
+@keyframes entrada{from{opacity:0;transform:translateY(20px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes entradaSalida{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes elEntrada{from{opacity:0;transform:translateY(35px)}to{opacity:1;transform:none}}
+@keyframes elSalida{from{opacity:1;transform:none}to{opacity:0;transform:translateY(35px)}}
+@keyframes pulso{0%,100%{opacity:.45}50%{opacity:1}}
+@media(orientation:portrait){
+ :root{--el-left:2%;--el-bottom:0;--el-width:min(54vw,380px);--marco-right:3%;--marco-top:34%;--marco-width:53vw;--marco-height:36vh;--respuesta-left:22%;--respuesta-width:70%}
+ .texto-el{left:4%;bottom:4%;width:65vw}.panel-pregunta{left:5%;width:90%}
+}

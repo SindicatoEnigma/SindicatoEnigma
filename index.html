@@ -2,266 +2,567 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#171717">
-  <title>Sindicato Enigma</title>
-  <style>
-    :root {
-      --fondo: #171717;
-      --papel: #eee5d2;
-      --rojo: #9d2929;
-      --tinta: #29251f;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    * { box-sizing: border-box; }
+    <title>Sindicato Enigma</title>
 
-    body {
-      margin: 0;
-      background: var(--fondo);
-      color: var(--papel);
-      font-family: Georgia, "Times New Roman", serif;
-    }
-
-    header {
-      text-align: center;
-      padding: 28px 16px 20px;
-      border-bottom: 1px solid #62594c;
-    }
-
-    .siglas {
-      color: var(--rojo);
-      font-size: 38px;
-      font-weight: bold;
-      letter-spacing: 5px;
-    }
-
-    header h1 {
-      font-size: 23px;
-      letter-spacing: 3px;
-      margin: 6px 0;
-    }
-
-    header p {
-      color: #b9ad99;
-      font-size: 12px;
-      letter-spacing: 2px;
-    }
-
-    main {
-      width: min(720px, 100%);
-      margin: auto;
-      padding: 20px 14px 40px;
-    }
-
-    .expediente {
-      background: var(--papel);
-      color: var(--tinta);
-      padding: 22px;
-      border: 1px solid #9a8b72;
-      box-shadow: 0 5px 18px #0008;
-    }
-
-    .sello {
-      display: inline-block;
-      border: 2px solid var(--rojo);
-      color: var(--rojo);
-      padding: 5px 9px;
-      font-weight: bold;
-      letter-spacing: 2px;
-      transform: rotate(-3deg);
-    }
-
-    .expediente h2 {
-      text-align: center;
-      margin: 22px 0 8px;
-      font-size: 24px;
-    }
-
-    .subtitulo {
-      text-align: center;
-      font-size: 12px;
-      letter-spacing: 2px;
-    }
-
-    .separador {
-      border: 0;
-      border-top: 1px solid #a99b83;
-      margin: 18px 0;
-    }
-
-    .escena {
-      margin-top: 22px;
-      border: 1px solid #665c4b;
-      background: #242321;
-      overflow: hidden;
-    }
-
-    .escenario {
-      min-height: 180px;
-      display: grid;
-      place-items: center;
-      padding: 22px;
-      text-align: center;
-      background:
-        radial-gradient(ellipse at center, #514638 0%, #282623 65%, #171717 100%);
-    }
-
-    .escenario .luna {
-      font-size: 42px;
-      margin-bottom: 8px;
-    }
-
-    .escenario h3 {
-      margin: 0;
-      font-size: 21px;
-    }
-
-    .escenario p {
-      margin-bottom: 0;
-      color: #c5b9a4;
-      font-size: 13px;
-    }
-
-    .dialogo {
-      background: var(--papel);
-      color: var(--tinta);
-      padding: 18px;
-      min-height: 145px;
-    }
-
-    .personaje {
-      color: var(--rojo);
-      font-weight: bold;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
-    }
-
-    #texto {
-      line-height: 1.6;
-      margin: 0;
-    }
-
-    button {
-      display: block;
-      width: 100%;
-      margin-top: 14px;
-      padding: 14px;
-      background: var(--rojo);
-      color: white;
-      border: 1px solid #c66a60;
-      font: bold 15px Georgia, serif;
-      cursor: pointer;
-    }
-
-    button:active { opacity: 0.8; }
-
-    .nota {
-      color: #b9ad99;
-      font-size: 12px;
-      text-align: center;
-      line-height: 1.6;
-      margin-top: 22px;
-    }
-
-    footer {
-      text-align: center;
-      padding: 18px;
-      border-top: 1px solid #51483c;
-      color: #9d917d;
-      font-size: 12px;
-    }
-  </style>
+    <link rel="stylesheet" href="motor/motor.css">
 </head>
+
 <body>
-  <header>
-    <div class="siglas">S · E</div>
-    <h1>SINDICATO ENIGMA</h1>
-    <p>ARCHIVOS · MISTERIOS · DEDUCCIÓN</p>
-  </header>
 
-  <main>
-    <section class="expediente">
-      <div class="sello">ARCHIVO ABIERTO</div>
-      <h2>Bienvenido, investigador</h2>
-      <p class="subtitulo">TU PRÓXIMO MISTERIO COMIENZA AQUÍ</p>
-      <hr class="separador">
-      <p>
-        Algunos secretos se esconden detrás de una puerta.
-        Otros, detrás de una palabra, un número o una
-        contradicción que nadie se ha detenido a examinar.
-      </p>
-      <p>
-        En este lugar encontrarás casos, acertijos y
-        aventuras. Observa las pruebas, cuestiona tus
-        sospechas y descubre qué se oculta tras cada enigma.
-      </p>
-    </section>
+<main id="app">
 
-    <section class="escena">
-      <div class="escenario">
-        <div>
-          <div class="luna">☾</div>
-          <h3 id="tituloEscena">La oficina del detective</h3>
-          <p id="lugar">Sindicato Enigma · 23:47</p>
+    <!-- ================================= -->
+    <!-- PORTAL PRINCIPAL                  -->
+    <!-- ================================= -->
+
+    <div id="portal">
+
+        <!-- ENCABEZADO -->
+        <header id="portal-encabezado">
+            <h1>SINDICATO ENIGMA</h1>
+            <p>Archivo de investigaciones extraordinarias</p>
+        </header>
+
+        <!-- CUERPO DEL PORTAL -->
+        <div id="portal-cuerpo">
+
+            <!-- MENÚ LATERAL -->
+            <aside id="portal-menu">
+
+                <h2>MENÚ</h2>
+
+                <nav id="navegacion-principal">
+
+                    <button class="opcion-menu"
+                            data-seccion="historias">
+                        Historias
+                    </button>
+
+                    <button class="opcion-menu"
+                            data-seccion="minijuegos">
+                        Minijuegos
+                    </button>
+
+                    <button class="opcion-menu"
+                            data-seccion="noticias">
+                        Noticias
+                    </button>
+
+                    <button class="opcion-menu"
+                            data-seccion="herramientas">
+                        Tools
+                    </button>
+
+                    <button class="opcion-menu"
+                            data-seccion="nosotros">
+                        Nosotros
+                    </button>
+
+                </nav>
+
+            </aside>
+
+            <!-- CONTENIDO VARIABLE -->
+            <section id="portal-contenido">
+
+                <div id="contenido-portal">
+
+                    <!-- NOTICIAS SERÁ LA SECCIÓN INICIAL -->
+                    
+<div id="seccion-noticias" class="seccion-portal">
+    <h2>Noticias</h2>
+
+    <!-- Catálogo de noticias -->
+    <div id="vista-listado-noticias">
+        <div id="lista-noticias">
+            <!-- Las noticias se cargarán automáticamente -->
         </div>
-      </div>
+    </div>
 
-      <div class="dialogo">
-        <div class="personaje" id="nombrePersonaje">EL</div>
-        <p id="texto">Vaya, por fin has llegado. Tengo un expediente que necesita una mente curiosa. ¿Te atreves a examinarlo?</p>
-        <button id="avanzar">Continuar →</button>
-      </div>
+    <!-- Visor de documentos PDF -->
+    <div id="visor-noticia" class="oculto">
+
+        <button id="btn-volver-noticias" type="button">
+            ← Volver a noticias
+        </button>
+
+        <h3 id="titulo-noticia-abierta"></h3>
+
+        <iframe
+            id="pdf-noticia"
+            title="Documento de noticia"
+        ></iframe>
+
+        <p>
+            <a
+                id="enlace-pdf-noticia"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Abrir PDF en otra pestaña
+            </a>
+        </p>
+
+    </div>
+</div>
+
+
+
+<!-- ================================= -->
+<!-- SECCIÓN DE HERRAMIENTAS           -->
+<!-- ================================= -->
+
+<div id="seccion-herramientas" class="seccion-portal">
+
+    <!-- Catálogo de herramientas -->
+    <div id="vista-listado-herramientas">
+
+        <h2>Herramientas</h2>
+
+        <div id="lista-herramientas"></div>
+
+    </div>
+
+    <!-- Visor de aplicaciones -->
+    <div id="visor-herramienta" class="oculto">
+
+        <!-- Encabezado minimalista -->
+        <header id="encabezado-herramienta">
+            <span id="titulo-herramienta">SINDICATO ENIGMA</span>
+        </header>
+
+        <!-- Aplicación seleccionada -->
+        <iframe
+            id="marco-herramienta"
+            title="Herramienta de Sindicato Enigma"
+            src="about:blank">
+        </iframe>
+
+        <!-- Pie con botón de regreso -->
+        <footer id="pie-herramienta">
+
+            <button
+                id="btn-volver-herramientas"
+                type="button">
+                ← Regresar
+            </button>
+
+        </footer>
+
+    </div>
+
+</div>
+
+
+                    
+
+                    <!-- HISTORIAS -->
+                    <div id="seccion-historias"
+                         class="seccion-portal oculto">
+
+                        <h2>Historias</h2>
+
+                        <div id="lista-historias">
+                            <!-- Aquí se cargarán las historias -->
+                        </div>
+
+                    </div>
+
+                    <!-- MINIJUEGOS -->
+                    
+<!-- MINIJUEGOS -->
+<div id="seccion-minijuegos" class="seccion-portal oculto">
+
+    <!-- Catálogo de tipos de juegos -->
+    <div id="vista-listado-minijuegos">
+
+        <h2>Minijuegos</h2>
+
+        <div id="lista-minijuegos"></div>
+
+    </div>
+
+    <!-- Catálogo de partidas -->
+    <div id="vista-partidas-minijuegos" class="oculto">
+
+        <button id="btn-volver-minijuegos" type="button">
+            ← Volver a minijuegos
+        </button>
+
+        <h2 id="titulo-partidas-minijuegos"></h2>
+
+        <div id="lista-partidas-minijuegos"></div>
+
+    </div>
+
+    <!-- Visor de minijuegos -->
+    <div id="visor-minijuego" class="oculto">
+
+        <header id="encabezado-minijuego">
+            <span id="titulo-minijuego">SINDICATO ENIGMA</span>
+        </header>
+
+        <iframe
+            id="marco-minijuego"
+            title="Minijuego de Sindicato Enigma"
+            src="about:blank">
+        </iframe>
+
+        <footer id="pie-minijuego">
+
+            <button id="btn-volver-partidas" type="button">
+                ← Regresar
+            </button>
+
+        </footer>
+
+    </div>
+
+</div>
+
+
+                    
+
+                    <!-- NOSOTROS -->
+                    <!-- NOSOTROS -->
+
+<div id="seccion-nosotros"
+     class="seccion-portal oculto">
+
+    <iframe
+        id="marco-nosotros"
+        src="nosotros/index.html"
+        title="Acerca de Sindicato Enigma">
+    </iframe>
+
+</div>
+                    
+                    
+
+                  <!-- CONTACTO -->
+<div id="seccion-contacto"
+     class="seccion-portal oculto">
+
+    <h2>Contacto</h2>
+
+    <iframe
+        id="marco-contacto"
+        src="contacto/index.html"
+        title="Formulario de contacto de Sindicato Enigma">
+    </iframe>
+
+</div>
+
+
+                    
+<!-- REDES SOCIALES -->
+<div id="seccion-redes"
+     class="seccion-portal oculto">
+
+    <header class="encabezado-redes">
+        <h2>Canales oficiales</h2>
+        <p>
+            Sigue las investigaciones, historias y novedades
+            de Sindicato Enigma.
+        </p>
+    </header>
+
+    <div id="lista-redes">
+
+        <!-- INSTAGRAM -->
+        <a class="tarjeta-red"
+           href="https://www.instagram.com/sindicato.enigma/"
+           target="_blank"
+           rel="noopener noreferrer">
+
+            <span class="icono-red">◎</span>
+            <h3>Instagram</h3>
+            <p>@sindicato.enigma</p>
+            <span class="texto-visitar">Visitar perfil ↗</span>
+
+        </a>
+
+        <!-- YOUTUBE -->
+        <a class="tarjeta-red"
+           href="https://youtube.com/@sindicato.enigma"
+           target="_blank"
+           rel="noopener noreferrer">
+
+            <span class="icono-red">▶</span>
+            <h3>YouTube</h3>
+            <p>@sindicato.enigma</p>
+            <span class="texto-visitar">Visitar canal ↗</span>
+
+        </a>
+
+        <!-- X -->
+        <a class="tarjeta-red"
+           href="https://x.com/SindicatoEnigma"
+           target="_blank"
+           rel="noopener noreferrer">
+
+            <span class="icono-red">𝕏</span>
+            <h3>X</h3>
+            <p>@SindicatoEnigma</p>
+            <span class="texto-visitar">Visitar perfil ↗</span>
+
+        </a>
+
+        <!-- TIKTOK -->
+        <a class="tarjeta-red"
+           href="https://www.tiktok.com/@sindicato.enigma"
+           target="_blank"
+           rel="noopener noreferrer">
+
+            <span class="icono-red">♪</span>
+            <h3>TikTok</h3>
+            <p>@sindicato.enigma</p>
+            <span class="texto-visitar">Visitar perfil ↗</span>
+
+        </a>
+
+    </div>
+
+    <p class="mensaje-redes">
+        Toda historia deja pistas. Encuéntranos en nuestras redes.
+    </p>
+
+</div>
+
+                    
+
+                </div>
+
+            </section>
+
+        </div>
+
+        <!-- PIE DE PÁGINA -->
+        <footer id="portal-pie">
+
+            <p>
+                Sindicato Enigma
+                |
+                <a href="#" data-seccion="redes">Redes sociales</a>
+                |
+                <a href="#" data-seccion="contacto">Contacto</a>
+            </p>
+
+        </footer>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- SISTEMA DE HISTORIAS Y MINIJUEGOS -->
+    <!-- ================================= -->
+
+    <!-- PANTALLA DE INICIO ANTIGUA -->
+    <section id="pantalla-inicio" class="pantalla">
+        <div class="logo-inicio">
+            <div class="logo-se">SE</div>
+            <h1>SINDICATO ENIGMA</h1>
+            <p>Archivo de investigaciones extraordinarias</p>
+            <button id="btn-iniciar">Abrir archivo</button>
+        </div>
     </section>
 
-    <p class="nota">
-      Esta es la primera versión de nuestro motor narrativo.
-      Más adelante añadiremos ilustraciones, personajes,
-      escenarios intercambiables, decisiones y minijuegos.
-    </p>
-  </main>
 
-  <footer>
-    SINDICATO ENIGMA · CADA PISTA CUENTA
-  </footer>
+    <!-- ARCHIVO DE CASOS -->
+    <section id="pantalla-archivo" class="pantalla">
 
-  <script>
-    const escenas = [
-      {
-        lugar: "Sindicato Enigma · 23:47",
-        titulo: "La oficina del detective",
-        personaje: "EL",
-        texto: "Vaya, por fin has llegado. Tengo un expediente que necesita una mente curiosa. ¿Te atreves a examinarlo?",
-        boton: "Continuar →"
-      },
-      {
-        lugar: "Expediente sin clasificar",
-        titulo: "Una carta misteriosa",
-        personaje: "EL",
-        texto: "Esta mañana encontré una carta sin remitente. Solo contiene una frase: «La verdad está a la vista, pero nadie la observa».",
-        boton: "Examinar la pista →"
-      },
-      {
-        lugar: "Primera regla de investigación",
-        titulo: "Antes de sacar conclusiones",
-        personaje: "EL",
-        texto: "Recuerda: una observación no es lo mismo que una hipótesis. Primero reúne los hechos; después, considera qué explicaciones encajan con ellos.",
-        boton: "Volver al principio ↻"
-      }
-    ];
+        <header class="encabezado">
+            <div>
+                <span class="etiqueta">ARCHIVO</span>
+                <h2>Casos del Sindicato</h2>
+            </div>
 
-    let indice = 0;
+            <button id="btn-config"
+                    class="boton-icono"
+                    title="Configuración">⚙</button>
+        </header>
 
-    document.getElementById("avanzar").addEventListener("click", () => {
-      indice = (indice + 1) % escenas.length;
-      const escena = escenas[indice];
+        <div id="lista-casos" class="lista-casos">
+            <!-- JavaScript inserta aquí los expedientes -->
+        </div>
 
-      document.getElementById("lugar").textContent = escena.lugar;
-      document.getElementById("tituloEscena").textContent = escena.titulo;
-      document.getElementById("nombrePersonaje").textContent = escena.personaje;
-      document.getElementById("texto").textContent = escena.texto;
-      document.getElementById("avanzar").textContent = escena.boton;
-    });
-  </script>
+    </section>
+
+
+    <!-- MENÚ DE CAPÍTULO -->
+    <section id="pantalla-capitulo" class="pantalla">
+
+        <header class="encabezado">
+
+            <button id="btn-volver-archivo"
+                    class="boton-secundario">
+                ← Archivo
+            </button>
+
+            <div>
+                <span id="capitulo-etiqueta"
+                      class="etiqueta">CAPÍTULO</span>
+
+                <h2 id="capitulo-titulo">Investigación</h2>
+            </div>
+
+        </header>
+
+        <div id="lista-partes" class="lista-partes">
+            <!-- JavaScript inserta aquí las partes -->
+        </div>
+
+    </section>
+
+
+    <!-- ESCENA NARRATIVA -->
+    <section id="pantalla-historia"
+             class="pantalla pantalla-historia">
+
+        <div id="escena" class="escena">
+
+            <div id="capa-personajes"
+                 class="capa-personajes"></div>
+
+            <!-- DIÁLOGO -->
+            <div id="dialogo" class="dialogo oculto">
+
+                <div id="nombre-personaje"
+                     class="nombre-personaje"></div>
+
+                <div id="texto-dialogo"
+                     class="texto-dialogo"></div>
+
+                <div id="indicador-avance"
+                     class="indicador-avance">▼</div>
+
+            </div>
+
+            <!-- DOCUMENTO -->
+            <div id="documento" class="documento oculto">
+
+                <div id="texto-documento"
+                     class="texto-documento"></div>
+
+                <button id="btn-cerrar-documento"
+                        class="boton-secundario">
+                    Cerrar
+                </button>
+
+            </div>
+
+            <!-- CONTROLES DE HISTORIA -->
+            <div class="controles-historia">
+
+                <button id="btn-menu-historia"
+                        class="boton-control">☰</button>
+
+                <div class="controles-audio">
+
+                    <button id="btn-musica"
+                            class="boton-control">♫</button>
+
+                    <button id="btn-sonido"
+                            class="boton-control">🔊</button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- PANTALLA DE MINIJUEGO -->
+    <section id="pantalla-puzzle" class="pantalla">
+
+        <div class="puzzle-contenedor">
+
+            <header class="encabezado">
+
+                <div>
+                    <span class="etiqueta">MINIJUEGO</span>
+                    <h2 id="puzzle-titulo">Puzzle</h2>
+                </div>
+
+            </header>
+
+            <div id="puzzle-contenido"
+                 class="puzzle-contenido">
+                <!-- Aquí se monta el módulo del puzzle -->
+            </div>
+
+            <button id="btn-salir-puzzle"
+                    class="boton-secundario">
+                Salir del minijuego
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- CONFIGURACIÓN -->
+    <section id="pantalla-config" class="pantalla">
+
+        <div class="config-contenedor">
+
+            <header class="encabezado">
+
+                <button id="btn-cerrar-config"
+                        class="boton-secundario">
+                    ← Volver
+                </button>
+
+                <div>
+                    <span class="etiqueta">SISTEMA</span>
+                    <h2>Configuración</h2>
+                </div>
+
+            </header>
+
+            <label class="opcion-config">
+
+                <input type="checkbox"
+                       id="config-musica"
+                       checked>
+
+                Música
+
+            </label>
+
+            <label class="opcion-config">
+
+                <input type="checkbox"
+                       id="config-sonido"
+                       checked>
+
+                Efectos de sonido
+
+            </label>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- ================================= -->
+<!-- ARCHIVOS JAVASCRIPT               -->
+<!-- ================================= -->
+
+<script src="motor/audio.js"></script>
+<script src="motor/noticias.js"></script>
+<script src="motor/herramientas.js"></script>
+    
+<script src="motor/minijuegos.js"></script>
+<script src="motor/motor.js"></script>
+
 </body>
 </html>

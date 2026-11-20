@@ -1,0 +1,1364 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de Crucigramas | Sindicato Enigma</title>
+
+<style>
+:root {
+    --fondo: #171717;
+    --panel: #242424;
+    --panel2: #303030;
+    --texto: #eeeeee;
+    --secundario: #aaaaaa;
+    --borde: #494949;
+    --rojo: #963d3d;
+    --azul: #315b80;
+    --verde: #376b4c;
+    --blanco: #f0eee8;
+    --negro: #111111;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 18px;
+    background: var(--fondo);
+    color: var(--texto);
+    font-family: Arial, sans-serif;
+}
+
+.contenedor {
+    width: 100%;
+    max-width: 950px;
+    margin: auto;
+}
+
+h1, h2, h3 {
+    color: var(--texto);
+}
+
+h1 {
+    text-align: center;
+    font-size: 25px;
+    margin-bottom: 5px;
+}
+
+.subtitulo {
+    text-align: center;
+    color: var(--secundario);
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--borde);
+    border-radius: 9px;
+    padding: 16px;
+    margin-bottom: 18px;
+}
+
+.panel h2 {
+    font-size: 18px;
+    margin-top: 0;
+}
+
+.configuracion {
+    display: flex;
+    gap: 12px;
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.campo-config {
+    flex: 1;
+    min-width: 100px;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    color: var(--secundario);
+    margin-bottom: 6px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--borde);
+    border-radius: 5px;
+    background: #181818;
+    color: white;
+    font-size: 15px;
+}
+
+input:focus, textarea:focus {
+    outline: 2px solid var(--azul);
+}
+
+button {
+    border: 0;
+    border-radius: 5px;
+    padding: 11px 15px;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+}
+
+.btn-generar {
+    background: var(--azul);
+}
+
+.btn-h {
+    background: var(--verde);
+}
+
+.btn-v {
+    background: var(--azul);
+}
+
+.btn-negra {
+    background: #444444;
+}
+
+.btn-borrar {
+    background: var(--rojo);
+}
+
+.btn-exportar {
+    background: var(--verde);
+}
+
+.btn-copiar {
+    background: var(--azul);
+}
+
+.herramientas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.instruccion {
+    color: var(--secundario);
+    font-size: 13px;
+    margin-bottom: 15px;
+}
+
+.info-seleccion {
+    background: #191919;
+    border: 1px solid var(--borde);
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    color: var(--secundario);
+}
+
+.tablero-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    padding: 5px 2px 12px;
+}
+
+.tablero {
+    display: grid;
+    gap: 3px;
+    width: max-content;
+    margin: auto;
+}
+
+.casilla {
+    width: 39px;
+    height: 39px;
+    position: relative;
+    background: var(--blanco);
+    border: 2px solid #b9b6ad;
+    border-radius: 3px;
+}
+
+.casilla.seleccionada {
+    outline: 3px solid #d6a94b;
+    outline-offset: 1px;
+    z-index: 2;
+}
+
+.casilla input {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    outline: none;
+    background: transparent;
+    color: #181818;
+    text-align: center;
+    font-size: 21px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.casilla input:focus {
+    outline: none;
+    background: #dce8f2;
+}
+
+.casilla.negra {
+    background: var(--negro);
+    border-color: #444444;
+}
+
+.casilla.negra input {
+    color: white;
+    cursor: default;
+}
+
+.marcador {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+.lista-pistas {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pista {
+    display: grid;
+    grid-template-columns: 105px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+}
+
+.pista-numero {
+    font-size: 13px;
+    font-weight: bold;
+    color: #dddddd;
+}
+
+.pista input {
+    min-width: 0;
+}
+
+.sin-pistas {
+    color: var(--secundario);
+    font-size: 13px;
+}
+
+.mensaje-final {
+    min-height: 75px;
+    resize: vertical;
+}
+
+.resultado {
+    min-height: 270px;
+    resize: vertical;
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre;
+}
+
+.acciones-resultado {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 10px;
+}
+
+.estado {
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 13px;
+    margin-top: 12px;
+    display: none;
+}
+
+.estado.error {
+    display: block;
+    background: #512929;
+    color: #ffdede;
+}
+
+.estado.exito {
+    display: block;
+    background: #23452f;
+    color: #d9ffe4;
+}
+
+.lista-errores {
+    padding-left: 20px;
+}
+
+@media (max-width: 520px) {
+    body {
+        padding: 10px;
+    }
+
+    .casilla {
+        width: 34px;
+        height: 34px;
+    }
+
+    .casilla input {
+        font-size: 18px;
+    }
+
+    .pista {
+        grid-template-columns: 1fr;
+        gap: 5px;
+    }
+
+    .herramientas button {
+        flex: 1 1 43%;
+    }
+
+    .configuracion button {
+        width: 100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+    <h1>SINDICATO ENIGMA</h1>
+    <div class="subtitulo">Generador de crucigramas</div>
+
+    <!-- CONFIGURACIÓN -->
+
+    <section class="panel">
+        <h2>1. Configurar matriz</h2>
+
+        <div class="configuracion">
+
+            <div class="campo-config">
+                <label for="filas">Filas</label>
+                <input type="number" id="filas"
+                       min="1" max="30" value="6">
+            </div>
+
+            <div class="campo-config">
+                <label for="columnas">Columnas</label>
+                <input type="number" id="columnas"
+                       min="1" max="30" value="5">
+            </div>
+
+            <button class="btn-generar" id="crear-tablero">
+                Crear matriz
+            </button>
+
+        </div>
+    </section>
+
+
+    <!-- EDITOR -->
+
+    <section class="panel" id="editor" hidden>
+
+        <h2>2. Editor del tablero</h2>
+
+        <div class="instruccion">
+            Selecciona una casilla para escribir una letra
+            o utilizar las herramientas.
+        </div>
+
+        <div class="herramientas">
+
+            <button class="btn-v" id="agregar-v" disabled>
+                Agregar vertical
+            </button>
+
+            <button class="btn-h" id="agregar-h" disabled>
+                Agregar horizontal
+            </button>
+
+            <button class="btn-negra" id="agregar-negra" disabled>
+                Negra
+            </button>
+
+            <button class="btn-borrar" id="borrar" disabled>
+                Borrar
+            </button>
+
+        </div>
+
+        <div class="info-seleccion" id="info-seleccion">
+            Selecciona una casilla del tablero.
+        </div>
+
+        <div class="tablero-contenedor">
+            <div class="tablero" id="tablero"></div>
+        </div>
+
+    </section>
+
+
+    <!-- PISTAS HORIZONTALES -->
+
+    <section class="panel" id="panel-h" hidden>
+
+        <h2>Pistas horizontales</h2>
+
+        <div class="lista-pistas" id="pistas-h"></div>
+
+    </section>
+
+
+    <!-- PISTAS VERTICALES -->
+
+    <section class="panel" id="panel-v" hidden>
+
+        <h2>Pistas verticales</h2>
+
+        <div class="lista-pistas" id="pistas-v"></div>
+
+    </section>
+
+
+    <!-- MENSAJE FINAL -->
+
+    <section class="panel" id="panel-final" hidden>
+
+        <h2>Mensaje de finalización</h2>
+
+        <label for="mensaje-final">
+            Mensaje que aparecerá al completar el crucigrama.
+        </label>
+
+        <textarea class="mensaje-final"
+                  id="mensaje-final">Has completado correctamente el crucigrama.</textarea>
+
+    </section>
+
+
+    <!-- GENERAR RESULTADO -->
+
+    <section class="panel" id="panel-resultado" hidden>
+
+        <h2>3. Generar crucigrama</h2>
+
+        <button class="btn-exportar" id="generar-codigo">
+            Generar código TXT
+        </button>
+
+        <div class="estado" id="estado"></div>
+
+        <div id="resultado-contenedor" hidden>
+
+            <h3>Resultado</h3>
+
+            <textarea class="resultado"
+                      id="resultado"
+                      readonly></textarea>
+
+            <div class="acciones-resultado">
+
+                <button class="btn-copiar" id="copiar">
+                    Copiar código
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<script>
+"use strict";
+
+/* =========================================
+   VARIABLES PRINCIPALES
+========================================= */
+
+let filas = 0;
+let columnas = 0;
+
+let matriz = [];
+let marcadores = [];
+
+let seleccion = null;
+let siguienteId = 1;
+
+
+/* =========================================
+   ELEMENTOS HTML
+========================================= */
+
+const tablero = document.getElementById("tablero");
+const editor = document.getElementById("editor");
+
+const infoSeleccion = document.getElementById("info-seleccion");
+
+const botonV = document.getElementById("agregar-v");
+const botonH = document.getElementById("agregar-h");
+const botonNegra = document.getElementById("agregar-negra");
+const botonBorrar = document.getElementById("borrar");
+
+const listaH = document.getElementById("pistas-h");
+const listaV = document.getElementById("pistas-v");
+
+const estado = document.getElementById("estado");
+const resultado = document.getElementById("resultado");
+
+
+/* =========================================
+   CREAR MATRIZ
+========================================= */
+
+document.getElementById("crear-tablero").addEventListener("click", () => {
+
+    const nuevasFilas = Number(document.getElementById("filas").value);
+    const nuevasColumnas = Number(document.getElementById("columnas").value);
+
+    if (
+        !Number.isInteger(nuevasFilas) ||
+        !Number.isInteger(nuevasColumnas) ||
+        nuevasFilas < 1 ||
+        nuevasColumnas < 1 ||
+        nuevasFilas > 30 ||
+        nuevasColumnas > 30
+    ) {
+        alert("Introduce entre 1 y 30 filas y columnas.");
+        return;
+    }
+
+    if (matriz.length > 0) {
+
+        const confirmar = confirm(
+            "Crear una nueva matriz eliminará el tablero actual y sus pistas. ¿Continuar?"
+        );
+
+        if (!confirmar) return;
+    }
+
+    filas = nuevasFilas;
+    columnas = nuevasColumnas;
+
+    matriz = [];
+    marcadores = [];
+    seleccion = null;
+    siguienteId = 1;
+
+    for (let f = 0; f < filas; f++) {
+
+        const fila = [];
+
+        for (let c = 0; c < columnas; c++) {
+
+            fila.push({
+                letra: "",
+                negra: false
+            });
+
+        }
+
+        matriz.push(fila);
+    }
+
+    editor.hidden = false;
+    document.getElementById("panel-h").hidden = false;
+    document.getElementById("panel-v").hidden = false;
+    document.getElementById("panel-final").hidden = false;
+    document.getElementById("panel-resultado").hidden = false;
+
+    resultado.value = "";
+    document.getElementById("resultado-contenedor").hidden = true;
+
+    ocultarEstado();
+
+    dibujarTablero();
+    dibujarPistas();
+    actualizarSeleccion();
+
+});
+
+
+/* =========================================
+   DIBUJAR TABLERO
+========================================= */
+
+function dibujarTablero() {
+
+    tablero.innerHTML = "";
+
+    tablero.style.gridTemplateColumns =
+        `repeat(${columnas}, 39px)`;
+
+    for (let f = 0; f < filas; f++) {
+
+        for (let c = 0; c < columnas; c++) {
+
+            const casilla = document.createElement("div");
+
+            casilla.className = "casilla";
+            casilla.dataset.fila = f;
+            casilla.dataset.columna = c;
+
+            const entrada = document.createElement("input");
+
+            entrada.type = "text";
+            entrada.maxLength = 1;
+            entrada.autocomplete = "off";
+            entrada.autocapitalize = "characters";
+            entrada.spellcheck = false;
+            entrada.setAttribute("aria-label",
+                `Fila ${f + 1}, columna ${c + 1}`);
+
+            const celda = matriz[f][c];
+
+            if (celda.negra) {
+
+    casilla.classList.add("negra");
+    entrada.disabled = true;
+
+    const tieneMarcador = marcadores.some(m =>
+        m.fila === f && m.columna === c
+    );
+
+    entrada.value = tieneMarcador ? "" : "#";
+
+} else {
+
+    entrada.value = celda.letra;
+
+            }
+
+            const marcadorCelda = marcadores.filter(m =>
+                m.fila === f && m.columna === c
+            );
+
+            if (marcadorCelda.length > 0) {
+
+                const etiqueta = document.createElement("div");
+                etiqueta.className = "marcador";
+
+                etiqueta.textContent = marcadorCelda
+                    .map(m => `${m.direccion}${obtenerNumero(m)}`)
+                    .join("/");
+
+                casilla.appendChild(etiqueta);
+            }
+
+            casilla.appendChild(entrada);
+
+            tablero.appendChild(casilla);
+
+            casilla.addEventListener("click", () => {
+                seleccionarCasilla(f, c);
+            });
+
+            entrada.addEventListener("focus", () => {
+                seleccionarCasilla(f, c);
+            });
+
+            entrada.addEventListener("input", () => {
+
+                if (celda.negra) return;
+
+                const valor = entrada.value
+                    .slice(0, 1)
+                    .toLocaleUpperCase("es-MX");
+
+                if (valor === "#" || /\s/.test(valor)) {
+
+                    entrada.value = "";
+                    matriz[f][c].letra = "";
+                    return;
+                }
+
+                entrada.value = valor;
+                matriz[f][c].letra = valor;
+
+                ocultarEstado();
+                document.getElementById("resultado-contenedor").hidden = true;
+
+            });
+
+        }
+    }
+
+    actualizarSeleccion();
+}
+
+
+/* =========================================
+   SELECCIONAR CASILLA
+========================================= */
+
+function seleccionarCasilla(fila, columna) {
+
+    seleccion = { fila, columna };
+
+    actualizarSeleccion();
+}
+
+
+function actualizarSeleccion() {
+
+    const casillas = tablero.querySelectorAll(".casilla");
+
+    casillas.forEach(casilla => {
+
+        const f = Number(casilla.dataset.fila);
+        const c = Number(casilla.dataset.columna);
+
+        casilla.classList.toggle(
+            "seleccionada",
+            seleccion !== null &&
+            seleccion.fila === f &&
+            seleccion.columna === c
+        );
+
+    });
+
+    const botones = [
+        botonV,
+        botonH,
+        botonNegra,
+        botonBorrar
+    ];
+
+    botones.forEach(boton => {
+        boton.disabled = seleccion === null;
+    });
+
+    if (seleccion === null) {
+
+        infoSeleccion.textContent =
+            "Selecciona una casilla del tablero.";
+
+        return;
+    }
+
+    const celda = matriz[seleccion.fila][seleccion.columna];
+
+    const marcadoresCelda = marcadores.filter(m =>
+        m.fila === seleccion.fila &&
+        m.columna === seleccion.columna
+    );
+
+    let descripcion = "";
+
+    if (celda.negra) {
+        descripcion = "Casilla negra";
+    } else {
+        descripcion = celda.letra
+            ? `Letra: ${celda.letra}`
+            : "Casilla vacía";
+    }
+
+    if (marcadoresCelda.length > 0) {
+
+        descripcion += " | Marcadores: " +
+            marcadoresCelda.map(m =>
+                `${m.direccion}${obtenerNumero(m)}`
+            ).join(", ");
+    }
+
+    infoSeleccion.textContent =
+        `Fila ${seleccion.fila + 1}, columna ${seleccion.columna + 1} | ${descripcion}`;
+}
+
+
+/* =========================================
+   NUMERACIÓN DE MARCADORES
+========================================= */
+
+function obtenerMarcadores(direccion) {
+
+    return marcadores.filter(m =>
+        m.direccion === direccion
+    );
+}
+
+
+function obtenerNumero(marcador) {
+
+    return obtenerMarcadores(marcador.direccion)
+        .findIndex(m => m.id === marcador.id) + 1;
+}
+
+
+/* =========================================
+   AGREGAR HORIZONTAL
+========================================= */
+
+botonH.addEventListener("click", () => {
+
+    if (!seleccion) return;
+
+    const existe = marcadores.some(m =>
+        m.fila === seleccion.fila &&
+        m.columna === seleccion.columna &&
+        m.direccion === "H"
+    );
+
+    if (existe) {
+        alert("Esta casilla ya tiene un marcador horizontal.");
+        return;
+    }
+
+    convertirEnMarcador("H");
+
+});
+
+
+/* =========================================
+   AGREGAR VERTICAL
+========================================= */
+
+botonV.addEventListener("click", () => {
+
+    if (!seleccion) return;
+
+    const existe = marcadores.some(m =>
+        m.fila === seleccion.fila &&
+        m.columna === seleccion.columna &&
+        m.direccion === "V"
+    );
+
+    if (existe) {
+        alert("Esta casilla ya tiene un marcador vertical.");
+        return;
+    }
+
+    convertirEnMarcador("V");
+
+});
+
+
+function convertirEnMarcador(direccion) {
+
+    const f = seleccion.fila;
+    const c = seleccion.columna;
+
+    matriz[f][c].letra = "";
+    matriz[f][c].negra = true;
+
+    marcadores.push({
+        id: siguienteId++,
+        direccion,
+        fila: f,
+        columna: c,
+        pista: ""
+    });
+
+    actualizarDespuesDeAccion();
+}
+
+
+/* =========================================
+   CASILLA NEGRA
+========================================= */
+
+botonNegra.addEventListener("click", () => {
+
+    if (!seleccion) return;
+
+    const f = seleccion.fila;
+    const c = seleccion.columna;
+
+    matriz[f][c].letra = "";
+    matriz[f][c].negra = true;
+
+    // Elimina los marcadores de esa casilla.
+    marcadores = marcadores.filter(m =>
+        m.fila !== f || m.columna !== c
+    );
+
+    actualizarDespuesDeAccion();
+});
+
+
+/* =========================================
+   BORRAR CASILLA
+========================================= */
+
+botonBorrar.addEventListener("click", () => {
+
+    if (!seleccion) return;
+
+    const f = seleccion.fila;
+    const c = seleccion.columna;
+
+    matriz[f][c].letra = "";
+    matriz[f][c].negra = false;
+
+    // Elimina marcadores y sus pistas.
+    marcadores = marcadores.filter(m =>
+        m.fila !== f || m.columna !== c
+    );
+
+    actualizarDespuesDeAccion();
+});
+
+
+/* =========================================
+   ACTUALIZAR DESPUÉS DE UNA ACCIÓN
+========================================= */
+
+function actualizarDespuesDeAccion() {
+
+    ocultarEstado();
+
+    document.getElementById("resultado-contenedor").hidden = true;
+
+    dibujarTablero();
+    dibujarPistas();
+    actualizarSeleccion();
+}
+
+
+/* =========================================
+   CREAR LISTAS DE PISTAS
+========================================= */
+
+function dibujarPistas() {
+
+    listaH.innerHTML = "";
+    listaV.innerHTML = "";
+
+    crearListaPistas("H", listaH);
+    crearListaPistas("V", listaV);
+
+}
+
+
+function crearListaPistas(direccion, contenedor) {
+
+    const elementos = obtenerMarcadores(direccion);
+
+    if (elementos.length === 0) {
+
+        const texto = document.createElement("div");
+        texto.className = "sin-pistas";
+        texto.textContent = "Todavía no hay pistas.";
+
+        contenedor.appendChild(texto);
+        return;
+    }
+
+    elementos.forEach(marcador => {
+
+        const fila = document.createElement("div");
+        fila.className = "pista";
+
+        const numero = document.createElement("div");
+        numero.className = "pista-numero";
+
+        numero.textContent =
+            `${direccion}${obtenerNumero(marcador)} · F${marcador.fila + 1}, C${marcador.columna + 1}`;
+
+        const entrada = document.createElement("input");
+
+        entrada.type = "text";
+        entrada.placeholder = "Escribe la pista...";
+        entrada.value = marcador.pista;
+
+        entrada.addEventListener("input", () => {
+
+            marcador.pista = entrada.value;
+
+            ocultarEstado();
+            document.getElementById("resultado-contenedor").hidden = true;
+
+        });
+
+        fila.appendChild(numero);
+        fila.appendChild(entrada);
+
+        contenedor.appendChild(fila);
+
+    });
+
+}
+
+
+/* =========================================
+   VALIDAR MATRIZ Y PISTAS
+========================================= */
+
+function validarCrucigrama() {
+
+    const errores = [];
+    const letrasUtilizadas = new Set();
+
+    if (marcadores.length === 0) {
+        errores.push("Debes agregar al menos un marcador horizontal o vertical.");
+    }
+
+    // Comprobar letras de todas las casillas blancas.
+
+    for (let f = 0; f < filas; f++) {
+
+        for (let c = 0; c < columnas; c++) {
+
+            const celda = matriz[f][c];
+
+            if (!celda.negra && !celda.letra) {
+
+                errores.push(
+                    `Falta una letra en la fila ${f + 1}, columna ${c + 1}.`
+                );
+
+            }
+
+        }
+    }
+
+    // Comprobar cada marcador.
+
+    marcadores.forEach(marcador => {
+
+        const numero = obtenerNumero(marcador);
+        const etiqueta = marcador.direccion + numero;
+
+        const pista = marcador.pista.trim();
+
+        if (!pista) {
+
+            errores.push(
+                `Falta escribir la pista ${etiqueta}.`
+            );
+
+        }
+
+        if (/[|\r\n]/.test(pista)) {
+
+            errores.push(
+                `La pista ${etiqueta} contiene un carácter no permitido (| o salto de línea).`
+            );
+
+        }
+
+        let f = marcador.fila;
+        let c = marcador.columna;
+
+        if (marcador.direccion === "H") {
+            c++;
+        } else {
+            f++;
+        }
+
+        let palabra = "";
+
+        while (
+            f < filas &&
+            c < columnas &&
+            !matriz[f][c].negra
+        ) {
+
+            palabra += matriz[f][c].letra;
+
+            letrasUtilizadas.add(`${f},${c}`);
+
+            if (marcador.direccion === "H") {
+                c++;
+            } else {
+                f++;
+            }
+
+        }
+
+        if (!palabra) {
+
+            errores.push(
+                `El marcador ${etiqueta} no tiene letras después de su casilla inicial.`
+            );
+
+        }
+
+    });
+
+
+    // Comprobar que todas las letras formen parte de alguna palabra.
+
+    for (let f = 0; f < filas; f++) {
+
+        for (let c = 0; c < columnas; c++) {
+
+            if (!matriz[f][c].negra) {
+
+                if (!letrasUtilizadas.has(`${f},${c}`)) {
+
+                    errores.push(
+                        `La casilla F${f + 1}, C${c + 1} no pertenece a ninguna palabra registrada.`
+                    );
+
+                }
+
+            }
+
+        }
+    }
+
+
+    const mensaje = document.getElementById("mensaje-final").value.trim();
+
+    if (!mensaje) {
+        errores.push("Debes escribir el mensaje de finalización.");
+    }
+
+    if (/[|\r\n]/.test(mensaje)) {
+        errores.push("El mensaje final no puede contener | ni saltos de línea.");
+    }
+
+    return errores;
+}
+
+
+/* =========================================
+   GENERAR ARCHIVO TXT
+========================================= */
+
+document.getElementById("generar-codigo").addEventListener("click", () => {
+
+    ocultarEstado();
+
+    const errores = validarCrucigrama();
+
+    if (errores.length > 0) {
+
+        mostrarErrores(errores);
+
+        document.getElementById("resultado-contenedor").hidden = true;
+
+        return;
+    }
+
+    const lineas = [];
+
+    // TABLERO
+
+    lineas.push("[TABLERO]");
+    lineas.push(`FILAS=${filas}`);
+    lineas.push(`COLUMNAS=${columnas}`);
+
+    for (let f = 0; f < filas; f++) {
+
+        let linea = "";
+
+        for (let c = 0; c < columnas; c++) {
+
+            const celda = matriz[f][c];
+
+            linea += celda.negra
+                ? "#"
+                : celda.letra;
+
+        }
+
+        lineas.push(linea);
+    }
+
+    lineas.push("");
+    
+
+    // PISTAS HORIZONTALES
+
+    lineas.push("[PISTAS_H]");
+
+    obtenerMarcadores("H").forEach(m => {
+
+        lineas.push(
+            `${obtenerNumero(m)}|${m.fila + 1}|${m.columna + 1}|${m.pista.trim()}`
+        );
+
+    });
+
+    lineas.push("");
+
+
+    // PISTAS VERTICALES
+
+    lineas.push("[PISTAS_V]");
+
+    obtenerMarcadores("V").forEach(m => {
+
+        lineas.push(
+            `${obtenerNumero(m)}|${m.fila + 1}|${m.columna + 1}|${m.pista.trim()}`
+        );
+
+    });
+
+    lineas.push("");
+
+
+    // RESPUESTAS
+
+    lineas.push("[RESPUESTAS]");
+
+    ["H", "V"].forEach(direccion => {
+
+        obtenerMarcadores(direccion).forEach(m => {
+
+            let f = m.fila;
+            let c = m.columna;
+
+            if (direccion === "H") {
+                c++;
+            } else {
+                f++;
+            }
+
+            let palabra = "";
+
+            while (
+                f < filas &&
+                c < columnas &&
+                !matriz[f][c].negra
+            ) {
+
+                palabra += matriz[f][c].letra;
+
+                if (direccion === "H") {
+                    c++;
+                } else {
+                    f++;
+                }
+
+            }
+
+            lineas.push(
+                `${direccion}|${obtenerNumero(m)}|${palabra}`
+            );
+
+        });
+
+    });
+
+    lineas.push("");
+
+
+    // FINAL
+
+    lineas.push("[FINAL]");
+    lineas.push(
+        `MENSAJE=${document.getElementById("mensaje-final").value.trim()}`
+    );
+
+
+    // Mostrar resultado
+
+    resultado.value = lineas.join("\n");
+
+    document.getElementById("resultado-contenedor").hidden = false;
+
+    mostrarExito(
+        "Crucigrama generado correctamente. Puedes copiar el código TXT."
+    );
+
+    document.getElementById("resultado-contenedor")
+        .scrollIntoView({ behavior: "smooth", block: "start" });
+
+});
+
+
+/* =========================================
+   MOSTRAR ERRORES
+========================================= */
+
+function mostrarErrores(errores) {
+
+    estado.className = "estado error";
+
+    const titulo = document.createElement("strong");
+    titulo.textContent = "No se puede generar el crucigrama. Corrige lo siguiente:";
+
+    const lista = document.createElement("ul");
+    lista.className = "lista-errores";
+
+    errores.forEach(error => {
+
+        const elemento = document.createElement("li");
+        elemento.textContent = error;
+
+        lista.appendChild(elemento);
+
+    });
+
+    estado.innerHTML = "";
+    estado.appendChild(titulo);
+    estado.appendChild(lista);
+
+}
+
+
+function mostrarExito(texto) {
+
+    estado.className = "estado exito";
+    estado.textContent = texto;
+
+}
+
+
+function ocultarEstado() {
+
+    estado.className = "estado";
+    estado.textContent = "";
+
+}
+
+
+/* =========================================
+   COPIAR CÓDIGO
+========================================= */
+
+document.getElementById("copiar").addEventListener("click", async () => {
+
+    if (!resultado.value) return;
+
+    try {
+
+        await navigator.clipboard.writeText(resultado.value);
+
+        mostrarExito("Código copiado al portapapeles.");
+
+    } catch (error) {
+
+        resultado.focus();
+        resultado.select();
+
+        const copiado = document.execCommand("copy");
+
+        if (copiado) {
+            mostrarExito("Código copiado al portapapeles.");
+        } else {
+            mostrarExito("Selecciona y copia el texto manualmente.");
+        }
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>

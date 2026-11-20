@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+<rect width="400" height="400" fill="#607080"/>
+<rect x="18" y="18" width="364" height="364" fill="none" stroke="#f4f0e6" stroke-width="4"/>
+<circle cx="200" cy="105" r="55" fill="none" stroke="#f4f0e6" stroke-width="4"/>
+<text x="200" y="115" text-anchor="middle" font-family="Georgia" font-size="38" font-weight="bold" fill="#f4f0e6">SE</text>
+<text x="200" y="175" text-anchor="middle" font-family="Georgia" font-size="24" font-weight="bold" fill="#f4f0e6">FANTASMA</text>
+<text x="200" y="350" text-anchor="middle" font-family="Georgia" font-size="13" letter-spacing="3" fill="#f4f0e6">SINDICATO ENIGMA</text>
+</svg>

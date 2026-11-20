@@ -1,0 +1,28 @@
+[TABLERO]
+FILAS=6
+COLUMNAS=5
+#####
+#CAT#
+#O#A#
+#W#T#
+#####
+#SHE#
+
+
+[PISTAS_H]
+1|2|1|Animal felino crucigrama 2
+3|6|1|Pronombre femenino en ingles
+
+[PISTAS_V]
+1|1|2|Animal de granja que produce leche
+2|1|4|Lo que haces cuando consumes algo
+
+[RESPUESTAS]
+H|1|CAT
+H|3|SHE
+V|1|COW
+V|2|TAT
+
+[FINAL]
+MENSAJE=Has completado correctamente el crucigrama de prueba del Sindicato Enigma.
+CODIGO=ENIGMA001

@@ -1,0 +1,34 @@
+{
+    "herramientas": [
+        {
+            "id": "frecuencias",
+            "titulo": "Analizador de Frecuencias",
+            "descripcion": "Herramienta para análisis de textos.",
+            "archivo": "minijuegos/herramientas/frecuencias/frecuencias.html"
+        },
+        {
+            "id": "monoalfabetico",
+            "titulo": "Análisis Monoalfabetico",
+            "descripcion": "Herramienta para sustitución de caracteres.",
+            "archivo": "minijuegos/herramientas/monoalfabetico/monoalfabetico.html"
+        },
+        {
+            "id": "cesar",
+            "titulo": "Cifrado César",
+            "descripcion": "Herramienta para cifrar y descifrar mensajes.",
+            "archivo": "minijuegos/herramientas/cesar/cesar.html"
+        },
+        {
+            "id": "vigenere",
+            "titulo": "Cifrado Vigenère",
+            "descripcion": "Herramienta de cifrado Vigenère.",
+            "archivo": "minijuegos/herramientas/vigenere/vigenere.html"
+        },
+        {
+            "id": "kasiski",
+            "titulo": "Mestodo Kasiski",
+            "descripcion": "Analizador de Método Kasiski.",
+            "archivo": "minijuegos/herramientas/kasiski/kasiski.html"
+        }
+    ]
+}

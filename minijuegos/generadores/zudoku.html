@@ -1,0 +1,1370 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de Zudoku | Sindicato Enigma</title>
+
+<style>
+:root {
+    --fondo: #171717;
+    --panel: #242424;
+    --texto: #eeeeee;
+    --secundario: #aaaaaa;
+    --borde: #494949;
+    --azul: #315b80;
+    --verde: #376b4c;
+    --rojo: #963d3d;
+    --blanco: #f0eee8;
+    --pista: #a9d8a5;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 18px;
+    background: var(--fondo);
+    color: var(--texto);
+    font-family: Arial, sans-serif;
+}
+
+.contenedor {
+    width: 100%;
+    max-width: 850px;
+    margin: auto;
+}
+
+h1 {
+    text-align: center;
+    font-size: 25px;
+    margin-bottom: 5px;
+}
+
+h2 {
+    font-size: 18px;
+    margin-top: 0;
+}
+
+h3 {
+    font-size: 16px;
+}
+
+.subtitulo {
+    text-align: center;
+    color: var(--secundario);
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--borde);
+    border-radius: 9px;
+    padding: 16px;
+    margin-bottom: 18px;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    color: var(--secundario);
+    margin-bottom: 6px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--borde);
+    border-radius: 5px;
+    background: #181818;
+    color: white;
+    font-size: 15px;
+}
+
+input:focus, textarea:focus {
+    outline: 2px solid var(--azul);
+}
+
+button {
+    border: 0;
+    border-radius: 5px;
+    padding: 11px 15px;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+}
+
+.configuracion {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.configuracion .completo {
+    grid-column: 1 / -1;
+}
+
+.btn-numero {
+    background: var(--azul);
+    min-width: 42px;
+}
+
+.btn-numero.activo {
+    background: #d6a94b;
+    color: #171717;
+    outline: 2px solid white;
+}
+
+.btn-borrar {
+    background: var(--rojo);
+}
+
+.btn-pista {
+    background: var(--verde);
+}
+
+.btn-pista.activo {
+    background: #a9d8a5;
+    color: #173117;
+    outline: 2px solid white;
+}
+
+.btn-generar, .btn-copiar {
+    background: var(--azul);
+}
+
+.herramientas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 7px;
+    margin-bottom: 15px;
+}
+
+.contador {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 15px;
+}
+
+.contador-item {
+    flex: 1;
+    min-width: 45px;
+    padding: 7px 3px;
+    text-align: center;
+    background: #191919;
+    border: 1px solid var(--borde);
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+.contador-item.completo {
+    border-color: var(--verde);
+    color: #b9e7c5;
+}
+
+.instruccion {
+    color: var(--secundario);
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 14px;
+}
+
+.info {
+    background: #191919;
+    border: 1px solid var(--borde);
+    border-radius: 5px;
+    padding: 11px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    color: var(--secundario);
+}
+
+.info.activa {
+    border-color: var(--azul);
+    color: #b9d9ff;
+}
+
+.tablero-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    padding: 5px 2px 12px;
+}
+
+.tablero {
+    display: grid;
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    width: 100%;
+    max-width: 450px;
+    aspect-ratio: 1;
+    margin: auto;
+    border: 2px solid #777;
+    gap: 0;
+}
+
+.casilla {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 0;
+    background: var(--blanco);
+    color: #181818;
+    border: 1px solid #b9b6ad;
+    font-size: clamp(16px, 4vw, 25px);
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+.casilla.borde-derecho {
+    border-right: 3px solid #555;
+}
+
+.casilla.borde-inferior {
+    border-bottom: 3px solid #555;
+}
+
+.casilla.pista {
+    background: var(--pista);
+    color: #173117;
+}
+
+.casilla.seleccionada {
+    outline: 3px solid #d6a94b;
+    outline-offset: -3px;
+    z-index: 2;
+}
+
+.lista-pistas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.pista-coordenada {
+    background: #d9efd5;
+    color: #173117;
+    padding: 8px 11px;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.sin-pistas {
+    color: var(--secundario);
+    font-size: 13px;
+}
+
+.mensaje-final {
+    min-height: 75px;
+    resize: vertical;
+}
+
+.resultado {
+    min-height: 270px;
+    resize: vertical;
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 10px;
+}
+
+.estado {
+    display: none;
+    padding: 11px;
+    border-radius: 5px;
+    font-size: 13px;
+    margin-top: 12px;
+}
+
+.estado.error {
+    display: block;
+    background: #512929;
+    color: #ffdede;
+}
+
+.estado.exito {
+    display: block;
+    background: #23452f;
+    color: #d9ffe4;
+}
+
+.estado ul {
+    padding-left: 20px;
+}
+
+@media (max-width: 520px) {
+
+    body {
+        padding: 10px;
+    }
+
+    .tablero {
+        max-width: 100%;
+    }
+
+    .configuracion {
+        grid-template-columns: 1fr;
+    }
+
+    .configuracion .completo {
+        grid-column: auto;
+    }
+
+    .herramientas button {
+        flex: 1 1 25%;
+    }
+
+    .contador-item {
+        min-width: 25px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+    <h1>SINDICATO ENIGMA</h1>
+    <div class="subtitulo">Generador de Zudoku</div>
+
+
+    <!-- CONFIGURACIÓN -->
+
+    <section class="panel">
+
+        <h2>1. Información del Zudoku</h2>
+
+        <div class="configuracion">
+
+            <div class="completo">
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre"
+                       value="El expediente">
+            </div>
+
+            <div class="completo">
+                <label for="autor">Autor</label>
+                <input type="text" id="autor"
+                       value="Sindicato Enigma">
+            </div>
+
+            <div class="completo">
+                <label for="mensaje-final">Mensaje de finalización</label>
+                <textarea class="mensaje-final"
+                          id="mensaje-final">¡Has completado el Zudoku!</textarea>
+            </div>
+
+            <button class="btn-generar completo" id="reiniciar">
+                Reiniciar tablero
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- TABLERO -->
+
+    <section class="panel">
+
+        <h2>2. Editor del tablero 9 × 9</h2>
+
+        <div class="instruccion">
+            Selecciona una herramienta y después pulsa una casilla.
+            Solo puede permanecer activa una herramienta a la vez.
+        </div>
+
+        <div class="herramientas" id="herramientas">
+
+            <button class="btn-numero" data-numero="1">1</button>
+            <button class="btn-numero" data-numero="2">2</button>
+            <button class="btn-numero" data-numero="3">3</button>
+            <button class="btn-numero" data-numero="4">4</button>
+            <button class="btn-numero" data-numero="5">5</button>
+            <button class="btn-numero" data-numero="6">6</button>
+            <button class="btn-numero" data-numero="7">7</button>
+            <button class="btn-numero" data-numero="8">8</button>
+            <button class="btn-numero" data-numero="9">9</button>
+
+            <button class="btn-borrar" id="herramienta-borrar">
+                Borrar
+            </button>
+
+            <button class="btn-pista" id="herramienta-pista">
+                Pista
+            </button>
+
+        </div>
+
+        <div class="info" id="informacion">
+            Selecciona un número, Borrar o Pista.
+        </div>
+
+        <div class="contador" id="contador"></div>
+
+        <div class="tablero-contenedor">
+            <div class="tablero" id="tablero"></div>
+        </div>
+
+    </section>
+
+
+    <!-- PISTAS -->
+
+    <section class="panel">
+
+        <h2>3. Coordenadas de las pistas</h2>
+
+        <div class="instruccion">
+            Las casillas verdes son las posiciones que aparecerán
+            como pistas en el juego.
+        </div>
+
+        <div class="lista-pistas" id="lista-pistas">
+            <div class="sin-pistas">
+                Todavía no hay coordenadas registradas.
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- GENERAR -->
+
+    <section class="panel">
+
+        <h2>4. Generar código</h2>
+
+        <button class="btn-generar" id="generar">
+            Generar código TXT
+        </button>
+
+        <div class="estado" id="estado"></div>
+
+        <div id="resultado-contenedor" hidden>
+
+            <h3>Resultado</h3>
+
+            <textarea class="resultado"
+                      id="resultado"
+                      readonly></textarea>
+
+            <div class="acciones">
+
+                <button class="btn-copiar" id="copiar">
+                    Copiar código
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<script>
+"use strict";
+
+
+/* =========================================
+   VARIABLES
+========================================= */
+
+const TAMANO = 9;
+
+let matriz = [];
+let pistas = [];
+
+let herramientaActiva = null;
+let seleccion = null;
+
+
+/* =========================================
+   ELEMENTOS
+========================================= */
+
+const tablero = document.getElementById("tablero");
+
+const informacion = document.getElementById("informacion");
+
+const contador = document.getElementById("contador");
+
+const listaPistas = document.getElementById("lista-pistas");
+
+const estado = document.getElementById("estado");
+
+const resultado = document.getElementById("resultado");
+
+const botonesNumero = document.querySelectorAll("[data-numero]");
+
+
+/* =========================================
+   INICIALIZAR TABLERO
+========================================= */
+
+function inicializarTablero() {
+
+    matriz = [];
+    pistas = [];
+
+    herramientaActiva = null;
+    seleccion = null;
+
+    for (let f = 0; f < TAMANO; f++) {
+
+        matriz.push([]);
+
+        for (let c = 0; c < TAMANO; c++) {
+
+            matriz[f].push(0);
+
+        }
+
+    }
+
+    document.getElementById("resultado-contenedor").hidden = true;
+
+    resultado.value = "";
+
+    ocultarEstado();
+
+    dibujarTablero();
+    actualizarContador();
+    dibujarPistas();
+    actualizarHerramienta();
+
+}
+
+
+document.getElementById("reiniciar").addEventListener("click", () => {
+
+    const confirmar = confirm(
+        "¿Deseas reiniciar el tablero? Se borrarán todos los números y pistas."
+    );
+
+    if (confirmar) {
+        inicializarTablero();
+    }
+
+});
+
+
+/* =========================================
+   DIBUJAR TABLERO
+========================================= */
+
+function dibujarTablero() {
+
+    tablero.innerHTML = "";
+
+    for (let f = 0; f < TAMANO; f++) {
+
+        for (let c = 0; c < TAMANO; c++) {
+
+            const casilla = document.createElement("div");
+
+            casilla.className = "casilla";
+
+            casilla.dataset.fila = f;
+            casilla.dataset.columna = c;
+
+            casilla.textContent = matriz[f][c] || "";
+
+            // Separadores de bloques 3x3.
+
+            if (c === 2 || c === 5) {
+                casilla.classList.add("borde-derecho");
+            }
+
+            if (f === 2 || f === 5) {
+                casilla.classList.add("borde-inferior");
+            }
+
+            // Marcar coordenadas de pistas.
+
+            if (esPista(f, c)) {
+                casilla.classList.add("pista");
+            }
+
+            casilla.addEventListener("click", () => {
+
+                seleccionarCasilla(f, c);
+
+                ejecutarHerramienta(f, c);
+
+            });
+
+            tablero.appendChild(casilla);
+
+        }
+
+    }
+
+    actualizarSeleccion();
+
+}
+
+
+/* =========================================
+   SELECCIONAR CASILLA
+========================================= */
+
+function seleccionarCasilla(f, c) {
+
+    seleccion = { fila: f, columna: c };
+
+    actualizarSeleccion();
+
+}
+
+
+function actualizarSeleccion() {
+
+    const casillas = tablero.querySelectorAll(".casilla");
+
+    casillas.forEach(casilla => {
+
+        const f = Number(casilla.dataset.fila);
+        const c = Number(casilla.dataset.columna);
+
+        casilla.classList.toggle(
+            "seleccionada",
+            seleccion !== null &&
+            seleccion.fila === f &&
+            seleccion.columna === c
+        );
+
+    });
+
+}
+
+
+/* =========================================
+   SELECCIÓN DE HERRAMIENTAS
+========================================= */
+
+botonesNumero.forEach(boton => {
+
+    boton.addEventListener("click", () => {
+
+        activarHerramienta({
+            tipo: "numero",
+            valor: Number(boton.dataset.numero)
+        });
+
+    });
+
+});
+
+
+document.getElementById("herramienta-borrar")
+    .addEventListener("click", () => {
+
+        activarHerramienta({
+            tipo: "borrar"
+        });
+
+    });
+
+
+document.getElementById("herramienta-pista")
+    .addEventListener("click", () => {
+
+        activarHerramienta({
+            tipo: "pista"
+        });
+
+    });
+
+
+function activarHerramienta(herramienta) {
+
+    herramientaActiva = herramienta;
+
+    ocultarEstado();
+
+    actualizarHerramienta();
+
+}
+
+
+function actualizarHerramienta() {
+
+    botonesNumero.forEach(boton => {
+
+        const numero = Number(boton.dataset.numero);
+
+        boton.classList.toggle(
+            "activo",
+            herramientaActiva !== null &&
+            herramientaActiva.tipo === "numero" &&
+            herramientaActiva.valor === numero
+        );
+
+    });
+
+    document.getElementById("herramienta-borrar")
+        .classList.toggle(
+            "activo",
+            herramientaActiva?.tipo === "borrar"
+        );
+
+    document.getElementById("herramienta-pista")
+        .classList.toggle(
+            "activo",
+            herramientaActiva?.tipo === "pista"
+        );
+
+    if (!herramientaActiva) {
+
+        informacion.className = "info";
+
+        informacion.textContent =
+            "Selecciona un número, Borrar o Pista.";
+
+        return;
+
+    }
+
+    informacion.className = "info activa";
+
+    if (herramientaActiva.tipo === "numero") {
+
+        informacion.textContent =
+            `Herramienta activa: número ${herramientaActiva.valor}. Selecciona una casilla.`;
+
+    } else if (herramientaActiva.tipo === "borrar") {
+
+        informacion.textContent =
+            "Herramienta activa: Borrar. Selecciona una casilla para eliminar su número y su pista.";
+
+    } else {
+
+        informacion.textContent =
+            "Herramienta activa: Pista. Selecciona una casilla para registrar sus coordenadas.";
+
+    }
+
+}
+
+
+/* =========================================
+   EJECUTAR HERRAMIENTA
+========================================= */
+
+function ejecutarHerramienta(f, c) {
+
+    if (!herramientaActiva) {
+
+        informacion.textContent =
+            "Primero selecciona una herramienta.";
+
+        return;
+
+    }
+
+    const herramienta = herramientaActiva;
+
+    if (herramienta.tipo === "numero") {
+
+        colocarNumero(f, c, herramienta.valor);
+
+    } else if (herramienta.tipo === "borrar") {
+
+        borrarCasilla(f, c);
+
+    } else if (herramienta.tipo === "pista") {
+
+        agregarPista(f, c);
+
+    }
+
+}
+
+
+/* =========================================
+   COLOCAR NÚMERO
+========================================= */
+
+function contarNumero(numero) {
+
+    let cantidad = 0;
+
+    matriz.forEach(fila => {
+
+        fila.forEach(valor => {
+
+            if (valor === numero) {
+                cantidad++;
+            }
+
+        });
+
+    });
+
+    return cantidad;
+
+}
+
+
+function colocarNumero(f, c, numero) {
+
+    const anterior = matriz[f][c];
+
+    // Si el número ya está en la casilla, no se modifica.
+
+    if (anterior === numero) {
+        return;
+    }
+
+    const cantidad = contarNumero(numero);
+
+    if (cantidad >= 9) {
+
+        mostrarError(
+            `El número ${numero} ya aparece nueve veces. No puedes colocarlo más.`
+        );
+
+        return;
+
+    }
+
+    matriz[f][c] = numero;
+
+    actualizarDespuesDeAccion();
+
+}
+
+
+/* =========================================
+   BORRAR CASILLA
+========================================= */
+
+function borrarCasilla(f, c) {
+
+    matriz[f][c] = 0;
+
+    // También elimina la coordenada de pista.
+
+    pistas = pistas.filter(pista =>
+        pista.fila !== f ||
+        pista.columna !== c
+    );
+
+    actualizarDespuesDeAccion();
+
+}
+
+
+/* =========================================
+   PISTAS
+========================================= */
+
+function esPista(f, c) {
+
+    return pistas.some(pista =>
+        pista.fila === f &&
+        pista.columna === c
+    );
+
+}
+
+
+function agregarPista(f, c) {
+
+    if (esPista(f, c)) {
+
+        mostrarError(
+            "Esta casilla ya está registrada como pista. Utiliza Borrar si deseas eliminarla."
+        );
+
+        return;
+
+    }
+
+    pistas.push({
+        fila: f,
+        columna: c
+    });
+
+    actualizarDespuesDeAccion();
+
+}
+
+
+/* =========================================
+   ACTUALIZAR VISTA
+========================================= */
+
+function actualizarDespuesDeAccion() {
+
+    document.getElementById("resultado-contenedor").hidden = true;
+
+    ocultarEstado();
+
+    dibujarTablero();
+    actualizarContador();
+    dibujarPistas();
+    actualizarSeleccion();
+
+}
+
+
+/* =========================================
+   CONTADOR DE NÚMEROS
+========================================= */
+
+function actualizarContador() {
+
+    contador.innerHTML = "";
+
+    for (let n = 1; n <= 9; n++) {
+
+        const cantidad = contarNumero(n);
+
+        const elemento = document.createElement("div");
+
+        elemento.className = "contador-item";
+
+        if (cantidad === 9) {
+            elemento.classList.add("completo");
+        }
+
+        elemento.textContent =
+            `${n}: ${cantidad}/9`;
+
+        contador.appendChild(elemento);
+
+    }
+
+}
+
+
+/* =========================================
+   LISTA DE PISTAS
+========================================= */
+
+function dibujarPistas() {
+
+    listaPistas.innerHTML = "";
+
+    if (pistas.length === 0) {
+
+        const texto = document.createElement("div");
+
+        texto.className = "sin-pistas";
+
+        texto.textContent =
+            "Todavía no hay coordenadas registradas.";
+
+        listaPistas.appendChild(texto);
+
+        return;
+
+    }
+
+    pistas.forEach(pista => {
+
+        const elemento = document.createElement("div");
+
+        elemento.className = "pista-coordenada";
+
+        elemento.textContent =
+            `${pista.fila + 1},${pista.columna + 1}`;
+
+        listaPistas.appendChild(elemento);
+
+    });
+
+}
+
+
+/* =========================================
+   VALIDAR SUDOKU
+========================================= */
+
+function validarSudoku() {
+
+    const errores = [];
+
+    const nombre = document.getElementById("nombre").value.trim();
+
+    const autor = document.getElementById("autor").value.trim();
+
+    const mensaje = document.getElementById("mensaje-final").value.trim();
+
+    if (!nombre) {
+        errores.push("Debes escribir el nombre del Zudoku.");
+    }
+
+    if (!autor) {
+        errores.push("Debes escribir el autor.");
+    }
+
+    if (!mensaje) {
+        errores.push("Debes escribir el mensaje final.");
+    }
+
+    if (/[|\r\n]/.test(nombre)) {
+        errores.push("El nombre no puede contener | ni saltos de línea.");
+    }
+
+    if (/[|\r\n]/.test(autor)) {
+        errores.push("El autor no puede contener | ni saltos de línea.");
+    }
+
+    if (/[|\r\n]/.test(mensaje)) {
+        errores.push("El mensaje final no puede contener | ni saltos de línea.");
+    }
+
+
+    // Comprobar que todas las casillas tengan números.
+
+    for (let f = 0; f < 9; f++) {
+
+        for (let c = 0; c < 9; c++) {
+
+            if (!matriz[f][c]) {
+
+                errores.push(
+                    `Falta un número en fila ${f + 1}, columna ${c + 1}.`
+                );
+
+            }
+
+        }
+
+    }
+
+
+    // Comprobar que cada número aparezca nueve veces.
+
+    for (let n = 1; n <= 9; n++) {
+
+        const cantidad = contarNumero(n);
+
+        if (cantidad !== 9) {
+
+            errores.push(
+                `El número ${n} aparece ${cantidad} veces. Debe aparecer exactamente 9 veces.`
+            );
+
+        }
+
+    }
+
+
+    // Comprobar filas.
+
+    for (let f = 0; f < 9; f++) {
+
+        const valores = matriz[f];
+
+        if (!esGrupoValido(valores)) {
+
+            errores.push(
+                `La fila ${f + 1} contiene números repetidos o incorrectos.`
+            );
+
+        }
+
+    }
+
+
+    // Comprobar columnas.
+
+    for (let c = 0; c < 9; c++) {
+
+        const valores = [];
+
+        for (let f = 0; f < 9; f++) {
+            valores.push(matriz[f][c]);
+        }
+
+        if (!esGrupoValido(valores)) {
+
+            errores.push(
+                `La columna ${c + 1} contiene números repetidos o incorrectos.`
+            );
+
+        }
+
+    }
+
+
+    // Comprobar bloques 3x3.
+
+    for (let inicioF = 0; inicioF < 9; inicioF += 3) {
+
+        for (let inicioC = 0; inicioC < 9; inicioC += 3) {
+
+            const valores = [];
+
+            for (let f = inicioF; f < inicioF + 3; f++) {
+
+                for (let c = inicioC; c < inicioC + 3; c++) {
+
+                    valores.push(matriz[f][c]);
+
+                }
+
+            }
+
+            if (!esGrupoValido(valores)) {
+
+                errores.push(
+                    `El bloque 3x3 que comienza en fila ${inicioF + 1}, columna ${inicioC + 1} contiene números repetidos o incorrectos.`
+                );
+
+            }
+
+        }
+
+    }
+
+
+    if (pistas.length === 0) {
+        errores.push("Debes registrar al menos una pista.");
+    }
+
+    return errores;
+
+}
+
+
+function esGrupoValido(valores) {
+
+    if (valores.length !== 9) return false;
+
+    const conjunto = new Set(valores);
+
+    return (
+        conjunto.size === 9 &&
+        valores.every(numero =>
+            Number.isInteger(numero) &&
+            numero >= 1 &&
+            numero <= 9
+        )
+    );
+
+}
+
+
+/* =========================================
+   GENERAR CÓDIGO TXT
+========================================= */
+
+document.getElementById("generar").addEventListener("click", () => {
+
+    ocultarEstado();
+
+    const errores = validarSudoku();
+
+    if (errores.length > 0) {
+
+        mostrarErrores(errores);
+
+        document.getElementById("resultado-contenedor").hidden = true;
+
+        return;
+
+    }
+
+    const lineas = [];
+
+    // ZUDOKU
+
+    lineas.push("[ZUDOKU]");
+
+    lineas.push(
+        `nombre=${document.getElementById("nombre").value.trim()}`
+    );
+
+    lineas.push(
+        `autor=${document.getElementById("autor").value.trim()}`
+    );
+
+    lineas.push("");
+
+
+    // TABLERO
+
+    lineas.push("[TABLERO]");
+
+    for (let f = 0; f < 9; f++) {
+
+        lineas.push(matriz[f].join(" "));
+
+    }
+
+    lineas.push("");
+
+
+    // PISTAS
+
+    lineas.push("[PISTAS]");
+
+    pistas.forEach(pista => {
+
+        lineas.push(
+            `${pista.fila + 1},${pista.columna + 1}`
+        );
+
+    });
+
+    lineas.push("");
+
+
+    // FINAL
+
+    lineas.push("[FINAL]");
+
+    lineas.push(
+        `mensaje=${document.getElementById("mensaje-final").value.trim()}`
+    );
+
+
+    // MOSTRAR RESULTADO
+
+    resultado.value = lineas.join("\n");
+
+    document.getElementById("resultado-contenedor").hidden = false;
+
+    mostrarExito(
+        "Zudoku generado correctamente. Ya puedes copiar el código."
+    );
+
+    document.getElementById("resultado-contenedor")
+        .scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+});
+
+
+/* =========================================
+   MENSAJES
+========================================= */
+
+function mostrarErrores(errores) {
+
+    estado.className = "estado error";
+
+    const titulo = document.createElement("strong");
+
+    titulo.textContent =
+        "No se puede generar el Zudoku. Corrige lo siguiente:";
+
+    const lista = document.createElement("ul");
+
+    errores.forEach(error => {
+
+        const elemento = document.createElement("li");
+
+        elemento.textContent = error;
+
+        lista.appendChild(elemento);
+
+    });
+
+    estado.innerHTML = "";
+
+    estado.appendChild(titulo);
+    estado.appendChild(lista);
+
+}
+
+
+function mostrarError(texto) {
+
+    estado.className = "estado error";
+    estado.textContent = texto;
+
+}
+
+
+function mostrarExito(texto) {
+
+    estado.className = "estado exito";
+    estado.textContent = texto;
+
+}
+
+
+function ocultarEstado() {
+
+    estado.className = "estado";
+    estado.textContent = "";
+
+}
+
+
+/* =========================================
+   COPIAR CÓDIGO
+========================================= */
+
+document.getElementById("copiar").addEventListener("click", async () => {
+
+    if (!resultado.value) return;
+
+    try {
+
+        await navigator.clipboard.writeText(resultado.value);
+
+        mostrarExito("Código copiado correctamente.");
+
+    } catch (error) {
+
+        resultado.focus();
+        resultado.select();
+
+        const copiado = document.execCommand("copy");
+
+        if (copiado) {
+
+            mostrarExito("Código copiado correctamente.");
+
+        } else {
+
+            mostrarError("Selecciona y copia el texto manualmente.");
+
+        }
+
+    }
+
+});
+
+
+/* =========================================
+   INICIAR
+========================================= */
+
+inicializarTablero();
+
+</script>
+
+</body>
+</html>

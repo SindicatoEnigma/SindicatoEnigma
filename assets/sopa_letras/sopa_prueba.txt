@@ -1,0 +1,22 @@
+[SOPA]
+nombre=Sopa de letras de prueba
+
+[TABLERO]
+R O M A X X C X X X
+O X X O X X A X X X
+S X X S X X S X X X
+A X X A X X A X X X
+X X X X X X X X X X
+X X X X X X X X X X
+X X X X X X X X X X
+X X X X X X X X X X
+X X X X X X X X X X
+X X X X X X X X X X
+
+[PALABRAS]
+1=ROMA|1,1|1,2|1,3|1,4
+2=ROSA|1,1|2,1|3,1|4,1
+3=CASA|1,7|2,7|3,7|4,7
+
+[FINAL]
+mensaje=¡Has completado la sopa de letras!

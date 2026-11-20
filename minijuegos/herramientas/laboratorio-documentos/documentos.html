@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio de Documentos | Sindicato Enigma</title>
+    <link rel="stylesheet" href="documentos.css">
+</head>
+<body>
+
+    <main class="contenedor">
+
+        <header class="encabezado">
+            <div class="sello">SE</div>
+            <div>
+                <h1>Laboratorio de Documentos</h1>
+                <p>Reconocimiento automático de texto</p>
+            </div>
+        </header>
+
+        <section class="panel">
+
+            <h2>Documento de entrada</h2>
+
+            <label for="inputImagen" class="selector-imagen">
+                <span class="icono">＋</span>
+                <span>Seleccionar imagen</span>
+                <small>JPG, PNG o WEBP</small>
+            </label>
+
+            <input
+                type="file"
+                id="inputImagen"
+                accept="image/png,image/jpeg,image/webp"
+                hidden
+            >
+
+            <div id="nombreArchivo" class="nombre-archivo">
+                Ningún documento seleccionado
+            </div>
+
+            <div class="vista-previa" id="contenedorVista" hidden>
+                <img id="vistaPrevia" alt="Vista previa del documento">
+            </div>
+
+            <button id="btnAnalizar" disabled>
+                Analizar documento
+            </button>
+
+            <div id="progresoContenedor" class="progreso-contenedor" hidden>
+                <div class="progreso-fondo">
+                    <div id="barraProgreso" class="progreso-barra"></div>
+                </div>
+                <p id="estado" aria-live="polite">Preparando análisis...</p>
+            </div>
+
+        </section>
+
+        <section class="panel resultado-panel">
+
+            <div class="titulo-resultado">
+                <h2>Texto reconocido</h2>
+                <span id="estadoResultado" class="estado-resultado">
+                    Esperando análisis
+                </span>
+            </div>
+
+            <div id="resumen" class="resumen" hidden>
+                <span id="totalBloques">0 bloques</span>
+                <span id="totalLineas">0 líneas</span>
+                <span id="totalPalabras">0 palabras</span>
+                <span id="totalCaracteres">0 segmentos</span>
+                <span id="confianza">Confianza: --</span>
+                <span id="coincidencia">Coincidencia: --</span>
+            </div>
+
+            <textarea
+                id="resultado"
+                placeholder="El texto reconocido aparecerá aquí..."
+                spellcheck="false"
+            ></textarea>
+
+            <div class="acciones">
+                <button id="btnCopiar" class="secundario" disabled>
+                    Copiar texto
+                </button>
+
+                <button id="btnLimpiar" class="secundario">
+                    Limpiar
+                </button>
+            </div>
+
+        </section>
+
+        <footer>
+            <p>Sindicato Enigma · Laboratorio de investigación</p>
+        </footer>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="documentos.js"></script>
+
+</body>
+</html>

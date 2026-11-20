@@ -1,0 +1,1404 @@
+
+/*
+    SINDICATO ENIGMA - MOTOR VISUAL
+    --------------------------------
+    HTML = estructura
+    CSS  = apariencia
+    JavaScript = comportamiento
+*/
+
+/* ================================= */
+/* VARIABLES GENERALES               */
+/* ================================= */
+
+:root {
+    --negro: #111111;
+    --gris-oscuro: #222222;
+    --gris: #555555;
+    --marfil: #eee9dc;
+    --papel: #f5f0e4;
+    --rojo: #7d1f1f;
+    --rojo-claro: #a23a3a;
+    --borde: rgba(238, 233, 220, 0.65);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    background: var(--negro);
+    color: var(--marfil);
+    font-family: Georgia, "Times New Roman", serif;
+}
+
+body {
+    min-height: 100dvh;
+}
+
+button {
+    font: inherit;
+    border: 1px solid var(--borde);
+    background: var(--gris-oscuro);
+    color: var(--marfil);
+    padding: 12px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #333;
+}
+
+.oculto {
+    display: none !important;
+}
+
+
+/* ================================= */
+/* PORTAL PRINCIPAL                  */
+/* ================================= */
+
+#portal {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    background: var(--negro);
+}
+
+/* ---------- Encabezado del portal ---------- */
+
+#portal-encabezado {
+    width: 100%;
+    min-height: 115px;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #171717;
+    border-bottom: 2px solid #555;
+    flex-shrink: 0;
+}
+
+#portal-encabezado h1 {
+    margin: 0;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    letter-spacing: 5px;
+}
+
+#portal-encabezado p {
+    margin: 8px 0 0;
+    color: #b6ad9d;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+/* ---------- Cuerpo del portal ---------- */
+
+#portal-cuerpo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* ---------- Menú lateral ---------- */
+
+#portal-menu {
+    background: #191919;
+    border-right: 1px solid #555;
+    padding: 25px 18px;
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+#portal-menu h2 {
+    margin: 0 0 25px;
+    text-align: center;
+    font-size: clamp(1.3rem, 3vw, 2rem);
+    letter-spacing: 4px;
+}
+
+#navegacion-principal {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.opcion-menu {
+    width: 100%;
+    min-height: 52px;
+    padding: 12px 3px;
+    text-align: center;
+    white-space: nowrap;
+    background: #242424;
+    border: 1px solid #555;
+    border-radius: 3px;
+    font-size: clamp(0.70rem, 1.5vw, 1.1rem);
+    letter-spacing: 0.3px;
+    box-sizing: border-box;
+    transition:
+        background 200ms ease,
+        border-color 200ms ease;
+}
+
+.opcion-menu:hover {
+    background: var(--rojo);
+    border-color: var(--rojo-claro);
+}
+
+/* ---------- Contenido derecho ---------- */
+
+#portal-contenido {
+    min-width: 0;
+    min-height: 0;
+    padding: 25px;
+    background: #202020;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#contenido-portal {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.seccion-portal {
+    width: 100%;
+}
+
+.seccion-portal h2 {
+    margin: 0 0 25px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #555;
+    font-size: clamp(1.3rem, 3vw, 2rem);
+}
+
+/* ---------- Pie de página ---------- */
+
+#portal-pie {
+    width: 100%;
+    padding: 18px;
+    text-align: center;
+    background: #171717;
+    border-top: 1px solid #555;
+    color: #aaa;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+#portal-pie p {
+    margin: 0;
+}
+
+#portal-pie a {
+    color: #c8c0af;
+    text-decoration: none;
+}
+
+#portal-pie a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+
+/* ================================= */
+/* SISTEMA DE PANTALLAS              */
+/* ================================= */
+
+.pantalla {
+    display: none;
+    width: 100%;
+    min-height: 100dvh;
+}
+
+.pantalla.activa {
+    display: flex;
+}
+
+/*
+    Cuando se abre una historia o un juego,
+    JavaScript ocultará el portal y activará
+    únicamente la pantalla correspondiente.
+*/
+
+
+/* ================================= */
+/* PANTALLA DE INICIO ANTIGUA         */
+/* ================================= */
+
+#pantalla-inicio {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background:
+        radial-gradient(circle, #333 0%, #111 65%);
+}
+
+.logo-inicio {
+    width: min(90%, 600px);
+    padding: 30px;
+}
+
+.logo-se {
+    margin: auto;
+    width: 110px;
+    height: 110px;
+    border: 3px solid var(--marfil);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 42px;
+    letter-spacing: 4px;
+}
+
+.logo-inicio h1 {
+    letter-spacing: 5px;
+    margin-bottom: 8px;
+}
+
+.logo-inicio p {
+    color: #c8c0af;
+}
+
+.logo-inicio button {
+    margin-top: 25px;
+    background: var(--rojo);
+}
+
+
+/* ================================= */
+/* BOTONES GENERALES                 */
+/* ================================= */
+
+.boton-secundario {
+    background: transparent;
+}
+
+.boton-icono,
+.boton-control {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+}
+
+.boton-control {
+    background: rgba(0, 0, 0, 0.65);
+}
+
+
+/* ================================= */
+/* ENCABEZADOS INTERNOS              */
+/* ================================= */
+
+.encabezado {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 20px;
+    border-bottom: 1px solid #444;
+    background: #171717;
+}
+
+.encabezado > div {
+    flex: 1;
+}
+
+.encabezado h2 {
+    margin: 4px 0 0;
+}
+
+.etiqueta {
+    color: #b6ad9d;
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+}
+
+
+/* ================================= */
+/* ARCHIVO Y CAPÍTULOS               */
+/* ================================= */
+
+#pantalla-archivo,
+#pantalla-capitulo {
+    flex-direction: column;
+    background: #151515;
+}
+
+.lista-casos,
+.lista-partes {
+    width: min(94%, 850px);
+    margin: 25px auto;
+}
+
+.expediente {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 15px;
+    padding: 22px;
+    background: var(--papel);
+    color: var(--negro);
+    border: 1px solid #777;
+    position: relative;
+}
+
+.expediente::after {
+    content: "SINDICATO ENIGMA";
+    position: absolute;
+    right: 14px;
+    bottom: 10px;
+    opacity: 0.25;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+}
+
+.expediente h3 {
+    margin: 0 0 6px;
+}
+
+.expediente p {
+    margin: 0;
+    color: #444;
+}
+
+.item-parte {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    margin-bottom: 10px;
+    text-align: left;
+    background: #202020;
+}
+
+.numero-parte {
+    min-width: 42px;
+    text-align: center;
+    font-size: 1.2rem;
+    color: #c8c0af;
+}
+
+.tipo-parte {
+    font-size: 0.75rem;
+    color: #aaa;
+    letter-spacing: 1px;
+}
+
+
+/* ================================= */
+/* ESCENA NARRATIVA                  */
+/* ================================= */
+
+.pantalla-historia {
+    background: #000;
+    width: 100%;
+    min-height: 100dvh;
+}
+
+.escena {
+    position: relative;
+    width: 100%;
+    height: 100dvh;
+    min-height: 520px;
+    overflow: hidden;
+
+    background:
+        radial-gradient(circle at 50% 35%, #444 0%, #181818 50%, #050505 100%);
+
+    background-size: cover;
+    background-position: center;
+}
+
+.capa-personajes {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.personaje {
+    position: absolute;
+    bottom: 18%;
+    max-width: 35%;
+    max-height: 40%;
+    object-fit: contain;
+    transition:
+        opacity 250ms ease,
+        transform 250ms ease,
+        filter 250ms ease;
+    opacity: 1;
+    filter: brightness(1);
+}
+
+.personaje.no-habla {
+    filter: brightness(0.55);
+}
+
+.personaje.hablando {
+    animation: pequeno-impulso 180ms ease-out;
+}
+
+@keyframes pequeno-impulso {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.01);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.personaje.izquierda {
+    left: 1%;
+}
+
+.personaje.derecha {
+    right: 1%;
+}
+
+.personaje.entrando {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.personaje.saliendo {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+
+/* ================================= */
+/* DIÁLOGO                           */
+/* ================================= */
+
+.dialogo {
+    position: absolute;
+    left: 1%;
+    right: 1%;
+    bottom: 3%;
+    height: 180px;
+    padding: 22px 24px;
+    background: #111111;
+    border: 1px solid var(--borde);
+    border-radius: 4px;
+    z-index: 10;
+}
+
+.dialogo::before,
+.dialogo::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    height: 1px;
+    background: rgba(238, 233, 220, 0.28);
+}
+
+.dialogo::before {
+    top: 7px;
+}
+
+.dialogo::after {
+    bottom: 7px;
+}
+
+.nombre-personaje {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 4px 12px;
+    background: var(--rojo);
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+.texto-dialogo {
+    height: calc(100% - 42px);
+    overflow-y: hidden;
+    overflow-x: hidden;
+    line-height: 1.6;
+    font-size: clamp(1rem, 2.2vw, 1.25rem);
+    padding-right: 10px;
+}
+
+.indicador-avance {
+    position: absolute;
+    right: 17px;
+    bottom: 10px;
+    opacity: 0.7;
+    animation: pulso 1s infinite;
+}
+
+@keyframes pulso {
+    50% {
+        opacity: 0.2;
+    }
+}
+
+
+/* ================================= */
+/* DOCUMENTOS                        */
+/* ================================= */
+
+#btn-cerrar-documento {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+
+    background: #29251f;
+    color: #f5f0e4;
+    border: 2px solid #8b744d;
+    padding: 10px 18px;
+    border-radius: 4px;
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: background 200ms ease;
+}
+
+#btn-cerrar-documento:hover {
+    background: #59452e;
+    color: #ffffff;
+}
+
+.documento {
+    position: absolute;
+    inset: 5%;
+    z-index: 30;
+    padding: 35px;
+    background: rgba(245, 240, 228, 0.97);
+    color: #171717;
+    border: 2px solid #777;
+    overflow: hidden;
+}
+
+.texto-documento {
+    height: calc(100% - 60px);
+    overflow-y: auto;
+    white-space: pre-wrap;
+    line-height: 1.7;
+    font-size: clamp(1rem, 2.2vw, 1.2rem);
+}
+
+
+/* ================================= */
+/* CONTROLES DE HISTORIA             */
+/* ================================= */
+
+.controles-historia {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 20;
+}
+
+.controles-audio {
+    display: flex;
+    gap: 8px;
+}
+
+
+/* ================================= */
+/* PANTALLA DE MINIJUEGO             */
+/* ================================= */
+
+
+/* ================================= */
+/* PANTALLA DE MINIJUEGO             */
+/* ================================= */
+
+#pantalla-puzzle {
+    align-items: stretch;
+    justify-content: center;
+    background: #111;
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.puzzle-contenedor {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.puzzle-contenedor > .encabezado {
+    flex-shrink: 0;
+}
+
+.puzzle-contenido {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    padding: 0;
+    display: block;
+    overflow: hidden;
+}
+
+.puzzle-contenido iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #111;
+}
+
+.puzzle-demo {
+    max-width: 650px;
+    margin: 25px auto;
+    padding: 30px;
+    border: 1px solid #555;
+    background: #1d1d1d;
+}
+
+.puzzle-demo h3 {
+    margin-top: 0;
+}
+
+.puzzle-demo .resultado {
+    margin-top: 20px;
+    color: #d7cfbf;
+}
+
+
+
+/* ================================= */
+/* CONFIGURACIÓN                     */
+/* ================================= */
+
+#pantalla-config {
+    align-items: flex-start;
+    justify-content: center;
+    background: #151515;
+}
+
+.config-contenedor {
+    width: min(100%, 700px);
+}
+
+.opcion-config {
+    display: block;
+    margin: 20px;
+    padding: 18px;
+    background: #222;
+}
+
+.opcion-config input {
+    transform: scale(1.3);
+    margin-right: 12px;
+}
+
+
+/* ================================= */
+/* ADAPTACIÓN PARA MÓVILES           */
+/* ================================= */
+
+@media (max-width: 600px) {
+
+    #portal-encabezado {
+        min-height: 95px;
+        padding: 14px 8px;
+    }
+
+    #portal-encabezado h1 {
+        font-size: 1.35rem;
+        letter-spacing: 2px;
+    }
+
+    #portal-encabezado p {
+        font-size: 0.72rem;
+    }
+
+    #portal-cuerpo {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+}
+
+    #portal-menu {
+        padding: 18px 8px;
+    }
+
+    #portal-menu h2 {
+        font-size: 1.15rem;
+        letter-spacing: 2px;
+        margin-bottom: 18px;
+    }
+
+    #navegacion-principal {
+        gap: 9px;
+    }
+
+    .opcion-menu {
+        min-height: 48px;
+        padding: 9px 3px;
+        font-size: 0.78rem;
+        letter-spacing: 0;
+    }
+
+    #portal-contenido {
+        padding: 16px 12px;
+    }
+
+    .seccion-portal h2 {
+        margin-bottom: 18px;
+    }
+
+    #portal-pie {
+        padding: 14px 6px;
+        font-size: 0.72rem;
+    }
+
+    .dialogo {
+        height: 180px;
+        padding: 20px 17px;
+    }
+
+    .personaje {
+        max-width: 45%;
+        max-height: 45%;
+        bottom: 30%;
+    }
+
+    .documento {
+        inset: 3%;
+        padding: 22px;
+    }
+
+    .encabezado {
+        padding: 14px;
+    }
+
+}
+
+
+
+/* ================================= */
+/* SISTEMA DE NOTICIAS Y DOCUMENTOS  */
+/* ================================= */
+
+#vista-listado-noticias {
+    width: 100%;
+}
+
+#lista-noticias {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Tarjetas individuales de noticias */
+
+.noticia-item {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    text-align: left;
+    background: #292929;
+    border: 1px solid #555;
+    border-left: 4px solid var(--rojo);
+    border-radius: 3px;
+    transition: background 200ms ease;
+}
+
+.noticia-item:hover {
+    background: #383838;
+    border-color: var(--rojo-claro);
+}
+
+.noticia-item h3 {
+    margin: 0 0 8px;
+    color: var(--marfil);
+    font-size: 1.1rem;
+}
+
+.noticia-item p {
+    margin: 0;
+    color: #aaa;
+    font-size: 0.85rem;
+}
+
+/* Visor de PDF */
+
+#visor-noticia {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#visor-noticia.oculto {
+    display: none !important;
+}
+
+#btn-volver-noticias {
+    align-self: flex-start;
+    background: var(--rojo);
+    border-color: var(--rojo-claro);
+}
+
+#titulo-noticia-abierta {
+    margin: 4px 0;
+    font-size: 1.1rem;
+    overflow-wrap: anywhere;
+}
+
+#pdf-noticia {
+    display: block;
+    width: 100%;
+    height: 85dvh;
+    min-height: 600px;
+    border: 1px solid #555;
+    background: #fff;
+}
+
+#enlace-pdf-noticia {
+    color: #d7cfbf;
+    text-decoration: underline;
+}
+
+/* Adaptación del visor para móviles */
+
+@media (max-width: 600px) {
+
+    .noticia-item {
+        padding: 14px;
+    }
+
+   #pdf-noticia {
+    width: 100%;
+    height: 80dvh;
+    min-height: 500px;
+   }
+
+    #titulo-noticia-abierta {
+        font-size: 1rem;
+    }
+}
+
+
+/* ==========================================
+   CATÁLOGO DE HERRAMIENTAS
+   ========================================== */
+
+#vista-listado-herramientas {
+    width: 100%;
+}
+
+#lista-herramientas {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.herramienta-item {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    text-align: left;
+    background: #292929;
+    border: 1px solid #555;
+    border-left: 4px solid var(--rojo);
+    border-radius: 3px;
+    transition: background 200ms ease;
+}
+
+.herramienta-item:hover {
+    background: #383838;
+    border-color: var(--rojo-claro);
+}
+
+.herramienta-item h3 {
+    margin: 0 0 8px;
+    color: var(--marfil);
+    font-size: 1.1rem;
+}
+
+.herramienta-item p {
+    margin: 0;
+    color: #aaa;
+    font-size: 0.85rem;
+}
+
+
+/* ==========================================
+   VISOR DE HERRAMIENTAS
+   ========================================== */
+
+#visor-herramienta {
+    width: 100%;
+    height: 78dvh;
+    min-height: 420px;
+    min-width: 0;
+
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 8px;
+}
+
+#visor-herramienta.oculto {
+    display: none !important;
+}
+
+
+/* Encabezado */
+
+#encabezado-herramienta {
+    padding: 7px 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: var(--marfil);
+    border-bottom: 1px solid #555;
+}
+
+
+/* Aplicación */
+
+#marco-herramienta {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border: 1px solid #555;
+    background: #fff;
+}
+
+
+/* Pie y regreso */
+
+#pie-herramienta {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 5px;
+}
+
+#btn-volver-herramientas {
+    padding: 7px 16px;
+    font-size: 0.8rem;
+    background: #292929;
+    border: 1px solid #666;
+    border-radius: 3px;
+    color: var(--marfil);
+}
+
+#btn-volver-herramientas:hover {
+    background: var(--rojo);
+    border-color: var(--rojo-claro);
+}
+
+
+/* Adaptación móvil */
+
+@media (max-width: 600px) {
+
+    #visor-herramienta {
+        height: 72dvh;
+        min-height: 350px;
+    }
+
+    .herramienta-item {
+        padding: 14px;
+    }
+
+    #encabezado-herramienta {
+        font-size: 0.72rem;
+    }
+}
+
+
+/* ==========================================
+   HERRAMIENTAS A PANTALLA COMPLETA
+   ========================================== */
+
+#visor-herramienta {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+
+    background: #171717;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+
+/* ==========================================
+   SISTEMA DE MINIJUEGOS
+   SINDICATO ENIGMA
+   ========================================== */
+
+/* Catálogos */
+
+#vista-listado-minijuegos,
+#vista-partidas-minijuegos {
+    width: 100%;
+}
+
+#lista-minijuegos,
+#lista-partidas-minijuegos {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Elementos del catálogo */
+
+.minijuego-item,
+.partida-minijuego-item {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    text-align: left;
+    background: #292929;
+    border: 1px solid #555;
+    border-left: 4px solid var(--rojo);
+    border-radius: 3px;
+    transition: background 200ms ease;
+}
+
+.minijuego-item:hover,
+.partida-minijuego-item:hover {
+    background: #383838;
+    border-color: var(--rojo-claro);
+}
+
+.minijuego-item h3,
+.partida-minijuego-item h3 {
+    margin: 0 0 8px;
+    color: var(--marfil);
+    font-size: 1.1rem;
+}
+
+.minijuego-item p,
+.partida-minijuego-item p {
+    margin: 0;
+    color: #aaa;
+    font-size: 0.85rem;
+}
+
+/* Botones para regresar entre catálogos */
+
+#btn-volver-minijuegos {
+    margin-bottom: 18px;
+    background: var(--rojo);
+    border-color: var(--rojo-claro);
+}
+
+#btn-volver-minijuegos:hover {
+    background: var(--rojo-claro);
+}
+
+/* ==========================================
+   VISOR DE MINIJUEGOS
+   ========================================== */
+
+#visor-minijuego {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 8px;
+
+    padding: 8px;
+    box-sizing: border-box;
+    background: #171717;
+}
+
+#visor-minijuego.oculto {
+    display: none !important;
+}
+
+#encabezado-minijuego {
+    padding: 7px 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: var(--marfil);
+    border-bottom: 1px solid #555;
+}
+
+#marco-minijuego {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border: 1px solid #555;
+    background: #fff;
+}
+
+#pie-minijuego {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 5px;
+}
+
+#btn-volver-partidas {
+    padding: 7px 16px;
+    font-size: 0.8rem;
+    background: #292929;
+    border: 1px solid #666;
+    border-radius: 3px;
+    color: var(--marfil);
+}
+
+#btn-volver-partidas:hover {
+    background: var(--rojo);
+    border-color: var(--rojo-claro);
+}
+
+/* Adaptación móvil */
+
+@media (max-width: 600px) {
+
+    .minijuego-item,
+    .partida-minijuego-item {
+        padding: 14px;
+    }
+
+    #encabezado-minijuego {
+        font-size: 0.72rem;
+    }
+}
+
+/* =====================================================
+   FORMULARIO DE CONTACTO
+   ===================================================== */
+
+/* =====================================================
+   FORMULARIO DE CONTACTO
+   ===================================================== */
+
+#seccion-contacto {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    padding: 0;
+    margin: 0;
+}
+
+#marco-contacto {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: 85vh;
+    min-height: 750px;
+    border: none;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background: #171717;
+}
+
+@media (max-width: 768px) {
+
+    #seccion-contacto {
+        padding: 0;
+        margin: 0;
+    }
+
+    #marco-contacto {
+        width: 100%;
+        height: 88vh;
+        min-height: 750px;
+    }
+
+}
+
+
+
+/* ========================================= */
+/* SECCIÓN DE REDES SOCIALES                 */
+/* ========================================= */
+
+#seccion-redes {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 15px;
+}
+
+.encabezado-redes {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.encabezado-redes h2 {
+    color: #e8e3d8;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.encabezado-redes p {
+    color: #aaa;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+#lista-redes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.tarjeta-red {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    padding: 25px 12px;
+    box-sizing: border-box;
+
+    color: #e8e3d8;
+    background: #222;
+    border: 1px solid #555;
+    border-radius: 6px;
+
+    text-align: center;
+    text-decoration: none;
+
+    transition:
+        background 0.2s,
+        border-color 0.2s,
+        transform 0.2s;
+}
+
+.tarjeta-red:hover {
+    background: #303030;
+    border-color: #b9a77a;
+    transform: translateY(-3px);
+}
+
+.icono-red {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 52px;
+    height: 52px;
+    margin-bottom: 12px;
+
+    color: #d2c29a;
+    border: 1px solid #777;
+    border-radius: 50%;
+
+    font-size: 27px;
+    font-weight: bold;
+}
+
+.tarjeta-red h3 {
+    margin: 5px 0;
+    font-size: 18px;
+}
+
+.tarjeta-red p {
+    margin: 5px 0 15px;
+    color: #aaa;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.texto-visitar {
+    color: #d2c29a;
+    font-size: 13px;
+}
+
+.mensaje-redes {
+    margin-top: 30px;
+    color: #999;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Adaptación para teléfonos */
+
+@media (max-width: 480px) {
+
+    #seccion-redes {
+        padding: 10px 5px;
+    }
+
+    #lista-redes {
+        gap: 10px;
+    }
+
+    .tarjeta-red {
+        padding: 20px 8px;
+    }
+
+    .tarjeta-red h3 {
+        font-size: 16px;
+    }
+
+    .icono-red {
+        width: 45px;
+        height: 45px;
+        font-size: 24px;
+    }
+}
+
+
+
+/* ========================================= */
+/* SECCIÓN NOSOTROS                          */
+/* ========================================= */
+
+#seccion-nosotros {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 0;
+}
+
+#marco-nosotros {
+    display: block;
+    width: 100%;
+    height: 950px;
+    border: none;
+    background: transparent;
+}

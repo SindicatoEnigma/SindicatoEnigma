@@ -1,0 +1,718 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de Nonogramas | Sindicato Enigma</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    background: #202020;
+    color: #eeeeee;
+    font-family: Arial, sans-serif;
+}
+
+.contenedor {
+    width: 100%;
+    max-width: 750px;
+    margin: auto;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #d6c6a5;
+}
+
+.panel {
+    background: #303030;
+    border: 1px solid #555;
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 6px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    background: #181818;
+    border: 1px solid #666;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+}
+
+button {
+    padding: 11px 16px;
+    border: 1px solid #777;
+    border-radius: 6px;
+    background: #444;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+button.activo {
+    background: #d6c6a5;
+    color: #171717;
+    border-color: #d6c6a5;
+    font-weight: bold;
+}
+
+button.principal {
+    background: #8b7650;
+    border-color: #b9a47a;
+    color: white;
+    font-weight: bold;
+}
+
+button:hover {
+    filter: brightness(1.15);
+}
+
+.boton-completo {
+    width: 100%;
+    margin-top: 15px;
+}
+
+.oculto {
+    display: none !important;
+}
+
+/* Herramientas */
+
+.herramientas {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+/* Tablero */
+
+.tablero-contenedor {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    overflow-x: auto;
+    padding: 5px;
+}
+
+.tablero {
+    display: grid;
+    gap: 2px;
+    background: #777;
+    padding: 2px;
+    width: fit-content;
+    max-width: 100%;
+    touch-action: manipulation;
+}
+
+.casilla {
+    width: 32px;
+    height: 32px;
+    min-width: 0;
+    padding: 0;
+    border: 1px solid #888;
+    border-radius: 0;
+    background: #f2f0e9;
+    cursor: pointer;
+}
+
+.casilla.negra {
+    background: #000;
+    border-color: #000;
+}
+
+.casilla:hover {
+    filter: brightness(0.85);
+}
+
+/* Resultado */
+
+.resultado {
+    margin-top: 20px;
+}
+
+textarea {
+    width: 100%;
+    min-height: 360px;
+    resize: vertical;
+    padding: 12px;
+    background: #151515;
+    color: #e8e8e8;
+    border: 1px solid #666;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.mensaje {
+    text-align: center;
+    color: #d6c6a5;
+    margin-top: 10px;
+}
+
+@media (max-width: 450px) {
+    body {
+        padding: 10px;
+    }
+
+    .panel {
+        padding: 12px;
+    }
+
+    .casilla {
+        width: min(7vw, 32px);
+        height: min(7vw, 32px);
+    }
+
+    button {
+        padding: 10px 12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+    <h1>Generador de Nonogramas</h1>
+
+    <!-- CONFIGURACIÓN INICIAL -->
+
+    <section id="configuracion" class="panel">
+
+        <h2>Configuración de la matriz</h2>
+
+        <label for="nombre">Nombre del nonograma</label>
+        <input
+            type="text"
+            id="nombre"
+            value="Nonograma de prueba"
+        >
+
+        <label for="filas">Número de filas</label>
+        <input
+            type="number"
+            id="filas"
+            min="1"
+            max="30"
+            value="5"
+        >
+
+        <label for="columnas">Número de columnas</label>
+        <input
+            type="number"
+            id="columnas"
+            min="1"
+            max="30"
+            value="5"
+        >
+
+        <button
+            class="principal boton-completo"
+            onclick="crearMatriz()">
+            Generar matriz
+        </button>
+
+    </section>
+
+
+    <!-- EDITOR DEL NONOGRAMA -->
+
+    <section id="editor" class="panel oculto">
+
+        <h2 id="tituloTablero">Matriz</h2>
+
+        <!-- HERRAMIENTAS -->
+
+        <div class="herramientas">
+
+            <button
+                id="botonNegras"
+                onclick="seleccionarHerramienta('negras')">
+                Negras
+            </button>
+
+            <button
+                id="botonBorrar"
+                onclick="seleccionarHerramienta('borrar')">
+                Borrar
+            </button>
+
+        </div>
+
+        <!-- TABLERO -->
+
+        <div class="tablero-contenedor">
+            <div id="tablero" class="tablero"></div>
+        </div>
+
+        <!-- GENERAR RESULTADO -->
+
+        <button
+            class="principal boton-completo"
+            onclick="generarCodigo()">
+            Generar
+        </button>
+
+        <p class="mensaje" id="estado">
+            Selecciona una herramienta para editar el tablero.
+        </p>
+
+    </section>
+
+
+    <!-- RESULTADO -->
+
+    <section id="resultado" class="panel oculto">
+
+        <h2>Plantilla generada</h2>
+
+        <textarea id="codigo" readonly></textarea>
+
+        <button
+            class="principal boton-completo"
+            onclick="copiarCodigo()">
+            Copiar plantilla
+        </button>
+
+        <button
+            class="boton-completo"
+            onclick="volverEditor()">
+            Volver al tablero
+        </button>
+
+        <p class="mensaje" id="mensajeCopia"></p>
+
+    </section>
+
+</div>
+
+
+<script>
+
+// =====================================
+// VARIABLES
+// =====================================
+
+let matriz = [];
+
+let totalFilas = 0;
+let totalColumnas = 0;
+
+let herramientaActiva = null;
+
+
+// =====================================
+// CREAR MATRIZ
+// =====================================
+
+function crearMatriz() {
+
+    const filas = Number(
+        document.getElementById("filas").value
+    );
+
+    const columnas = Number(
+        document.getElementById("columnas").value
+    );
+
+    if (
+        !Number.isInteger(filas) ||
+        !Number.isInteger(columnas) ||
+        filas < 1 ||
+        columnas < 1 ||
+        filas > 30 ||
+        columnas > 30
+    ) {
+        alert("Las dimensiones deben estar entre 1 y 30.");
+        return;
+    }
+
+    totalFilas = filas;
+    totalColumnas = columnas;
+
+    // Creamos una matriz completamente blanca.
+    matriz = [];
+
+    for (let f = 0; f < totalFilas; f++) {
+
+        let fila = [];
+
+        for (let c = 0; c < totalColumnas; c++) {
+            fila.push(0);
+        }
+
+        matriz.push(fila);
+    }
+
+    document.getElementById("configuracion")
+        .classList.add("oculto");
+
+    document.getElementById("editor")
+        .classList.remove("oculto");
+
+    document.getElementById("resultado")
+        .classList.add("oculto");
+
+    document.getElementById("tituloTablero").textContent =
+        totalFilas + " × " + totalColumnas;
+
+    herramientaActiva = null;
+
+    actualizarHerramientas();
+    dibujarTablero();
+
+    document.getElementById("estado").textContent =
+        "Selecciona Negras o Borrar para editar.";
+
+}
+
+
+// =====================================
+// DIBUJAR TABLERO
+// =====================================
+
+function dibujarTablero() {
+
+    const tablero = document.getElementById("tablero");
+
+    tablero.innerHTML = "";
+
+    tablero.style.gridTemplateColumns =
+        `repeat(${totalColumnas}, 32px)`;
+
+    for (let f = 0; f < totalFilas; f++) {
+
+        for (let c = 0; c < totalColumnas; c++) {
+
+            const casilla = document.createElement("button");
+
+            casilla.className = "casilla";
+
+            if (matriz[f][c] === 1) {
+                casilla.classList.add("negra");
+            }
+
+            casilla.setAttribute(
+                "aria-label",
+                `Fila ${f + 1}, columna ${c + 1}`
+            );
+
+            casilla.addEventListener("click", () => {
+                modificarCasilla(f, c);
+            });
+
+            tablero.appendChild(casilla);
+        }
+    }
+}
+
+
+// =====================================
+// SELECCIONAR HERRAMIENTA
+// =====================================
+
+function seleccionarHerramienta(herramienta) {
+
+    herramientaActiva = herramienta;
+
+    actualizarHerramientas();
+
+    if (herramienta === "negras") {
+
+        document.getElementById("estado").textContent =
+            "Selecciona las casillas que serán negras.";
+
+    } else {
+
+        document.getElementById("estado").textContent =
+            "Selecciona las casillas que deseas borrar.";
+
+    }
+}
+
+
+// =====================================
+// ACTUALIZAR BOTONES
+// =====================================
+
+function actualizarHerramientas() {
+
+    document.getElementById("botonNegras")
+        .classList.toggle(
+            "activo",
+            herramientaActiva === "negras"
+        );
+
+    document.getElementById("botonBorrar")
+        .classList.toggle(
+            "activo",
+            herramientaActiva === "borrar"
+        );
+}
+
+
+// =====================================
+// MODIFICAR CASILLA
+// =====================================
+
+function modificarCasilla(fila, columna) {
+
+    if (!herramientaActiva) {
+
+        document.getElementById("estado").textContent =
+            "Primero selecciona Negras o Borrar.";
+
+        return;
+    }
+
+    if (herramientaActiva === "negras") {
+
+        matriz[fila][columna] = 1;
+
+    } else if (herramientaActiva === "borrar") {
+
+        matriz[fila][columna] = 0;
+
+    }
+
+    dibujarTablero();
+}
+
+
+// =====================================
+// CALCULAR PISTAS
+// =====================================
+
+function calcularPistas(secuencia) {
+
+    const pistas = [];
+
+    let contador = 0;
+
+    for (let i = 0; i < secuencia.length; i++) {
+
+        if (secuencia[i] === 1) {
+
+            contador++;
+
+        } else {
+
+            if (contador > 0) {
+                pistas.push(contador);
+                contador = 0;
+            }
+
+        }
+    }
+
+    // Registrar la última secuencia si termina en negro.
+    if (contador > 0) {
+        pistas.push(contador);
+    }
+
+    // Una línea sin casillas negras se representa con 0.
+    if (pistas.length === 0) {
+        pistas.push(0);
+    }
+
+    return pistas;
+}
+
+
+// =====================================
+// OBTENER PISTAS DE FILAS
+// =====================================
+
+function obtenerPistasFilas() {
+
+    const resultado = [];
+
+    for (let f = 0; f < totalFilas; f++) {
+
+        resultado.push(
+            calcularPistas(matriz[f])
+        );
+
+    }
+
+    return resultado;
+}
+
+
+// =====================================
+// OBTENER PISTAS DE COLUMNAS
+// =====================================
+
+function obtenerPistasColumnas() {
+
+    const resultado = [];
+
+    for (let c = 0; c < totalColumnas; c++) {
+
+        const columna = [];
+
+        for (let f = 0; f < totalFilas; f++) {
+            columna.push(matriz[f][c]);
+        }
+
+        resultado.push(
+            calcularPistas(columna)
+        );
+
+    }
+
+    return resultado;
+}
+
+
+// =====================================
+// GENERAR PLANTILLA
+// =====================================
+
+function generarCodigo() {
+
+    const nombre = document.getElementById("nombre")
+        .value.trim() || "Nonograma sin nombre";
+
+    const pistasFilas = obtenerPistasFilas();
+
+    const pistasColumnas = obtenerPistasColumnas();
+
+    let texto = "";
+
+    // ENCABEZADO
+
+    texto += "[NONOGRAMA]\n";
+    texto += "nombre=" + nombre + "\n";
+    texto += "filas=" + totalFilas + "\n";
+    texto += "columnas=" + totalColumnas + "\n\n";
+
+
+    // PISTAS DE FILAS
+
+    texto += "[FILAS]\n";
+
+    for (let f = 0; f < totalFilas; f++) {
+
+        texto += pistasFilas[f].join(" ") + "\n";
+
+    }
+
+    texto += "\n";
+
+
+    // PISTAS DE COLUMNAS
+
+    texto += "[COLUMNAS]\n";
+
+    for (let c = 0; c < totalColumnas; c++) {
+
+        texto += pistasColumnas[c].join(" ") + "\n";
+
+    }
+
+    texto += "\n";
+
+
+    // SOLUCIÓN
+
+    texto += "[SOLUCION]\n";
+
+    for (let f = 0; f < totalFilas; f++) {
+
+        texto += matriz[f].join(" ") + "\n";
+
+    }
+
+    texto += "\n";
+
+
+    // MENSAJE FINAL
+
+    texto += "[FINAL]\n";
+    texto += "mensaje=¡Has completado el nonograma!\n";
+
+
+    // MOSTRAR RESULTADO
+
+    document.getElementById("codigo").value = texto;
+
+    document.getElementById("editor")
+        .classList.add("oculto");
+
+    document.getElementById("resultado")
+        .classList.remove("oculto");
+
+}
+
+
+// =====================================
+// COPIAR PLANTILLA
+// =====================================
+
+async function copiarCodigo() {
+
+    const codigo = document.getElementById("codigo");
+
+    try {
+
+        await navigator.clipboard.writeText(codigo.value);
+
+        document.getElementById("mensajeCopia").textContent =
+            "Plantilla copiada correctamente.";
+
+    } catch (error) {
+
+        codigo.select();
+
+        const copiado = document.execCommand("copy");
+
+        document.getElementById("mensajeCopia").textContent =
+            copiado
+                ? "Plantilla copiada correctamente."
+                : "No se pudo copiar. Selecciona y copia el texto manualmente.";
+
+    }
+}
+
+
+// =====================================
+// VOLVER AL EDITOR
+// =====================================
+
+function volverEditor() {
+
+    document.getElementById("resultado")
+        .classList.add("oculto");
+
+    document.getElementById("editor")
+        .classList.remove("oculto");
+
+}
+
+</script>
+
+</body>
+</html>

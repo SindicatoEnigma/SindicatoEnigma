@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 650">
+  <ellipse cx="200" cy="610" rx="150" ry="30" fill="#000" opacity=".35"/>
+  <path d="M75 290 Q200 185 325 290 L300 590 Q200 640 100 590Z" fill="#3b3936"/>
+  <circle cx="200" cy="250" r="92" fill="#c7b39d"/>
+  <path d="M105 235 Q125 120 200 120 Q275 120 300 235 Q260 185 200 190 Q145 185 105 235Z" fill="#6b625a"/>
+  <circle cx="165" cy="255" r="7" fill="#171717"/>
+  <circle cx="235" cy="255" r="7" fill="#171717"/>
+  <path d="M165 300 Q200 280 235 300" fill="none" stroke="#171717" stroke-width="6"/>
+  <path d="M150 400 H250 V440 H150Z" fill="#eee9dc"/>
+  <circle cx="200" cy="420" r="15" fill="#7d1f1f"/>
+  <text x="200" y="535" text-anchor="middle" fill="#eee9dc" font-family="Georgia" font-size="22">MARGARET</text>
+</svg>

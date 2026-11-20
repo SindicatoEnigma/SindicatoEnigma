@@ -1,0 +1,20 @@
+# PARTE 03
+# Aquí demostramos cómo una historia puede abrir un minijuego.
+# El módulo real se sustituirá después por el crucigrama,
+# Sudoku, nonograma, etc.
+
+[FONDO calle_noche]
+
+[EL normal]
+EL: Tenemos una primera pista, pero todavía necesitamos interpretarla.
+
+
+[EL normal]
+EL: Excelente. El minijuego devolvió el control a la historia.
+
+[SECUENCIA]
+TIPO: JUEGO
+TITULO: Las primeras pistas
+ARCHIVO: minijuegos/zudoku.html
+DATOS: ../assets/zudoku/zudokuprueba02.txt
+[FIN SECUENCIA]

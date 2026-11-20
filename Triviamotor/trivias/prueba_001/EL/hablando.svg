@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="1100">
+<ellipse cx="350" cy="1020" rx="230" ry="35" fill="#000" opacity=".45"/>
+<circle cx="350" cy="290" r="130" fill="#161616" stroke="#d8cbb0" stroke-width="5"/>
+<path d="M185 250 Q350 110 515 250 L480 190 Q350 90 220 190Z" fill="#111" stroke="#d8cbb0" stroke-width="5"/>
+<path d="M230 540 Q350 430 470 540 L520 920 Q350 1000 180 920Z" fill="#111" stroke="#d8cbb0" stroke-width="5"/>
+<circle cx="405" cy="285" r="28" fill="#f2ead9"/><circle cx="412" cy="285" r="11" fill="#111"/>
+<text x="350" y="730" fill="#d8cbb0" font-family="Georgia,serif" font-size="42" text-anchor="middle">EL</text>
+<text x="350" y="780" fill="#d8cbb0" opacity=".7" font-family="Georgia,serif" font-size="22" text-anchor="middle">HABLANDO</text>
+</svg>

@@ -1,0 +1,408 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto | Sindicato Enigma</title>
+
+    <!-- Google reCAPTCHA v2 -->
+    <script src="https://www.google.com/recaptcha/api.js?hl=es"
+            async defer></script>
+
+    <!-- EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@5/dist/email.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+    margin: 0;
+    padding: 10px;
+    background: #171717;
+    color: #e8e3d8;
+    font-family: Georgia, serif;
+}
+
+        .contenedor {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 25px;
+    background: #222;
+    border: 1px solid #555;
+    border-radius: 5px;
+}
+
+        .encabezado {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #666;
+        }
+
+        .encabezado h1 {
+            margin: 0 0 10px;
+            font-size: 25px;
+            letter-spacing: 2px;
+        }
+
+        .encabezado p {
+            margin: 0;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .campo {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 15px;
+        }
+
+        input,
+        textarea {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            color: #eee;
+            background: #151515;
+            border: 1px solid #555;
+            border-radius: 3px;
+            font-family: Arial, sans-serif;
+            font-size: 15px;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #b9a77a;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .captcha {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin: 20px 0;
+    overflow: visible;
+}
+
+        .boton {
+            width: 100%;
+            padding: 13px;
+            color: #eee;
+            background: #393939;
+            border: 1px solid #777;
+            border-radius: 3px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .boton:hover:not(:disabled) {
+            background: #555;
+        }
+
+        .boton:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #estado {
+            min-height: 24px;
+            margin-top: 18px;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .nota {
+            margin-top: 20px;
+            color: #999;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        /* Campo invisible de control antispam */
+        .campo-oculto {
+            position: absolute;
+            left: -10000px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        @media (max-width: 480px) {
+
+    body {
+        padding: 0;
+    }
+
+    .contenedor {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 14px;
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+    }
+
+    .encabezado {
+        margin-bottom: 18px;
+        padding-bottom: 12px;
+    }
+
+    .encabezado h1 {
+        font-size: 21px;
+    }
+
+    .campo {
+        margin-bottom: 14px;
+    }
+
+    .captcha {
+        justify-content: center;
+        overflow: visible;
+        margin: 20px 0;
+    }
+
+    .g-recaptcha {
+        transform: scale(0.85);
+        transform-origin: center top;
+        margin-bottom: -12px;
+    }
+
+        }
+        /* Ajuste del CAPTCHA para teléfonos */
+.g-recaptcha {
+    transform: scale(0.85);
+    transform-origin: center top;
+    width: 304px;
+    margin-bottom: -12px;
+}
+    </style>
+</head>
+
+<body>
+
+    <main class="contenedor">
+
+        <header class="encabezado">
+            <h1>SINDICATO ENIGMA</h1>
+            <p>Canal oficial de contacto</p>
+        </header>
+
+        <form id="formulario-contacto">
+
+            <div class="campo">
+                <label for="nombre">Nombre</label>
+                <input
+                    type="text"
+                    id="nombre"
+                    name="name"
+                    placeholder="Tu nombre"
+                    maxlength="100"
+                    autocomplete="name"
+                    required>
+            </div>
+
+            <div class="campo">
+                <label for="correo">Correo electrónico</label>
+                <input
+                    type="email"
+                    id="correo"
+                    name="email"
+                    placeholder="correo@ejemplo.com"
+                    maxlength="254"
+                    autocomplete="email"
+                    required>
+            </div>
+
+            <div class="campo">
+                <label for="asunto">Asunto</label>
+                <input
+                    type="text"
+                    id="asunto"
+                    name="title"
+                    placeholder="Motivo del mensaje"
+                    maxlength="150"
+                    required>
+            </div>
+
+            <div class="campo">
+                <label for="mensaje">Mensaje</label>
+                <textarea
+                    id="mensaje"
+                    name="message"
+                    placeholder="Escribe tu mensaje..."
+                    maxlength="4000"
+                    required></textarea>
+            </div>
+
+            <!-- Fecha de recepción -->
+            <input type="hidden" name="time" id="fecha-mensaje">
+
+            <!-- Campo trampa para bots -->
+            <div class="campo-oculto" aria-hidden="true">
+                <label for="sitio-web">No rellenar</label>
+                <input
+                    type="text"
+                    id="sitio-web"
+                    name="website"
+                    tabindex="-1"
+                    autocomplete="off">
+            </div>
+
+            <!-- Google reCAPTCHA -->
+            <div class="captcha">
+                <div
+                    class="g-recaptcha"
+                    data-sitekey="6Le3YSIuAAAAALmRQ4tckcWz-8EB6NcvdsOG554w"
+                    data-theme="dark">
+                </div>
+            </div>
+
+            <button
+                type="submit"
+                class="boton"
+                id="btn-enviar">
+                Enviar mensaje
+            </button>
+
+            <div id="estado" role="status" aria-live="polite"></div>
+
+        </form>
+
+        <p class="nota">
+            Tu mensaje será utilizado únicamente para atender tu consulta.
+        </p>
+
+    </main>
+
+    <script>
+        // Inicializar EmailJS
+        emailjs.init({
+            publicKey: "YCPUonrCwNyAjlCPm"
+        });
+
+        const formulario =
+            document.getElementById("formulario-contacto");
+
+        const boton =
+            document.getElementById("btn-enviar");
+
+        const estado =
+            document.getElementById("estado");
+
+        const claveEspera =
+            "SE_contacto_ultimo_envio";
+
+        let enviando = false;
+
+        formulario.addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+            if (enviando) return;
+
+            // Comprobar campo trampa
+            if (document.getElementById("sitio-web").value.trim()) {
+                estado.textContent = "No se pudo procesar el mensaje.";
+                return;
+            }
+
+            // Comprobar que Google CAPTCHA está cargado
+            if (typeof grecaptcha === "undefined") {
+                estado.textContent =
+                    "No se pudo cargar la verificación. Intenta nuevamente.";
+                return;
+            }
+
+            // Comprobar CAPTCHA
+            if (!grecaptcha.getResponse()) {
+                estado.textContent =
+                    "Debes completar la verificación de seguridad.";
+                return;
+            }
+
+            // Limitar envíos desde este navegador
+            const ultimoEnvio =
+                Number(localStorage.getItem(claveEspera) || 0);
+
+            const tiempoTranscurrido =
+                Date.now() - ultimoEnvio;
+
+            if (tiempoTranscurrido < 60000) {
+                const segundos =
+                    Math.ceil((60000 - tiempoTranscurrido) / 1000);
+
+                estado.textContent =
+                    "Espera " + segundos +
+                    " segundos antes de enviar otro mensaje.";
+
+                return;
+            }
+
+            // Preparar fecha
+            document.getElementById("fecha-mensaje").value =
+                new Date().toLocaleString("es-MX");
+
+            enviando = true;
+            boton.disabled = true;
+            boton.textContent = "Enviando...";
+            estado.textContent = "Enviando tu mensaje...";
+
+            try {
+
+                await emailjs.sendForm(
+                    "service_else",
+                    "template_x9vhns8",
+                    formulario
+                );
+
+                localStorage.setItem(
+                    claveEspera,
+                    String(Date.now())
+                );
+
+                estado.textContent =
+                    "¡Mensaje enviado correctamente! Gracias por contactar al Sindicato Enigma.";
+
+                formulario.reset();
+
+                grecaptcha.reset();
+
+            } catch (error) {
+
+                console.error("Error EmailJS:", error);
+
+                estado.textContent =
+                    "No se pudo enviar el mensaje. Comprueba tu conexión e inténtalo nuevamente.";
+
+                grecaptcha.reset();
+
+            } finally {
+
+                enviando = false;
+                boton.disabled = false;
+                boton.textContent = "Enviar mensaje";
+
+            }
+
+        });
+    </script>
+
+</body>
+</html>

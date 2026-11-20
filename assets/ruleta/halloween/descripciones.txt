@@ -1,0 +1,8 @@
+# Formato: archivo.png|Descripción
+
+hombre-lobo.png|Una criatura de la noche condenada a transformarse bajo la luz de la luna.
+jinete-sin-cabeza.png|Un jinete espectral que cabalga silenciosamente entre la niebla.
+frankenstein.png|Una criatura nacida de un experimento que desafió los límites de la ciencia.
+bruja.png|Una hechicera que conoce secretos que quizá sería mejor no descubrir.
+vampiro.png|Una criatura nocturna que abandona las sombras cuando cae la noche.
+fantasma.svg|Un espíritu que permanece entre nuestro mundo y el siguiente.

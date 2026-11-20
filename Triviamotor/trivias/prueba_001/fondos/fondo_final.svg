@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080">
+<defs><radialGradient id="g"><stop stop-color="#3b3428"/><stop offset="1" stop-color="#0d1114"/></radialGradient></defs>
+<rect width="1920" height="1080" fill="url(#g)"/>
+<rect x="70" y="70" width="1780" height="940" fill="none" stroke="#d8cbb0" stroke-opacity=".5" stroke-width="3"/>
+<rect x="100" y="100" width="1720" height="880" fill="none" stroke="#d8cbb0" stroke-opacity=".15"/>
+<text x="960" y="500" fill="#d8cbb0" font-family="Georgia,serif" font-size="72" text-anchor="middle" letter-spacing="8">EXPEDIENTE CERRADO</text>
+<text x="960" y="590" fill="#d8cbb0" opacity=".65" font-family="Georgia,serif" font-size="30" text-anchor="middle" letter-spacing="5">HASTA EL PRÓXIMO CASO</text>
+</svg>

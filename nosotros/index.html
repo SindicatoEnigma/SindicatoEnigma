@@ -1,0 +1,360 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Nosotros | Sindicato Enigma</title>
+
+    <style>
+        /* ================================= */
+        /* CONFIGURACIÓN GENERAL             */
+        /* ================================= */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            background: transparent;
+            color: #e8e3d8;
+            font-family: Georgia, "Times New Roman", serif;
+            line-height: 1.7;
+        }
+
+        .contenedor-nosotros {
+            width: 100%;
+            max-width: 900px;
+            margin: auto;
+            padding: 25px 22px 40px;
+        }
+
+        /* ================================= */
+        /* ENCABEZADO                        */
+        /* ================================= */
+
+        .encabezado {
+            text-align: center;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #655c49;
+        }
+
+        .encabezado .subtitulo {
+            color: #b9a77a;
+            font-size: 13px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        .encabezado h1 {
+            margin: 8px 0;
+            font-size: clamp(28px, 5vw, 42px);
+            letter-spacing: 3px;
+        }
+
+        /* ================================= */
+        /* PRESENTACIÓN                      */
+        /* ================================= */
+
+        .presentacion {
+            text-align: center;
+            margin-bottom: 35px;
+            padding: 10px 5px;
+        }
+
+        .presentacion p {
+            margin: 0 0 18px;
+            font-size: 17px;
+            text-align: center;
+            line-height: 1.85;
+        }
+
+        .presentacion .frase-final {
+            margin-top: 25px;
+            color: #d2c29a;
+            font-size: 19px;
+            font-style: italic;
+            text-align: center;
+        }
+
+        /* ================================= */
+        /* REDES SOCIALES                    */
+        /* ================================= */
+
+        .redes-contenedor {
+            margin: 35px 0;
+        }
+
+        .redes-contenedor h2 {
+            margin-bottom: 8px;
+            font-size: 23px;
+            text-align: center;
+        }
+
+        .redes-contenedor .descripcion {
+            margin: 0 auto 20px;
+            max-width: 600px;
+            color: #b8b8b8;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .tarjeta-redes {
+            display: block;
+            width: 100%;
+            padding: 23px 15px;
+            color: #e8e3d8;
+            background: #222;
+            border: 1px solid #827453;
+            border-radius: 6px;
+            text-align: center;
+            text-decoration: none;
+            transition: background 0.2s,
+                        border-color 0.2s,
+                        transform 0.2s;
+        }
+
+        .tarjeta-redes:hover {
+            background: #303030;
+            border-color: #d2c29a;
+            transform: translateY(-3px);
+        }
+
+        .tarjeta-redes .icono {
+            display: block;
+            margin-bottom: 8px;
+            color: #d2c29a;
+            font-size: 30px;
+        }
+
+        .tarjeta-redes h3 {
+            margin: 0 0 5px;
+            font-size: 22px;
+            letter-spacing: 3px;
+        }
+
+        .tarjeta-redes p {
+            margin: 0;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .tarjeta-redes .visitar {
+            display: inline-block;
+            margin-top: 12px;
+            color: #d2c29a;
+            font-size: 13px;
+        }
+
+        /* ================================= */
+        /* INVITACIÓN A PARTICIPAR            */
+        /* ================================= */
+
+        .invitacion {
+            margin-top: 40px;
+            padding: 25px 20px;
+            border-top: 1px solid #655c49;
+            text-align: center;
+        }
+
+        .invitacion h2 {
+            margin: 0 0 18px;
+            font-size: 23px;
+        }
+
+        .invitacion p {
+            margin: 0 0 15px;
+            color: #d0d0d0;
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .invitacion strong {
+            color: #d2c29a;
+        }
+
+        /* ================================= */
+        /* ADAPTACIÓN A MÓVILES              */
+        /* ================================= */
+
+        @media (max-width: 480px) {
+
+            .contenedor-nosotros {
+                padding: 18px 14px 30px;
+            }
+
+            .presentacion p {
+                font-size: 16px;
+            }
+
+            .presentacion .frase-final {
+                font-size: 17px;
+            }
+
+            .invitacion {
+                padding: 22px 8px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <main class="contenedor-nosotros">
+
+        <!-- ENCABEZADO -->
+
+        <header class="encabezado">
+
+            <div class="subtitulo">
+                Expediente institucional
+            </div>
+
+            <h1>SINDICATO ENIGMA</h1>
+
+        </header>
+
+
+        <!-- PRESENTACIÓN -->
+
+        <section class="presentacion">
+
+            <p>
+                Hay preguntas que despiertan nuestra curiosidad,
+                historias que nos invitan a descubrir sus secretos
+                y desafíos que ponen a prueba nuestra imaginación.
+            </p>
+
+            <p>
+                Sindicato Enigma es un espacio dedicado al
+                pensamiento, la curiosidad y la diversión,
+                donde los misterios, la creatividad, el conocimiento
+                y el entretenimiento se encuentran.
+            </p>
+
+            <p>
+                Aquí podrás explorar historias, resolver enigmas,
+                poner a prueba tu ingenio, descubrir nuevas ideas
+                y mirar el mundo desde perspectivas diferentes.
+            </p>
+
+            <p>
+                No importa si eres un apasionado de los misterios,
+                un curioso por naturaleza o simplemente alguien
+                que busca algo diferente: siempre habrá algo
+                esperando a ser descubierto.
+            </p>
+
+            <p class="frase-final">
+                La curiosidad abre la puerta.
+                Tu ingenio descubre el camino.
+            </p>
+
+        </section>
+
+
+        <!-- REDES SOCIALES -->
+
+        <section class="redes-contenedor">
+
+            <h2>¡Mantente al tanto!</h2>
+
+            <p class="descripcion">
+                No te pierdas nuestras nuevas historias,
+                investigaciones, enigmas, desafíos y publicaciones.
+                Síguenos para descubrir cada nuevo contenido
+                del Sindicato Enigma.
+            </p>
+
+            <a href="#" class="tarjeta-redes" id="enlace-redes">
+
+                <span class="icono">✦</span>
+
+                <h3>REDES</h3>
+
+                <p>
+                    Instagram · YouTube · X · TikTok
+                </p>
+
+                <span class="visitar">
+                    Visitar nuestras redes sociales ↗
+                </span>
+
+            </a>
+
+        </section>
+
+
+        <!-- INVITACIÓN A PARTICIPAR -->
+
+        <section class="invitacion">
+
+            <h2>¿Tienes algo que compartir?</h2>
+
+            <p>
+                Los mejores misterios también pueden venir
+                de nuestros lectores.
+            </p>
+
+            <p>
+                ¿Tienes un acertijo interesante, un problema
+                que nadie ha podido resolver o una historia
+                misteriosa que merece ser contada?
+            </p>
+
+            <p>
+                <strong>
+                    ¡Compártela con nosotros en nuestras redes sociales!
+                </strong>
+            </p>
+
+            <p>
+                Nos encantará conocer tus propuestas,
+                descubrir nuevos desafíos y explorar las historias
+                que quieras compartir con el Sindicato Enigma.
+            </p>
+
+        </section>
+
+    </main>
+
+
+    <!-- CONEXIÓN CON LAS REDES DEL PORTAL -->
+
+    <script>
+
+        const enlaceRedes = document.getElementById("enlace-redes");
+
+        enlaceRedes.addEventListener("click", function(evento) {
+
+            evento.preventDefault();
+
+            const enlacePortal = window.parent.document.querySelector(
+                '#portal-pie a[data-seccion="redes"]'
+            );
+
+            if (enlacePortal) {
+                enlacePortal.click();
+            } else {
+                console.error(
+                    "No se encontró el enlace de Redes sociales del portal."
+                );
+            }
+
+        });
+
+    </script>
+
+</body>
+</html>

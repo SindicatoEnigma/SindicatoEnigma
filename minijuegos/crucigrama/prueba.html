@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Prueba — Crucigrama Sindicato Enigma</title>
+
+    <link
+        rel="stylesheet"
+        href="crucigrama.css"
+    >
+</head>
+
+<body>
+
+    <main id="crucigrama">
+
+        <header>
+            <h1>Crucigrama</h1>
+            <p>Prueba técnica — Sindicato Enigma</p>
+        </header>
+
+        <div
+            id="diagnostico"
+            style="
+                background:#e9e4d7;
+                color:#111;
+                padding:10px;
+                margin:10px;
+                border:2px solid #111;
+            "
+        >
+            Cargando motor...
+        </div>
+
+        <section id="app">
+
+            <div
+                id="tablero"
+                class="tablero"
+            ></div>
+
+            <section
+                id="respuesta"
+                class="respuesta hidden"
+            >
+
+                <div
+                    id="cabecera"
+                    class="cabecera"
+                ></div>
+
+                <div
+                    id="pista"
+                    class="pista"
+                >
+                    Selecciona una palabra.
+                </div>
+
+                <div
+                    id="casillas"
+                    class="casillas"
+                ></div>
+
+                <div class="entrada">
+
+                    <input
+                        id="input"
+                        type="text"
+                        autocomplete="off"
+                        autocapitalize="characters"
+                    >
+
+                    <button
+                        id="confirmar"
+                        type="button"
+                    >
+                        Comprobar
+                    </button>
+
+                </div>
+
+                <div
+                    id="mensaje"
+                    class="mensaje"
+                ></div>
+
+            </section>
+
+            <section
+                id="final"
+                class="final hidden"
+            >
+
+                <h2>¡Crucigrama completado!</h2>
+
+                <p id="finalTexto"></p>
+
+                <button
+                    id="continuar"
+                    type="button"
+                >
+                    CONTINUAR
+                </button>
+
+            </section>
+
+        </section>
+
+    </main>
+
+    <script>
+
+        /*
+         * PRUEBA DIAGNÓSTICA
+         *
+         * Si aparece este mensaje, prueba.html funciona.
+         */
+        document.getElementById("diagnostico").textContent =
+            "HTML cargado correctamente. Intentando cargar el motor...";
+
+    </script>
+
+    <script src="crucigrama.js"></script>
+
+    <script>
+
+        /*
+         * Si aparece este segundo mensaje,
+         * crucigrama.js también fue cargado.
+         */
+        document.getElementById("diagnostico").textContent =
+            "HTML + crucigrama.js cargados. El motor está iniciándose.";
+
+    </script>
+
+</body>
+
+</html>

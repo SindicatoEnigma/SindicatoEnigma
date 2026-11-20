@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 650">
+  <ellipse cx="200" cy="610" rx="150" ry="30" fill="#000" opacity=".35"/>
+  <path d="M80 260 Q200 170 320 260 L290 570 Q200 630 110 570Z" fill="#101010"/>
+  <path d="M65 255 Q200 130 335 255 L305 305 Q200 250 95 305Z" fill="#161616"/>
+  <ellipse cx="200" cy="270" rx="95" ry="80" fill="#050505"/>
+  <path d="M90 245 Q200 180 310 245 L295 280 Q200 245 105 280Z" fill="#2b2b2b"/>
+  <ellipse cx="245" cy="280" rx="18" ry="12" fill="#eee9dc"/>
+  <circle cx="248" cy="280" r="5" fill="#111"/>
+  <path d="M160 420 L240 420 L230 455 L170 455Z" fill="#eee9dc"/>
+  <circle cx="200" cy="438" r="15" fill="#7d1f1f"/>
+  <text x="200" y="535" text-anchor="middle" fill="#eee9dc" font-family="Georgia" font-size="25">EL</text>
+</svg>
