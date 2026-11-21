@@ -1,0 +1,596 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ruleta Simple | Sindicato Enigma</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+}
+
+body {
+    background: #111;
+    color: #eee;
+    font-family: Georgia, "Times New Roman", serif;
+    overflow: hidden;
+}
+
+button, input {
+    font: inherit;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ===== PANTALLAS ===== */
+
+.screen {
+    width: 100%;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.panel {
+    width: min(94vw, 600px);
+    text-align: center;
+}
+
+.title {
+    margin: 0 0 12px;
+    font-size: clamp(28px, 7vw, 44px);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.subtitle {
+    color: #bbb;
+    margin: 0 0 24px;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+/* ===== SELECCIÓN DE IMÁGENES ===== */
+
+.file-label {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    border: 1px dashed #aaa;
+    border-radius: 6px;
+    background: #202020;
+    cursor: pointer;
+    margin-bottom: 12px;
+}
+
+.file-label strong {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 6px;
+}
+
+.file-label small {
+    color: #bbb;
+}
+
+#imageInput {
+    display: none;
+}
+
+.image-count {
+    min-height: 24px;
+    color: #ccc;
+    margin: 12px 0;
+    font-size: 14px;
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 16px 0;
+    max-height: 190px;
+    overflow-y: auto;
+}
+
+.preview-item {
+    aspect-ratio: 1;
+    background: #292929;
+    border: 1px solid #555;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.action-btn {
+    border: 1px solid #aaa;
+    background: #eee;
+    color: #111;
+    padding: 15px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.action-btn:active {
+    transform: scale(.97);
+}
+
+.action-btn:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+}
+
+#startBtn {
+    width: 100%;
+    margin-top: 8px;
+}
+
+/* ===== RULETA ===== */
+
+#rouletteScreen {
+    padding: 12px;
+}
+
+.roulette-stage {
+    position: relative;
+    width: min(96vw, 1000px);
+    height: min(88dvh, 900px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #050505;
+    border: clamp(4px, 1vw, 9px) solid #ddd;
+    outline: 1px solid #555;
+    border-radius: 3px;
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+.roulette-image {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+/* ===== MENÚ FINAL ===== */
+
+.final-panel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 20px;
+    background: rgba(0, 0, 0, .78);
+}
+
+.final-panel .action-btn {
+    width: min(85%, 340px);
+}
+
+/* ===== MENSAJES ===== */
+
+.message {
+    min-height: 22px;
+    color: #e3c77a;
+    font-size: 14px;
+    margin: 12px 0;
+}
+
+@media(max-height: 500px) {
+    .screen {
+        padding: 7px;
+    }
+
+    .roulette-stage {
+        height: 94dvh;
+    }
+
+    .preview-grid {
+        max-height: 100px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ===== SELECCIÓN ===== -->
+
+<section id="setupScreen" class="screen">
+
+    <div class="panel">
+
+        <h1 class="title">Ruleta</h1>
+
+        <p class="subtitle">
+            Selecciona de 3 a 7 imágenes de tu teléfono.
+        </p>
+
+        <label for="imageInput" class="file-label">
+            <strong>✦ SELECCIONAR IMÁGENES</strong>
+            <small>Elige tus imágenes desde la galería o archivos</small>
+        </label>
+
+        <input
+            type="file"
+            id="imageInput"
+            accept="image/*"
+            multiple
+        >
+
+        <div id="imageCount" class="image-count">
+            Todavía no has seleccionado imágenes.
+        </div>
+
+        <div id="previewGrid" class="preview-grid"></div>
+
+        <div id="message" class="message"></div>
+
+        <button id="startBtn" class="action-btn" disabled>
+            INICIAR
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ===== RULETA ===== -->
+
+<section id="rouletteScreen" class="screen hidden">
+
+    <div id="rouletteStage" class="roulette-stage">
+
+        <img
+            id="rouletteImage"
+            class="roulette-image"
+            alt="Imagen seleccionada"
+        >
+
+        <!-- Menú después de detenerse -->
+        <div id="finalPanel" class="final-panel hidden">
+
+            <button id="againBtn" class="action-btn">
+                VOLVER A GIRAR
+            </button>
+
+            <button id="exitBtn" class="action-btn">
+                SALIR
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<script>
+
+/* ===== ELEMENTOS ===== */
+
+const setupScreen = document.getElementById("setupScreen");
+const rouletteScreen = document.getElementById("rouletteScreen");
+
+const imageInput = document.getElementById("imageInput");
+const imageCount = document.getElementById("imageCount");
+const previewGrid = document.getElementById("previewGrid");
+const message = document.getElementById("message");
+
+const startBtn = document.getElementById("startBtn");
+
+const rouletteStage = document.getElementById("rouletteStage");
+const rouletteImage = document.getElementById("rouletteImage");
+
+const finalPanel = document.getElementById("finalPanel");
+const againBtn = document.getElementById("againBtn");
+const exitBtn = document.getElementById("exitBtn");
+
+
+/* ===== ESTADO ===== */
+
+let selectedImages = [];
+let imageURLs = [];
+
+let currentIndex = 0;
+let rouletteTimer = null;
+
+let rouletteRunning = false;
+let showingMenu = false;
+
+
+/* ===== SELECCIÓN DE IMÁGENES ===== */
+
+imageInput.addEventListener("change", () => {
+
+    const files = Array.from(imageInput.files);
+
+    // Limpiar selección anterior.
+    clearImages();
+
+    previewGrid.innerHTML = "";
+    message.textContent = "";
+
+    if (files.length < 3) {
+
+        imageCount.textContent =
+            "Necesitas seleccionar al menos 3 imágenes.";
+
+        startBtn.disabled = true;
+        return;
+    }
+
+    if (files.length > 7) {
+
+        imageCount.textContent =
+            "Solo puedes seleccionar un máximo de 7 imágenes.";
+
+        message.textContent =
+            "Selecciona nuevamente entre 3 y 7 imágenes.";
+
+        startBtn.disabled = true;
+        imageInput.value = "";
+        return;
+    }
+
+    selectedImages = files;
+
+    imageCount.textContent =
+        files.length + " imágenes seleccionadas.";
+
+    // Crear vista previa.
+    files.forEach(file => {
+
+        const url = URL.createObjectURL(file);
+
+        imageURLs.push(url);
+
+        const container = document.createElement("div");
+        container.className = "preview-item";
+
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = file.name;
+
+        container.appendChild(img);
+        previewGrid.appendChild(container);
+
+    });
+
+    startBtn.disabled = false;
+
+});
+
+
+/* ===== LIMPIAR IMÁGENES ===== */
+
+function clearImages() {
+
+    imageURLs.forEach(url => {
+        URL.revokeObjectURL(url);
+    });
+
+    imageURLs = [];
+    selectedImages = [];
+
+}
+
+
+/* ===== PRECARGAR IMÁGENES ===== */
+
+async function preloadImages() {
+
+    const promises = imageURLs.map(url => {
+
+        return new Promise((resolve, reject) => {
+
+            const image = new Image();
+
+            image.onload = () => resolve(image);
+
+            image.onerror = () => {
+                reject(new Error("No se pudo cargar una imagen."));
+            };
+
+            image.src = url;
+
+        });
+
+    });
+
+    return Promise.all(promises);
+
+}
+
+
+/* ===== INICIAR ===== */
+
+startBtn.addEventListener("click", startGame);
+
+async function startGame() {
+
+    if (selectedImages.length < 3 ||
+        selectedImages.length > 7) {
+        return;
+    }
+
+    startBtn.disabled = true;
+    message.textContent = "Preparando imágenes...";
+
+    try {
+
+        await preloadImages();
+
+        message.textContent = "";
+
+        setupScreen.classList.add("hidden");
+        rouletteScreen.classList.remove("hidden");
+
+        startRoulette();
+
+    } catch(error) {
+
+        console.error("[SE] Error al cargar imágenes:", error);
+
+        message.textContent =
+            "No se pudieron cargar todas las imágenes.";
+
+        startBtn.disabled = false;
+
+    }
+
+}
+
+
+/* ===== INICIAR RULETA ===== */
+
+function startRoulette() {
+
+    stopRoulette();
+
+    finalPanel.classList.add("hidden");
+
+    showingMenu = false;
+    rouletteRunning = true;
+
+    // Siempre empezar por la primera imagen.
+    currentIndex = 0;
+
+    showCurrentImage();
+
+    rouletteTimer = setInterval(() => {
+
+        currentIndex++;
+
+        // Volver a la primera imagen al llegar al final.
+        if (currentIndex >= imageURLs.length) {
+            currentIndex = 0;
+        }
+
+        showCurrentImage();
+
+    }, 80);
+
+}
+
+
+/* ===== MOSTRAR IMAGEN ===== */
+
+function showCurrentImage() {
+
+    rouletteImage.src = imageURLs[currentIndex];
+
+}
+
+
+/* ===== DETENER RULETA ===== */
+
+function stopRoulette() {
+
+    if (rouletteTimer !== null) {
+
+        clearInterval(rouletteTimer);
+        rouletteTimer = null;
+
+    }
+
+    rouletteRunning = false;
+
+}
+
+
+/* ===== TOQUE PARA DETENER ===== */
+
+rouletteStage.addEventListener("click", () => {
+
+    // Primer toque: detener la secuencia.
+    if (rouletteRunning) {
+
+        stopRoulette();
+        return;
+
+    }
+
+    // Segundo toque: mostrar opciones.
+    if (!showingMenu) {
+
+        showingMenu = true;
+        finalPanel.classList.remove("hidden");
+
+    }
+
+});
+
+
+/* ===== VOLVER A GIRAR ===== */
+
+againBtn.addEventListener("click", event => {
+
+    event.stopPropagation();
+
+    startRoulette();
+
+});
+
+
+/* ===== SALIR ===== */
+
+exitBtn.addEventListener("click", event => {
+
+    event.stopPropagation();
+
+    stopRoulette();
+
+    showingMenu = false;
+
+    finalPanel.classList.add("hidden");
+    rouletteScreen.classList.add("hidden");
+    setupScreen.classList.remove("hidden");
+
+});
+
+
+/* ===== LIMPIEZA AL CAMBIAR SELECCIÓN ===== */
+
+// Las URL anteriores se liberan cuando el usuario
+// selecciona un nuevo grupo de imágenes.
+
+window.addEventListener("beforeunload", () => {
+
+    stopRoulette();
+    clearImages();
+
+});
+
+</script>
+
+</body>
+</html>
